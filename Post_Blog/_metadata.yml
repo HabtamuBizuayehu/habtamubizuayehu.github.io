@@ -1,8 +1,0 @@
-# will show the all posts in this folder
-
-freeze: auto
-
-# Enable banner style title blocks
-title-block-banner: true
-title-block: true
-external: true  # Will apply to all posts listed from this folder

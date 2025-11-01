@@ -1,5 +1,0 @@
-<!-- This embeds my CV; please upload the cv in the file location-->
-
-<iframe src="CV.pdf" width="100%" height="1000px">
-
-</iframe>
