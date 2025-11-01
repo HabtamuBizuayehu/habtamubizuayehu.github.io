@@ -1,0 +1,15 @@
+[
+  {
+    "listing": "/Podcast_Blog.html",
+    "items": [
+      "/Post_Blog/Shiny_app_interactive/index.html",
+      "/Post_Blog/Table_automation_Ideas/index.html",
+      "/Post_Blog/Data_Manipulation_and_Wrangling/index.html",
+      "/Post_Blog/Visualisations/index.html",
+      "/Post_Blog/Shiny_app_User_controlled/index.html",
+      "/Post_Blog/Date_and_Time_Data_analysis/index.html",
+      "/Post_Blog/Longitudinal_Data_Analysis/index.html",
+      "/Post_Blog/Missing_Data_Analysis/index.html"
+    ]
+  }
+]

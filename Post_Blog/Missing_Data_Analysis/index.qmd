@@ -1,0 +1,471 @@
+---
+title: "Missing Data Management and Analysis"
+description: |
+  Missing data diagnostics and imputation strategies, R and STATA. Mechanism classification (MCAR/MAR/MNAR), multiple imputation, mean Imputation and LOCF/NOCB.
+author: "**Habtamu Bizuayehu**"
+website: "https://habtamubizuayehu.com/"
+orcid: "https://orcid.org/0000-0002-1360-4909"
+date: 2024-05-20
+image: "missing_data.png"
+highlight-style: github
+project:
+  type: website
+  output-dir: docs
+categories: [Missing Data, Data Imputation, Missing Data Identification]
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: false
+    code-fold: false
+    code-tools: true
+    code-summary: "Show the code"
+    theme: united
+    self-contained: true
+execute:
+  echo: true
+  warning: false
+  message: false
+knitr:
+  opts_chunk:
+    warning: false
+    message: false
+editor: visual
+---
+
+## **Introduction**
+
+Missing data is a common challenge in **survey, clinical, and population-based datasets**.\
+It can arise from participant dropout, skipped responses, changes in study design, or inconsistencies in data collection.\
+If not addressed appropriately, missingness can introduce **bias**, reduce **statistical power**, and undermine the reliability of results.\
+
+I also prepared Missing Data Management and Analysis via PowerPoint: Visit the [Missing data presentation](missing_data_presentation.pdf){target="_blank"}.
+
+This work showcases two complementary **missing data management projects**, developed across different datasets and research contexts:
+
+1.  **Stata-based missing data diagnostics and imputation**
+    -   Used structured diagnostic tools to quantify and visualise missingness, and identify patterns.\
+    -   Applied targeted imputation methods, including **Multiple Imputation (MI)**, **Last Observation Carried Forward (LOCF)**, **Next Observation Carried Backward (NOCB)**, and hybrid approaches depending on variable type and study design.
+2.  **R-based reproducible workflows for missing data**
+    -   Designed flexible pipelines for detecting, cleaning, and imputing missing values. 
+    -   Demonstrated simple (mean/median) and advanced methods (*MICE*, model-based imputation), as well as forward/backward filling and participant-level imputation.
+
+By combining **statistical rigour**, **methodological adaptability**, and **transparent documentation**, these approaches ensure that findings remain **robust, reproducible, and comparable** across studies, regardless of the data source.
+
+## STATA-Based Missing Data management and Analysis Project
+
+Some outputs are not presented here, as certain variables had small cell counts that could potentially compromise participant confidentiality.\
+Where the number of observations fell below accepted thresholds, they were withheld to remain in line with the minimum data reporting standards for sensitive datasets.
+
+The overall and aggregated results, however, have been published and are available in the following peer-reviewed journal articles:
+
+My work has resulted in three peer-reviewed Q1 publications:\
+- [Preterm Birth](https://doi.org/10.1016/j.midw.2022.103334): https://doi.org/10.1016/j.midw.2022.103334\
+- [Low Birthweight](https://doi.org/10.1093/eurpub/ckab033): https://doi.org/10.1093/eurpub/ckab033\
+- [Caesarean Section and Labour Intervention](https://doi.org/10.1007/s43032-023-01219-7): https://doi.org/10.1007/s43032-023-01219-7
+
+------------------------------------------------------------------------
+
+In large-scale and longitudinal data, missing data is almost inevitable. It can arise from participant attrition, skipped responses, evolving survey designs, or inconsistencies in measurement over time.\
+If not addressed appropriately, missingness can reduce statistical power, bias estimates, and compromise the validity of conclusions.
+
+### 1.1 Scientific Context
+
+Longitudinal studies, such as ALSWH, collect data from the same participants repeatedly over long periods. While this design allows for rich analysis of change over time, it is also prone to *loss to follow-up* and intermittent missingness.
+
+International best practice suggests that when missingness exceeds **5–10%** for a variable, imputation should be considered to improve precision and reduce bias (Rubin, 1987; Sterne et al., 2009). In this project:\
+- *Maternal pre-pregnancy BMI* and *age at menarche* had missingness above 10%.\
+- Missingness was often non-monotone, requiring tailored imputation strategies for different variable types.
+
+------------------------------------------------------------------------
+
+### 1.2 Diagnostic Approaches
+
+I began by systematically assessing the **extent and structure of missingness**:
+
+-   Used STATA packages `misschk`, `mdesc`, and `xtpatternvar` to quantify missing values per variable and identify patterns.
+-   Classified patterns into **monotone** (e.g., dropout) and **intermittent** (e.g., missed responses but later re-entry).
+-   Inspected missingness by **birth order** and survey wave to account for pregnancy-specific variables.
+-   Flagged variables with \>5% missingness for potential imputation.
+
+------------------------------------------------------------------------
+
+### 1.3 Missing Data Mechanisms
+
+Before selecting imputation methods, I classified variables according to the statistical mechanism of missingness:
+
+-   **MCAR – Missing Completely at Random**: The probability of a value being missing is unrelated to either the observed or unobserved data.
+-   **MAR – Missing at Random**: The probability of missingness depends only on observed data, not the missing values themselves.
+-   **MNAR – Missing Not at Random**: The probability of missingness depends on the unobserved data itself.
+
+------------------------------------------------------------------------
+
+### 1.4 Criteria for Imputation
+
+A **rule of thumb** from the literature recommends initiating imputation when the missing proportion exceeds **5–10%** of the variable’s observations. In this study:\
+- **Maternal BMI** and **age at menarche** exceeded 10% missingness.\
+- Time-varying health conditions (e.g., hypertension) had intermittent missingness between waves.
+
+### 1.5 Imputation Methods Applied Using STATA
+
+This Project has been completed using ALSWH data source
+
+**a) Mean Imputation (Row Mean)**\
+- Applied to *pre-pregnancy BMI* (\<15% missingness).\
+- Used the participant’s own available BMI values from other waves to calculate a personalised row mean.\
+- Observed mean: 24.46 kg/m²; Imputed mean: 24.63 kg/m² — indicating close alignment.
+
+**b) Multiple Imputation (MI)**\
+- Applied to *age at menarche* (\>10% missingness), a static variable recorded only once (Survey 2).\
+- Used **Multivariate Imputation by Chained Equations (MICE)** with 20 imputations, following guidelines to reduce sampling error.\
+- Incorporated auxiliary variables predictive of missingness.\
+- Conducted diagnostics: density plots, distribution overlays, and observed vs. imputed comparison.
+
+**c) Last Observation Carried Forward (LOCF)**\
+- Used for chronic conditions (e.g., hypertension, diabetes) that persist after diagnosis.\
+- Ensured stability in prevalence estimates over time.
+
+**d) Next Observation Carried Backward (NOCB)**\
+- Applied to lifetime exposure variables (e.g., partner violence). If reported in later waves, status was carried backward.
+
+**e) Combined LOCF + NOCB**\
+- Applied to variables requiring lifetime ascertainment, maximising completeness in both time directions; for example, country of birth.
+
+------------------------------------------------------------------------
+
+### 1.6 Sensitivity Analyses
+
+To ensure the robustness of results: - Conducted **complete-case analysis** alongside imputed datasets. - Compared distributions of observed vs. imputed data to detect anomalies. - Re-estimated models with alternative imputation strategies to check stability of effect estimates.
+
+------------------------------------------------------------------------
+
+**Table: Summary of Missing Data Handling Techniques**
+
+| Variable Type | Example Variable | Method Applied | Rationale |
+|------------------|------------------|------------------|-------------------|
+| **Static, continuous** | Age at menarche | Multiple Imputation (20 datasets, chained equations) | Single-time measurement; high missingness; categorical imputation adjusted for predictors |
+| **Time-varying, continuous** | BMI prior to birth | Row mean imputation using available values from same participant | Preserves within-person trajectory; missing at intermittent waves |
+| **Chronic binary condition** | Hypertension, diabetes | Last Observation Carried Forward (LOCF) | Lifetime conditions assumed persistent once reported |
+| **Lifetime event binary** | Ever violated by partner | LOCF + Next Observation Carried Backward (NOCB) | Ensures capture of lifetime exposure regardless of reporting wave |
+
+------------------------------------------------------------------------
+
+**In summary**, the combination of diagnostic mapping, mechanism classification, tailored imputation, and sensitivity analyses allowed me to address missingness in a scientifically sound manner, maximising the analytic value of this 20-year longitudinal dataset.
+
+------------------------------------------------------------------------
+
+> **Final Reflection:**\
+> I have had the privilege of contributing to one of Australia’s most significant longitudinal studies, producing results that are both methodologically robust and policy-relevant.\
+> The lessons I have gained — about rigour, adaptability, and the potential of data to drive meaningful change — will remain central to my work and collaborations. I will apply these skills in future projects that connects advanced analytics with real-world health outcomes, both in Australia and internationally.
+
+**If you are interested in exploring each paper in greater depth, including the methods applied, please read the links below**. I hope you find them insightful.
+
+-   [Preterm Birth](https://doi.org/10.1016/j.midw.2022.103334): https://doi.org/10.1016/j.midw.2022.103334\
+-   [Low Birthweight](https://doi.org/10.1093/eurpub/ckab033): https://doi.org/10.1093/eurpub/ckab033\
+-   [Caesarean Section and Labour Intervention](https://doi.org/10.1007/s43032-023-01219-7): https://doi.org/10.1007/s43032-023-01219-7
+
+## R-Based Missing Data management and Analysis Project
+
+### **Missing Value Identification and Imputations**
+
+**A. Identifying Missing Values**
+
+-   is.na(), anyNA(), sum(is.na(x)), colSums() – detect/count missing values
+
+-   complete.cases() – filter complete rows
+
+-   Convert blanks to NA: x\[x == ""\] \<- NA
+
+**B. Handling Missing Values**
+
+-   Basic Removal/Replacement: na.omit(), replace_na() (tidyr), ifelse()
+
+-   Forward/Backward Fill: fill() (tidyr) with .direction = "down" / "up"
+
+-   Statistical Imputation:
+
+-Simple: mean/median imputation
+
+-Multiple: mice::mice()()
+
+\-**Advanced**: Hmisc::aregImpute, missForest, Amelia, zoo::na.fill
+
+Missing data is a common issue in real-world datasets. In R, handling missing values properly is essential to ensure the integrity of analyses and avoid misleading results.
+
+This section covers how to **identify**, **clean**, and **impute** missing values using base R and tidyverse tools. Techniques range from basic filtering to advanced imputation models.
+
+➡️ Missing values are typically represented as `NA` in R. Empty strings (e.g., `""`) or special codes (e.g., `-99`, `"missing"`) may also indicate missingness and need conversion before analysis.
+
+🔹 Summary of Functions for Handling Missing Values
+
+| **Task** | **Function** / **Code** | **Purpose** |
+|-------------------|------------------------|-----------------------------|
+| Detect missing values | `is.na(x)`, `anyNA(x)`, `sum(is.na(x))` | Identify/count missing values |
+| Missing per column | `colSums(is.na(df))` | Count NAs per column |
+| Filter complete rows | `complete.cases(df)` | Keep only rows without any missing values |
+| Convert blanks to `NA` | `x[x == ""] <- NA` | Convert empty strings to missing values |
+| Remove missing rows | `na.omit(df)` | Remove rows with any missing value |
+| Replace missing values | `replace_na(df, list(...))`, `ifelse(is.na(x), ...)` | Impute or replace NA with custom logic |
+| Forward/backward fill | `fill(df, .direction = "down" / "up")` | Fill NA using nearby values |
+| Mean/median imputation | `x[is.na(x)] <- mean(x, na.rm = TRUE)` | Replace NA with summary statistic |
+| Multiple imputation | `mice::mice(df)` | Create multiple imputed datasets using chained equations |
+| Advanced imputation | `Hmisc::aregImpute`, `missForest`, `Amelia`, `zoo::na.fill()` | Specialized techniques for complex imputations |
+
+📚 **Further Learning and Resources**
+
+Additional tutorials, demonstrations, and datasets are available on:
+
+-   **YouTube Channel – AnalyticsHub**\
+    <https://studio.youtube.com/channel/UCLVKP0g8GvHhOh0kn20T8eg/videos/upload?filter=%5B%5D&sort=%7B%22columnType%22%3A%22date%22%2C%22sortOrder%22%3A%22DESCENDING%22%7D>
+
+-   **GitHub Repository**\
+    <https://github.com/HabtamuBizuayehu?tab=repositories>
+
+------------------------------------------------------------------------
+
+```{r, echo=FALSE, include=FALSE}
+
+library(dplyr)      # For %>%, mutate(), slice_sample(), arrange(), summarise()
+library(tidyr)      # For fill(), replace_na()
+library(mice)       # For multiple imputation
+library(Hmisc)      # For aregImpute (advanced imputation)
+library(missForest) # For random forest-based imputation
+library(Amelia)     # For EM-based multiple imputation
+library(zoo)        # For na.fill()
+
+```
+
+```{r, echo=FALSE}
+
+# setwd("C:/Users/User/Desktop/Materials_ Course and proposals/Course Related/DataCamp/Data/Synthetic_data")
+visits_all <- read.csv("C:/Users/User/Desktop/Materials_ Course and proposals/Course Related/DataCamp/Data/Synthetic_data/patients.csv")
+
+colnames(visits_all) <- tolower(colnames(visits_all))
+
+# Generate variables for demonstrating bassAckward and forward imputation
+
+set.seed(123)  # For reproducibility
+
+visit_1 <- visits_all %>%
+  slice_sample(n = 10) %>% 
+  mutate(visit = 1)
+
+# Label visit_1 if not already done
+visit_1 <- visit_1 %>%
+  mutate(visit = 1)
+
+# Create visit_2 (all race & income missing)
+visit_2 <- visit_1 %>%
+  mutate(
+    visit = 2,
+    race = NA,
+    income = NA
+  )
+
+# Create visit_3: 5 missing race, 5 missing income, others income - 1000
+set.seed(123)
+race_miss_idx_v3 <- sample(1:nrow(visit_1), 5)
+income_miss_idx_v3 <- sample(setdiff(1:nrow(visit_1), race_miss_idx_v3), 5)
+
+visit_3 <- visit_1 %>%
+  mutate(
+    visit = 3,
+    race = ifelse(row_number() %in% race_miss_idx_v3, NA, race),
+    income = case_when(
+      row_number() %in% income_miss_idx_v3 ~ NA_real_,
+      TRUE ~ income - 1000
+    )
+  )
+
+# Create visit_4: reverse missing pattern of visit_3
+visit_4 <- visit_1 %>%
+  mutate(
+    visit = 4,
+    race = ifelse(row_number() %in% income_miss_idx_v3, NA, race),
+    income = case_when(
+      row_number() %in% race_miss_idx_v3 ~ NA_real_,
+      TRUE ~ income - 1000
+    )
+  )
+
+# Combine all visits
+visits_all <- bind_rows(visit_1, visit_2, visit_3, visit_4)
+# Optional: preview
+head(visits_all)
+rm(visit_1, visit_2, visit_3, visit_4)
+
+# Standardise missing values
+visits_all <- visits_all %>%
+  mutate(
+    across(where(is.character), ~ na_if(.x, "")),
+    across(where(is.numeric), ~ ifelse(.x == 0, NA, .x)))
+
+# Create a unique patient ID by combining parts of first and last name with birthdate
+visits_all <- visits_all %>%
+  mutate(
+    birthdate = as.Date(birthdate),
+    id_text = paste0(substr(first, 1, 4), "|", substr(last, 1, 4), "|", birthdate))
+```
+
+```{r, echo=FALSE, results='hide', include=FALSE, eval=FALSE}
+# Check patterns of missing data (optional: mice)
+md.pattern(visits_all)
+```
+
+```{r}
+
+# Summarise missing values across all columns
+missing_summary <- colSums(is.na(visits_all))
+print(missing_summary[missing_summary > 0])
+
+# Total number of missing cells
+total_missing <- sum(is.na(visits_all))
+cat("Total missing values in dataset:", total_missing, "\n")
+
+# Count of individuals with at least one missing value
+n_missing_individuals <- sum(!complete.cases(visits_all))
+cat("Number of individuals with at least one missing value:", n_missing_individuals, "\n")
+
+# Sort records by patient ID and visit number
+visits_all <- visits_all %>%
+  arrange(id_text, visit)
+
+# View rows with any missing values
+missing_rows <- visits_all %>%
+  filter(!complete.cases(.))
+head(missing_rows, n = 12) %>% select(id_text, race, income, passport)
+
+# Impute passport with "UNKNOWN"
+df_passport <- visits_all %>%
+  mutate(passport_imputed = replace_na(passport, "UNKNOWN")) %>%
+  filter(is.na(passport)) %>%
+  select(id, id_text, visit, passport, passport_imputed)
+
+head(df_passport, n = 12)
+
+# Sort records by patient ID and visit number (to prepare for forward/backward fill)
+visits_all <- visits_all %>%
+  arrange(id_text, visit)
+
+# Preview sorted data (tail)
+tail(visits_all %>% select(id_text, visit, race, income), n = 12)
+
+# Forward fill missing race values within each patient (downward)
+visits_all <- visits_all %>%
+  group_by(id_text) %>%
+  mutate(race_forward = race) %>%
+  fill(race_forward, .direction = "down") %>%
+  ungroup()
+
+# Preview forward-filled race values (head)
+head(visits_all %>% select(id_text, visit, race, race_forward), n = 12)
+
+# Backward fill missing race values within each patient (upward)
+visits_all <- visits_all %>%
+  group_by(id_text) %>%
+  mutate(race_backward = race) %>%
+  fill(race_backward, .direction = "up") %>%
+  ungroup()
+
+# Preview backward-filled race values (tail)
+tail(visits_all %>% select(id_text, visit, race, race_backward), n = 12)
+
+# Calculate the global (overall) mean income
+global_mean_income <- mean(visits_all$income, na.rm = TRUE)
+
+# Use global mean to impute missing income values
+visits_all <- visits_all %>%
+  mutate(income_global_mean = ifelse(is.na(income), global_mean_income, income))
+
+# Preview global mean-imputed income (head)
+head(visits_all %>% select(id_text, visit, income, income_global_mean), n = 12)
+
+# Calculate mean income per participant (id_text)
+participant_mean_income <- visits_all %>%
+  group_by(id_text) %>%
+  summarise(mean_income_id = mean(income, na.rm = TRUE), .groups = "drop")
+
+# Use participant-level mean to impute missing income values
+visits_all <- visits_all %>%
+  left_join(participant_mean_income, by = "id_text") %>%
+  mutate(income_participant_mean = ifelse(is.na(income), mean_income_id, income))
+
+# Preview participant mean-imputed income (tail)
+tail(visits_all %>% select(id_text, visit, income, income_participant_mean), n = 12)
+
+# Multiple imputation for fips, zip, healthcare_coverage, and income
+patients_mice <- visits_all %>%
+  select(id_text, fips, zip, healthcare_coverage, income)
+
+# Apply mice
+imputed <- mice(patients_mice %>% select(-id_text), method = "pmm", m = 1, printFlag = FALSE)
+
+# Retrieve completed dataset
+mice_result <- complete(imputed)
+colnames(mice_result) <- paste0(colnames(mice_result), "_imputed")
+
+# Join ID and filter rows with original missing values
+df_mice <- bind_cols(patients_mice, mice_result) %>%
+  filter(is.na(fips) | is.na(zip) | is.na(healthcare_coverage) | is.na(income)) %>%
+  select(id_text,
+         fips, fips_imputed,
+         zip, zip_imputed,
+         healthcare_coverage, healthcare_coverage_imputed,
+         income, income_imputed)
+
+head(df_mice, n = 12)
+
+# Optional: Inspect logged events from mice
+imputed$loggedEvents
+
+# Final summary: compare original and imputed values for rows with missingness
+
+final_impute_check <- visits_all %>%
+  filter(is.na(race) | is.na(income)) %>%
+  select(id_text, visit,
+         race, race_forward, race_backward,
+         income, income_global_mean, income_participant_mean)
+
+# Preview top 12
+head(final_impute_check, n = 12)
+
+# Preview bottom 12
+tail(final_impute_check, n = 12)
+
+# Clean up temporary objects 
+rm( participant_mean_income, final_impute_check, global_mean_income, df_passport, df_mice,
+    patients_mice, imputed, mice_result, missing_summary, total_missing, n_missing_individuals, missing_rows
+)
+```
+
+## **Conclusion**
+
+Managing missing data is a core part of ensuring the **validity, reproducibility, and interpretability** of findings. Missingness can arise from a variety of sources, including participant attrition, evolving survey designs, and structural inconsistencies, and each requires a tailored approach. In multi-decade datasets, missingness arises from participant attrition, evolving survey designs, and changes in data collection priorities. Without a structured approach, these gaps can bias results, reduce statistical power, and undermine the credibility of findings.
+
+An effective missing data strategy should:
+
+-   Begin with **comprehensive diagnostics** to assess the extent, patterns, and potential mechanisms of missingness -whether MCAR (Missing Completely at Random), MAR (Missing at Random), or MNAR (Missing Not at Random)—as this classification guides the choice of analytical remedies.
+-   Use **appropriate imputation techniques**—from simple methods like mean substitution to advanced approaches such as multiple imputation, mean imputation, last observation carried forward (LOCF), or combined strategies—selected according to the type of variable and nature of missingness.
+-   Incorporate **sensitivity analyses** to evaluate the robustness of results under different assumptions.
+-   Maintain **transparent documentation** of all decisions, code, and outputs, ensuring reproducibility and facilitating peer review.
+
+Ultimately, the goal is not to replace missing values simply to achieve a complete dataset, but to apply appropriate methods that preserve the validity, reliability, and interpretability of the analysis. A structured, documented, and flexible approach allows data analysts to maximise the value of data while minimising bias and loss of precision—ensuring that findings can confidently and precisely inform both science and policy.\
+
+I also prepared Missing Data Management and Analysis via PowerPoint: Visit the [Missing data presentation](missing_data_presentation.pdf){target="_blank"}.
+
+------------------------------------------------------------------------
+
+## **References**
+
+A. Book and Articles
+
+1.  Dong Y, Peng C-YJ. Principled missing data methods for researchers. SpringerPlus. 2013;2(1):222.
+2.  Bennett DA. How can I deal with missing data in my study? Australian and New Zealand journal of public health. 2001;25(5):464-9.
+3.  StataCorp L. Stata statistical software: Release 13.(2013). College Station, TX: StataCorp LP. 2013.
+4.  White IR, Royston P, Wood AM. Multiple imputation using chained equations: Issues and guidance for practice. Stat Med. 2011;30(4):377-99. https://www.sagepub.com/sites/default/files/upm-binaries/45664_6.pdf
+
+B. Useful websites:\
+https://missingdata.org/\
+https://www.missingdata.nl/missing-data/missing-data-methods/
+
+------------------------------------------------------------------------

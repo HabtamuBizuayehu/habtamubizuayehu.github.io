@@ -1,0 +1,415 @@
+//================================
+** // ==== Missing Data management and Analysis ==========================  
+//================================
+
+// By Habtamu Bizuayehu 
+
+// This Stata script demonstrates a complete workflow for managing and analysing missing data in a large longitudinal health dataset. It applies both Last Observation Carried Forward 
+// (LOCF) and Next Observation Carried Backward (NOCB) techniques for static variables across multiple survey waves, followed by multiple imputation (MI) using chained equations for key
+// study variables. The approach integrates diagnostic checks, model fitting, and sensitivity analyses to ensure robust handling of missingness and valid statistical inference.
+
+
+// the variables were identified in each survery (Country of birth = survey 1, age at menstrual onset and Maternal birth weight = survey 2, ACE= survey 7 full and 
+// sexual abuse = survey 4 which  was used for replacement of the missing values ) and the needed variables were kept 
+// all variables needed in all survey were merged with survey 1 which had all participants ID and continued to fill in all the rest surveys 
+// to replace in survey 1 to survey 7 it was used the all static vaiables data set
+
+
+// Last Observation Carried Forward (LOCF) and Next observation carried backward (NOCB) imputation method will be used to accomplish this task
+
+//************
+// imputations by LOCF and NOCB for missed values 
+
+
+// Country of birth = survey 1 was carried out by LOCF method 
+
+ta cob, m
+ta cob wave, m col
+
+by idalias (wave), sort: replace cob=cob[_n-1] if cob >= .
+by idalias (wave), sort: replace cob=cob[_n-2] if cob>= .
+by idalias (wave), sort: replace cob=cob[_n-3] if cob>= .
+by idalias (wave), sort: replace cob=cob[_n-4] if cob>= .
+by idalias (wave), sort: replace cob=cob[_n-5] if cob>= .
+by idalias (wave), sort: replace cob=cob[_n-6] if cob>= .
+
+ta cob, m
+ta cob wave, m col
+
+// age at menstrual onset and Maternal birth weight = survey 2 was carried out by both LOCF & NOCB method 
+
+// LOCF & NOCB method for survey 3-7
+
+ta afmpg, m
+ta afmpg wave, m col
+
+by idalias (wave), sort: replace afmpg=afmpg[_n-1] if afmpg >= .
+by idalias (wave), sort: replace afmpg=afmpg[_n-2] if afmpg>= .
+by idalias (wave), sort: replace afmpg=afmpg[_n-3] if afmpg>= .
+by idalias (wave), sort: replace afmpg=afmpg[_n-4] if afmpg>= .
+by idalias (wave), sort: replace afmpg=afmpg[_n-5] if afmpg>= .
+by idalias (wave), sort: replace afmpg=afmpg[_n-6] if afmpg>= .
+
+ta afmpg, m
+ta afmpg wave, m col
+
+
+// NOCB method for survey 1 
+
+ta afmpg, m
+ta afmpg wave, m col
+
+by idalias (wave), sort: replace afmpg=afmpg[_n+1] if afmpg >= .
+by idalias (wave), sort: replace afmpg=afmpg[_n+2] if afmpg>= .
+by idalias (wave), sort: replace afmpg=afmpg[_n+3] if afmpg>= .
+by idalias (wave), sort: replace afmpg=afmpg[_n+4] if afmpg>= .
+by idalias (wave), sort: replace afmpg=afmpg[_n+5] if afmpg>= .
+by idalias (wave), sort: replace afmpg=afmpg[_n+6] if afmpg>= .
+
+ta afmpg, m
+ta afmpg wave, m col
+
+
+// ACE= survey 7 full was carried out by both LOCF & NOCB method but not generated due to not used in this study and relatively high missing value 
+
+
+// NOCB method for survey 1-6 replacement 
+
+save "C:\Users\c3271807\Desktop\proposal@ PhD\Data for work\append and merge 19 04 09\mod 4 @ 19 08 21\static & historical variables 1-7 survey.dta", replace
+
+
+// the next step is merging this data together with other variables 
+
+cd "C:\Users\c3271807\Desktop\proposal@ PhD\Data for work\append and merge 19 04 09\mod 4 @ 19 08 21"
+
+save "appended data merged @ static historical variables.dta", replace 
+
+sort idalias wave
+
+clear
+
+//
+
+
+
+// *************************************
+
+// adjusted predictors of missingness 
+// multivariate analysis to select  variables for final imputations
+// factors contributed for missingness for variables selected for imputations  
+
+// variables with p-values <= 0.25 from univariate analysis to select Auxilary variables are  //  ///  i.ageg3 ib1.edu i.phi i.vlc i.aria3 i.cob
+// the factors that was included in the final model and should be included in the imputations are // lbw ib1.bo3 i.dmg i.htng i.afmpg i.bmirmg4
+// NB: i.bmigp4 not included due to high missing value 
+// NB: afmpg is outcome variable and must excluded  
+
+//NB: the outcome variable i.e. missed (yes/no) so logit can fit
+// adjusted predictors of missingness 
+
+
+//menarch age 
+
+xtlogit afmpgm i.ageg3 ib1.edu i.phi i.vlc i.aria3 ib1.cob i.lbw ib1.bo3 i.dmg i.htng, re or cformat(%9.2f) pformat(%5.2f) sformat(%8.2f)
+
+ // Variables used in the final imputations 
+ 
+// the factors that was included in the final model and should be included in the imputations are // ptb ib1.bog4 i.dmg i.htng i.asthma ib1.edu i.mars
+ // From auxilary variables i.ageg3   // i.ageg3 ib1.cob auxilary variables
+
+save "C:\Users\c3271807\OneDrive - The University Of Newcastle\data\Analysis @ LBW\all\mothers singlton hx only.dta", replace
+ 
+// estimate by wave 
+// augment was used when predictors cause a problem during MI
+// wave 1
+
+ta wave
+// NB: wave is from 1-6 that is 2-7 practically
+
+// wave 1_7 used for MI
+
+cd "C:\Users\c3271807\OneDrive - The University Of Newcastle\data\Analysis @ LBW\all\MI"
+
+save "wave 1.dta", replace
+
+keep if wave==1
+
+mi set wide
+mi register imputed afmpg 
+mi impute chained (logit) afmpg = ageg3 cob lbw bo3 dmg htng, add(20) force
+
+keep idalias child_dob wave _mi_miss _1_afmpg _2_afmpg _3_afmpg _4_afmpg _5_afmpg _6_afmpg _7_afmpg _8_afmpg _9_afmpg _10_afmpg _11_afmpg _12_afmpg _13_afmpg _14_afmpg _15_afmpg _16_afmpg _17_afmpg _18_afmpg _19_afmpg _20_afmpg 
+
+sort idalias wave child_dob
+
+save "wave 1.dta", replace 
+clear
+
+// wave 2
+
+use "C:\Users\c3271807\OneDrive - The University Of Newcastle\data\Analysis @ LBW\all\mothers singlton hx only.dta"
+
+cd "C:\Users\c3271807\OneDrive - The University Of Newcastle\data\Analysis @ LBW\all\MI"
+
+save "wave 2.dta" 
+
+keep if wave==2
+
+mi set wide
+mi register imputed afmpg 
+mi impute chained (logit) afmpg = ageg3 cob lbw bo3 dmg htng, add(20) force
+
+keep idalias child_dob wave _mi_miss _1_afmpg _2_afmpg _3_afmpg _4_afmpg _5_afmpg _6_afmpg _7_afmpg _8_afmpg _9_afmpg _10_afmpg _11_afmpg _12_afmpg _13_afmpg _14_afmpg _15_afmpg _16_afmpg _17_afmpg _18_afmpg _19_afmpg _20_afmpg 
+
+sort idalias wave child_dob
+
+save "wave 2.dta", replace 
+
+clear
+
+// wave 3
+
+use "C:\Users\c3271807\OneDrive - The University Of Newcastle\data\Analysis @ LBW\all\mothers singlton hx only.dta"
+
+cd "C:\Users\c3271807\OneDrive - The University Of Newcastle\data\Analysis @ LBW\all\MI"
+
+save "wave 3.dta" 
+
+keep if wave==3
+
+mi set wide
+mi register imputed afmpg 
+mi impute chained (logit) afmpg = ageg3 cob lbw bo3 dmg htng, add(20) force
+
+keep idalias child_dob wave _mi_miss _1_afmpg _2_afmpg _3_afmpg _4_afmpg _5_afmpg _6_afmpg _7_afmpg _8_afmpg _9_afmpg _10_afmpg _11_afmpg _12_afmpg _13_afmpg _14_afmpg _15_afmpg _16_afmpg _17_afmpg _18_afmpg _19_afmpg _20_afmpg 
+
+sort idalias wave child_dob
+
+save "wave 3.dta", replace
+
+clear
+
+// wave 4
+
+use "C:\Users\c3271807\OneDrive - The University Of Newcastle\data\Analysis @ LBW\all\mothers singlton hx only.dta"
+
+cd "C:\Users\c3271807\OneDrive - The University Of Newcastle\data\Analysis @ LBW\all\MI"
+
+save "wave 4.dta" 
+
+keep if wave==4
+
+mi set wide
+mi register imputed afmpg 
+mi impute chained (logit) afmpg = ageg3 cob lbw bo3 dmg htng, add(20) force
+
+keep idalias child_dob wave _mi_miss _1_afmpg _2_afmpg _3_afmpg _4_afmpg _5_afmpg _6_afmpg _7_afmpg _8_afmpg _9_afmpg _10_afmpg _11_afmpg _12_afmpg _13_afmpg _14_afmpg _15_afmpg _16_afmpg _17_afmpg _18_afmpg _19_afmpg _20_afmpg 
+
+sort idalias wave child_dob
+
+save "wave 4.dta", replace
+
+clear
+
+// wave 5
+
+use "C:\Users\c3271807\OneDrive - The University Of Newcastle\data\Analysis @ LBW\all\mothers singlton hx only.dta"
+
+cd "C:\Users\c3271807\OneDrive - The University Of Newcastle\data\Analysis @ LBW\all\MI"
+
+save "wave 5.dta" 
+
+keep if wave==5
+
+mi set wide
+mi register imputed afmpg 
+mi impute chained (logit) afmpg = ageg3 cob lbw bo3 dmg htng, add(20) force
+
+keep idalias child_dob wave _mi_miss _1_afmpg _2_afmpg _3_afmpg _4_afmpg _5_afmpg _6_afmpg _7_afmpg _8_afmpg _9_afmpg _10_afmpg _11_afmpg _12_afmpg _13_afmpg _14_afmpg _15_afmpg _16_afmpg _17_afmpg _18_afmpg _19_afmpg _20_afmpg 
+
+sort idalias wave child_dob
+
+save "wave 5.dta", replace
+
+clear
+
+// wave 6
+
+use "C:\Users\c3271807\OneDrive - The University Of Newcastle\data\Analysis @ LBW\all\mothers singlton hx only.dta"
+
+cd "C:\Users\c3271807\OneDrive - The University Of Newcastle\data\Analysis @ LBW\all\MI"
+
+save "wave 6.dta" 
+
+keep if wave==6
+
+mi set wide
+mi register imputed afmpg 
+mi impute chained (logit) afmpg = ageg3 cob lbw bo3 dmg htng, add(20) force
+
+keep idalias child_dob wave _mi_miss _1_afmpg _2_afmpg _3_afmpg _4_afmpg _5_afmpg _6_afmpg _7_afmpg _8_afmpg _9_afmpg _10_afmpg _11_afmpg _12_afmpg _13_afmpg _14_afmpg _15_afmpg _16_afmpg _17_afmpg _18_afmpg _19_afmpg _20_afmpg 
+
+sort idalias wave child_dob
+
+save "wave 6.dta", replace
+clear
+
+// wave 7
+
+// NB: not observation 
+
+//use "C:\Users\c3271807\OneDrive - The University Of Newcastle\data\Analysis @ LBW\all\mothers singlton hx only.dta"
+
+// cd "C:\Users\c3271807\OneDrive - The University Of Newcastle\data\Analysis @ LBW\all\MI"
+
+save "wave 7.dta"
+
+//keep if wave==7
+
+mi set wide
+mi register imputed afmpg 
+mi impute chained (logit) afmpg = ageg3 cob lbw bo3 dmg htng, add(20) force
+
+keep idalias child_dob wave _mi_miss _1_afmpg _2_afmpg _3_afmpg _4_afmpg _5_afmpg _6_afmpg _7_afmpg _8_afmpg _9_afmpg _10_afmpg _11_afmpg _12_afmpg _13_afmpg _14_afmpg _15_afmpg _16_afmpg _17_afmpg _18_afmpg _19_afmpg _20_afmpg 
+
+sort idalias wave child_dob
+
+//save "wave 7.dta", replace
+clear
+
+
+// appending each wave and merge with the orginal data 
+
+
+use "C:\Users\c3271807\OneDrive - The University Of Newcastle\data\Analysis @ LBW\all\MI\wave 1.dta"
+
+
+cd "C:\Users\c3271807\OneDrive - The University Of Newcastle\data\Analysis @ LBW\all\MI"
+
+save "appended 1-7 wave.dta"
+
+
+append using "C:\Users\c3271807\OneDrive - The University Of Newcastle\data\Analysis @ LBW\all\MI\wave 2.dta"
+append using "C:\Users\c3271807\OneDrive - The University Of Newcastle\data\Analysis @ LBW\all\MI\wave 3.dta"
+append using "C:\Users\c3271807\OneDrive - The University Of Newcastle\data\Analysis @ LBW\all\MI\wave 4.dta"
+append using "C:\Users\c3271807\OneDrive - The University Of Newcastle\data\Analysis @ LBW\all\MI\wave 5.dta"
+append using "C:\Users\c3271807\OneDrive - The University Of Newcastle\data\Analysis @ LBW\all\MI\wave 6.dta"
+//append using "C:\Users\c3271807\OneDrive - The University Of Newcastle\data\Analysis @ LBW\all\MI\wave 7.dta"
+
+
+ta wave, m
+ta _1_afmpg wave, m
+ta _1_afmpg wave, m col
+ta _20_afmpg wave, m col
+
+sort idalias wave child_dob
+
+drop  _merge
+
+save "appended 1-7 wave.dta", replace
+clear
+
+
+// Merging in each survey 
+
+use "C:\Users\c3271807\OneDrive - The University Of Newcastle\data\Analysis @ LBW\all\mothers singlton hx only.dta"
+
+
+cd "C:\Users\c3271807\OneDrive - The University Of Newcastle\data\Analysis @ LBW\all"
+
+save "MI LBW singleton Hx Only.dta"
+
+sort idalias wave child_dob
+
+drop  _merge
+
+save "MI LBW singleton Hx Only.dta", replace
+
+
+merge m:m idalias wave child_dob using "C:\Users\c3271807\OneDrive - The University Of Newcastle\data\Analysis @ LBW\all\MI\appended 1-7 wave.dta"
+
+drop  _merge
+
+// missing pattern for imputed data 
+
+mi misstable patterns afmpg
+
+// diagnosis test 
+// NB: if observed, imputed and completed data are comparable it is a good imputation
+
+asdoc midiagplots afmpg   // show proportions of observed, imputed and completed data 
+asdoc midiagplots afmpg, tabfreq // show frequencies of observed, imputed and completed data 
+
+
+ta _1_afmpg wave, m
+ta _1_afmpg wave, m col
+ta _20_afmpg wave, m col
+
+
+// description of study participants for imputed variables age at menarch and BMI
+//'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+//NB: the value for BMI was done above except for regression 
+
+asdoc ta _1_afmpg, replace
+asdoc ta _1_afmpg, m append
+asdoc  ta lbw _1_afmpg , col append
+
+mi estimate: xtlogit lbw i.afmpg, re
+mi estimate, or cformat(%9.2f) pformat(%5.2f) sformat(%8.2f)
+//mi estimate, or
+
+xtlogit  lbw i.bmirmg4, re or cformat(%9.2f) pformat(%5.2f) sformat(%8.2f)
+asdoc estat ic
+
+
+//*********************************************************************************
+// relative good model all births 
+
+// ========data before imputations using row data 
+
+//ib1.edu i.asthma ib1.ageg3 i.mars  i.phi  i.anxa i.vlc ib1.cob  i.pwk  excluded
+// looks final model but needs imputations for i.afmpg since BMI is imputed
+
+xtlogit  lbw ib1.bo3 i.dmg i.htng i.afmpg i.bmirmg4, re or cformat(%9.2f) pformat(%5.2f) sformat(%8.2f)
+asdoc estat ic
+
+
+// i.afmpg removed 
+
+xtlogit  lbw ib1.bo3 i.dmg i.htng i.bmirmg4, re or cformat(%9.2f) pformat(%5.2f) sformat(%8.2f)
+
+ estat ic
+
+
+// ============MI imputation
+
+mi estimate: xtlogit lbw ib1.bo3 i.dmg i.htng i.afmpg i.bmirmg4, re
+mi estimate, or cformat(%9.2f) pformat(%5.2f) sformat(%8.2f)
+//mi estimate, or
+
+save "MI LBW singleton Hx Only.dta", replace
+clear
+
+
+//======================================================================================
+// preterm birth in the model sensitivity anlysis 
+//======================================================================================
+
+use "C:\Users\c3271807\OneDrive - The University Of Newcastle\data\Analysis @ LBW\all\mothers singlton hx only.dta"
+
+xtset idalias
+
+// p-value <0.25
+
+xtlogit  lbw i.ptb ib1.bo3 i.dmg i.htng i.asthma i.anxa ib1.edu i.pwk  i.mars ib1.ageg3 i.bmigp4 i.vlc i.phi ib1.cob, i(idalias) re or cformat(%9.2f) pformat(%5.2f) sformat(%8.2f)
+estat ic
+
+// i.vlc excluded
+
+xtlogit  lbw i.ptb ib1.bo3 i.dmg i.htng i.asthma i.anxa ib1.edu i.pwk  i.mars ib1.ageg3 i.bmigp4 i.phi ib1.cob, i(idalias) re or cformat(%9.2f) pformat(%5.2f) sformat(%8.2f)
+estat ic
+
+//i.mars  i.vlc excluded
+
+xtlogit  lbw i.ptb ib1.bo3 i.dmg i.htng i.asthma i.anxa ib1.edu i.pwk  ib1.ageg3 i.bmigp4 i.phi ib1.cob, i(idalias) re or cformat(%9.2f) pformat(%5.2f) sformat(%8.2f)
+estat ic

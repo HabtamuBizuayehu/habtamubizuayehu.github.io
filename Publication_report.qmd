@@ -1,0 +1,64 @@
+---
+title: "Publication | Report | Conference Presentation"
+# subtitle: "Publication | Report | Conference Presentation"
+format:
+  html:
+    css: styles.css
+---
+
+## <i class="fa-solid fa-book-open"></i> Publications & Reports
+
+I have authored over 40 peer-reviewed journal articles, more than two major reports, and a book chapter. My work has been cited more than 10,000 times, with over 35% ranking in the top 1% journals globally. Many publications have directly informed policy and guidelines. I have presented my research outputs at 18 conferences, including those hosted by the Public Health Association of Australia, Australasian Epidemiological Association, and World Indigenous Cancer Conference.
+
+------------------------------------------------------------------------
+
+## 📑 Reports
+
+-   **Bizuayehu H**, Kenny T, Chong T, et al. **Trends and coverage of antenatal vaccination during pregnancy in Western Australia.** WA Department of Health, 2025.\
+-   **Bizuayehu H**, Garvey G, Diaz A, Jahan S, et al. **Developing Consumer‑Driven Cancer Research with First Nations Peoples.** . The First Nations Cancer and Wellbeing Research Program (FNCWR), The University of Queensland, 2024.
+
+------------------------------------------------------------------------
+
+## 📚 Book Chapter
+
+-   **Bizuayehu HM**, Belachew SA, Diaz A, Jahan S, Fong KM, Garvey G. **Indigenous and Tribal Peoples and Cancer.** In: *Cancer and Society*. Springer, 2024. [View chapter](https://link.springer.com/content/pdf/10.1007/978-3-031-56806-0.pdf#page=200)
+
+------------------------------------------------------------------------
+
+## 📝 Peer-Reviewed Journal Articles
+
+*NB: My name in the publications is presented as either **Bizuayehu HM** or **Mellie H.***
+
+1.  **Bizuayehu HM** *et al.* **Burden of 30 cancers among men: Global statistics in 2022 and projections for 2050 using population-based estimates**. Cancer. 2024 Aug 12. <https://doi.org/10.1002/cncr.35458>\
+2.  **Bizuayehu HM** *et al.* **Patterns of Labour Interventions and Associated Maternal Biopsychosocial Factors in Australia: a Path Analysis**. Reproductive Sciences. 2023;30:2767–2779. <https://doi.org/10.1007/s43032-023-01219-7>\
+3.  **Bizuayehu HM** *et al.* **Utilisation of endocrine therapy for cancer in Indigenous peoples: a systematic review and meta-analysis**. BMC Cancer. 2024;24(1):882. <https://doi.org/10.1186/s12885-024-12627-6>\
+4.  **Bizuayehu HM** *et al.* **Maternal residential area effects on preterm birth, low birth weight and caesarean section in Australia: A systematic review**. Midwifery. 2023;123:103704. <https://doi.org/10.1016/j.midw.2023.103704>\
+5.  **Bizuayehu HM** *et al.* **Low birth weight and its associated biopsychosocial factors over a 19-year period: findings from a national cohort study**. Eur J Public Health. 2021;31(4):786–793. [doi: 10.1093/eurpub/ckab033](https://pubmed.ncbi.nlm.nih.gov/33755156/)\
+6.  **Bizuayehu HM** *et al.* **Global burden of 34 cancers among women in 2020 and projections to 2040: population-based data from 185 countries/territories**. Int J Cancer. 2023;152(3):592–604. <https://doi.org/10.1002/ijc.34247>\
+7.  Bore MG, Dadi AF, & **Bizuayehu HM**. **Unmet supportive care needs among cancer patients in Sub‑Saharan Africa: a mixed-method systematic review and meta-analysis**. J Pain Symptom Manage. 2023;66(4):673–689.e1. <https://doi.org/10.1016/j.jpainsymman.2023.03.012>\
+8.  **Bizuayehu HM** *et al.* **A Review of the Application of Spatial Survival Methods in Cancer Research: Trends, Modeling, and Visualization Techniques**. Cancer Epidemiol Biomarkers Prev. 2023;32(6):761–775. [DOI: 10.1158/1055-9965.EPI-23-0154](https://pubmed.ncbi.nlm.nih.gov/37257201/)\
+9.  Habte A, **Bizuayehu HM**, Lemma L, Sisay Y. **Road to maternal death: the pooled estimate of maternal near‑miss, its primary causes and determinants in Africa: a systematic review and meta-analysis**. BMC Pregnancy Childbirth. 2024;24(1):1–22. <https://doi.org/10.1186/s12884-024-06325-1>\
+10. Habte A, **Bizuayehu HM**, Haile Y, *et al.* **Spatial variation and predictors of composite index of HIV/AIDS knowledge, attitude and behaviours among Ethiopian women: A spatial and multilevel analyses of the 2016 Demographic Health Survey**. PLOS ONE. 2024;19(6):e0304982. <https://doi.org/10.1371/journal.pone.0304982>\
+11. Ahmed KY, Dadi AF, Kibret GD, **Bizuayehu HM**, *et al.* **Population modifiable risk factors associated with under‑5 acute respiratory tract infections and diarrhoea in 25 countries in sub‑Saharan Africa (2014–2021): an analysis of data from demographic and health surveys**. eClinicalMedicine. 2024;68:101998. [DOI: 10.1016/j.eclinm.2024.102444](https://pubmed.ncbi.nlm.nih.gov/38333537/)\
+12. Belete N, Tsige Y, **Mellie H**. **Willingness and acceptability of cervical cancer screening among women living with HIV/AIDS in Addis Ababa, Ethiopia: a cross sectional study**. Gynecol Oncol Res Pract. 2015;2(1):1–6. [DOI:10.1186/s40661-015-0012-3](https://pmc.ncbi.nlm.nih.gov/articles/PMC4881166/)\
+13. Mulat A, Bayu H, **Mellie H**, Alemu A. **Induced second trimester abortion and associated factors in Amhara region referral hospitals**. Biomed Res Int. 2015;2015:Article ID 358062. [DOI:10.1155/2015/256534](https://pubmed.ncbi.nlm.nih.gov/25918704/)\
+14. Moges NA, **Bizuayehu HM**. **Sexual Behaviour of Perinatally Infected Youth in Northwest Ethiopia: Implication for HIV Prevention Strategy**. AIDS Res Treat. 2018;2018:Article ID 5489787. [DOI: 10.1155/2018/1573845](https://onlinelibrary.wiley.com/doi/10.1155/2018/1573845)\
+15. **Bizuayehu HM** *et al.* **Biopsychosocial factors influencing the occurrence and recurrence of preterm singleton births among Australian women: A prospective cohort study**. \*Midwifery. 2022;110:103334. <https://doi.org/10.1016/j.midw.2022.103334>
+
+------------------------------------------------------------------------
+
+*Full publication list and additional links available via [Google Scholar](https://scholar.google.com.au/citations?hl=en&user=zHEXO-IAAAAJ) or [ORCID](https://orcid.org/0000-0002-1360-4909).*
+
+## 🎤 Conference Presentations
+
+Presented 18 research outputs, including over seven research outputs in Australian conferences:
+
+-   **Bizuayehu HM**, Belachew, S. A., Jahan, S., Diaz, A., Fong K. M., & Garvey G. The landscape of lung cancer screening among Indigenous peoples worldwide. World Indigenous Cancer Conference. Face-to-face presentation at Melbourne; 19/03/2024
+
+-   **Bizuayehu HM**, Cameron JK, Dasgupta P, and Baade PD. Spatial survival methods application in cancer research: trends, modelling and visualisation techniques: Australasian Epidemiological Association conference. Face-to-face presentation at Melbourne; 19/10/2023
+
+-   **Bizuayehu HM**, Harris ML, Chojenta C, *et al.* Labour interventions patterns and associated biopsychosocial factors: a path analysis of cohort study. Australasian Epidemiological Association conference. Face-to-face presentation at Melbourne; 20/10/2023
+
+-   **Bizuayehu HM**, Cameron JK, Dasgupta P, and Baade PD. Spatial survival methods application in cancer research: trends, modelling and visualisation techniques. The 3rd Early Career Researcher Cancer Epidemiology Virtual Conference; 23 November 2023
+
+-   **Bizuayehu HM**, Harris ML, Chojenta C, *et al.* Maternal residential area effects on preterm birth, low birth weight and caesarean section: A systematic review. The Australian-Based Ethiopian Researchers Network (ABReN) 4th Annual Virtual Conference, 12/08/2023

@@ -1,0 +1,486 @@
+---
+title: "Longitudinal and Large Data Analysis: A 20 Years of Australian Prospective Cohort Data"
+description: |
+  Longitudinal and Big data management and modelling: wave-by-wave variable management, reshaping, harmonisation,
+  missing data analysis (MI/LOCF/NOCB), GLMM/GEE and Maternal and child health.
+author: "Habtamu Bizuayehu"
+website: "https://habtamubizuayehu.com/"
+orcid: "https://orcid.org/0000-0002-1360-4909"
+date: 2024-05-20
+image: "pregnant_2.png"
+highlight-style: github
+project:
+  type: website
+  output-dir: docs
+categories: [Longitudinal Analysis, Missing Data, GLMM, ALSWH, Maternal and child health]
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: false
+    code-fold: false
+    code-tools: true
+    code-summary: "Show the code"
+    theme: united
+    self-contained: true
+execute:
+  echo: true
+  warning: false
+  message: false
+knitr:
+  opts_chunk:
+    warning: false
+    message: false
+editor: visual
+---
+
+## **1. Brief Overview**
+
+I have had the privilege of working on the [Australian Longitudinal Study on Women’s Health (ALSWH)](https://alswh.org.au/) for more than four years, focusing on maternal and child health outcomes using one of Australia’s large and bid prospective longitudinal national datasets. I led the end-to-end process — from data cleaning and preparation to advanced statistical modelling and dissemination of results — both in high-impact journals and at conferences.
+
+My work has resulted in three peer-reviewed Q1 publications:\
+- [Preterm Birth](https://doi.org/10.1016/j.midw.2022.103334): https://doi.org/10.1016/j.midw.2022.103334\
+- [Low Birthweight](https://doi.org/10.1093/eurpub/ckab033): https://doi.org/10.1093/eurpub/ckab033\
+- [Caesarean Section and Labour Intervention](https://doi.org/10.1007/s43032-023-01219-7): https://doi.org/10.1007/s43032-023-01219-7
+
+I have also presented these findings at:\
+- Public Health Association of Australia Conference\
+- ABReN (Australian Based Ethiopian Researchers Network) – 4th Annual Conference\
+- Health in Preconception, Pregnancy and Postpartum (HiPPP) EMR-C, Australia
+
+Through this work, I have strengthened my expertise in managing large-scale, multi-wave datasets, applying advanced longitudinal modelling techniques, and translating complex findings into actionable insights for both academic and policy audiences.
+
+------------------------------------------------------------------------
+
+**Contents Addressed in this Presentation**
+
+1.  **Brief Overview and Research Objectives** – Context, scope, and significance of the project.
+2.  **Data Sources** – Description of primary and linked datasets.
+3.  **Data Preparation & Management Workflow** – End-to-end process, from wave-level cleaning to final panel dataset.
+4.  **Missing Data management and analysis** – Diagnostic approaches, imputation methods, and sensitivity checks.
+5.  **Statistical Modelling & Analysis** – Model selection, longitudinal methods, and causal modelling approaches.
+6.  **Data Governance & Ethics** – Ethical approvals, privacy, and confidentiality measures.
+7.  **Research Outputs & Dissemination** – Publications, conference presentations, and stakeholder engagement.
+8.  **Lessons Learned & Reflections** – Challenges faced and strategies used to manage a large multi-decade dataset.
+9.  **Conclusion** – Summary of contributions, skills, and future applications.
+
+## **1. Brief Overview and Research Objectives**
+
+The main goal of my research was to investigate biopsychosocial risk factors for key maternal and child health outcomes over a 20-year period, while also developing reproducible workflows for large-scale longitudinal data analysis.
+
+**Specific objectives:** **Scientific Contribution**\
+- To identify and quantify the **biopsychosocial determinants** of preterm birth, low birth weight, and labour interventions over the life course.\
+- To assess **recurrence risks** for adverse birth outcomes in subsequent pregnancies.\
+- To explore **causal pathways** using longitudinal modelling approaches.
+
+## **2. Data Sources**
+
+For this research, I used data from the 1973–78 cohort of the [Australian Longitudinal Study on Women’s Health (ALSWH)](https://alswh.org.au/), an ongoing, population-based prospective cohort study funded by the Australian Government Department of Health. ALSWH was designed to investigate the health and wellbeing of Australian women over time, with repeated follow-up surveys collecting comprehensive health, lifestyle, and sociodemographic information.
+
+The baseline survey was conducted in 1996, when women from three birth cohorts (1973–78, 1946–51, and 1921–26) were recruited. Participants were randomly selected from Australia’s national medical insurance database (Medicare), which provides near-complete coverage of the population. To ensure sufficient representation of women living outside major cities, those in rural and remote areas were sampled at twice the rate of women in urban areas.
+
+For my research, I focused on the 1973–78 cohort, who were aged 18–23 years at baseline. Data from this cohort span more than 20 years of follow-up, with surveys conducted approximately every three years. This cohort is particularly valuable for studying reproductive and maternal health because it captures women’s health experiences from early adulthood through to their 40s.
+
+This analysis focused exclusively on the **1973–78 cohort**, with data spanning over **seven survey waves (20 years)**. The dataset contained:\
+- Detailed **reproductive histories** including all pregnancies and their outcomes.\
+- **Maternal health information**, including chronic and acute conditions.\
+- **Lifestyle and behavioural factors**, such as smoking, alcohol consumption, physical activity, and dietary patterns.\
+- **Psychosocial indicators** such as perceived stress, social support, and experiences of violence.\
+- **Socioeconomic indicators**, including education, employment, and income.
+
+------------------------------------------------------------------------
+
+## **3. Data Preparation & Management Workflow**
+
+Working with a **multi-decade, multi-wave longitudinal dataset** required a structured and reproducible data management approach. My workflow was designed to ensure accuracy, transparency, and efficiency, from the **wave-level cleaning** stage to the creation of the **final panel dataset** ready for analysis.
+
+------------------------------------------------------------------------
+
+### **3.1 Wave-by-Wave Preparation**
+
+Imported raw datasets and conducted initial checks for duplicates, variable types, logical inconsistencies and missingness. Each survey wave (baseline and follow-ups) was cleaned individually before merging:\
+- **Variable naming** was standardised across waves to ensure consistency.\
+- **Value categories** were aligned where coding changed between waves.\
+- **Data type corrections** were applied (e.g., converting string variables to numeric or date formats where needed).\
+- Derived variables (e.g., *birth order*, *maternal age at delivery*) were calculated for each wave.\
+- Resolved **structural inconsistencies:** Structural inconsistencies occur when the way a variable is defined, coded, or collected changes between survey waves, creating incompatibility for pooled or longitudinal analysis.\
+- **For Example:** The definition and categories for *marital status* changed over time — in earlier surveys, “legal marriage” was included as a distinct category, but this was omitted after Survey 4. Such changes can introduce misclassification if unaddressed. To resolve this, I created a unified classification scheme for marital status that allowed consistent comparison across all waves.\
+- Documentation was updated after each cleaning step to support reproducibility.
+
+------------------------------------------------------------------------
+
+### **3.2 Appending and Merging**
+
+-   **Appending survey waves** – Cleaned wave files were appended into a master longitudinal dataset, ensuring a single record per woman per survey wave.\
+-   **Merging linked datasets** – Administrative datasets (Perinatal Data Collections) were merged using **unique participant IDs** and event dates and survey waves.\
+-   **Data integrity checks** – After merging, I ran systematic cross-checks to ensure:
+    -   No duplicate IDs or wave combinations.
+    -   Correct alignment of event timing across sources.
+    -   Logical consistency between self-reported and administrative data.
+
+------------------------------------------------------------------------
+
+### **3.3 Reshaping Data and Declaring the Panel Structure**
+
+To conduct time-varying and repeated-measures analyses:\
+- I reshaped the data from **wide** to **long** format using `reshape long`, which is essential for longitudinal modelling.\
+- I created **lag** and **lead** variables to capture sequential relationships (e.g., prior birth outcomes, health history).\
+- I declared the dataset as **panel data** using: "xtset idalias child_order"
+
+## **4. Missing Data management and analysis**
+
+In longitudinal studies, missing data is almost inevitable due to participant attrition, skipped questions, evolving survey designs, and structural inconsistencies. If not addressed appropriately, missingness can reduce statistical power, bias estimates, and compromise the validity of conclusions.
+
+In this project, I developed and implemented a **multi-stage missing data management plan** for the ALSWH 1973–78 cohort that combined *diagnostic assessment*, *mechanism classification*, *appropriate imputation*, and *sensitivity checks*. This approach ensured that findings were robust and reproducible. If missing data is not handled appropriately, can introduce **bias**, reduce **statistical power**, and compromise **validity** of the findings.
+
+------------------------------------------------------------------------
+
+### 4.1 Scientific Context
+
+Longitudinal studies, such as ALSWH, collect data from the same participants repeatedly over long periods. While this design allows for rich analysis of change over time, it is also prone to *loss to follow-up* and intermittent missingness.
+
+International best practice suggests that when missingness exceeds **5–10%** for a variable, imputation should be considered to improve precision and reduce bias (Rubin, 1987; Sterne et al., 2009). In this project:\
+- *Maternal pre-pregnancy BMI* and *age at menarche* had missingness above 10%.\
+- Missingness was often non-monotone, requiring tailored imputation strategies for different variable types.
+
+------------------------------------------------------------------------
+
+### 4.2 Diagnostic Approaches
+
+I began by systematically assessing the **extent and structure of missingness**:
+
+-   Used STATA packages `misschk`, `mdesc`, and `xtpatternvar` to quantify missing values per variable and identify patterns.
+-   Classified patterns into **monotone** (e.g., dropout) and **intermittent** (e.g., missed responses but later re-entry).
+-   Inspected missingness by **birth order** and survey wave to account for pregnancy-specific variables.
+-   Flagged variables with \>5% missingness for potential imputation.
+
+------------------------------------------------------------------------
+
+### 4.3 Missing Data Mechanisms
+
+Before selecting imputation methods, I classified variables according to the statistical mechanism of missingness:
+
+-   **MCAR – Missing Completely at Random**: The probability of a value being missing is unrelated to either the observed or unobserved data.
+-   **MAR – Missing at Random**: The probability of missingness depends only on observed data, not the missing values themselves.
+-   **MNAR – Missing Not at Random**: The probability of missingness depends on the unobserved data itself.
+
+------------------------------------------------------------------------
+
+### 4.4 Criteria for Imputation
+
+A **rule of thumb** from the literature recommends initiating imputation when the missing proportion exceeds **5–10%** of the variable’s observations. In this study:\
+- **Maternal BMI** and **age at menarche** exceeded 10% missingness.\
+- Time-varying health conditions (e.g., hypertension) had intermittent missingness between waves.
+
+### 4.5 Imputation Methods Applied in This Project
+
+**a) Mean Imputation (Row Mean)**\
+- Applied to *pre-pregnancy BMI* (\<15% missingness).\
+- Used the participant’s own available BMI values from other waves to calculate a personalised row mean.\
+- Observed mean: 24.46 kg/m²; Imputed mean: 24.63 kg/m² — indicating close alignment.
+
+**b) Multiple Imputation (MI)**\
+- Applied to *age at menarche* (\>10% missingness), a static variable recorded only once (Survey 2).\
+- Used **Multivariate Imputation by Chained Equations (MICE)** with 20 imputations, following guidelines to reduce sampling error.\
+- Incorporated auxiliary variables predictive of missingness.\
+- Conducted diagnostics: density plots, distribution overlays, and observed vs. imputed comparison.
+
+**c) Last Observation Carried Forward (LOCF)**\
+- Used for chronic conditions (e.g., hypertension, diabetes) that persist after diagnosis.\
+- Ensured stability in prevalence estimates over time.
+
+**d) Next Observation Carried Backward (NOCB)**\
+- Applied to lifetime exposure variables (e.g., partner violence). If reported in later waves, status was carried backward.
+
+**e) Combined LOCF + NOCB**\
+- Applied to variables requiring lifetime ascertainment, maximising completeness in both time directions; for example, country of birth.
+
+------------------------------------------------------------------------
+
+### 4.6 Sensitivity Analyses
+
+To ensure the robustness of results: - Conducted **complete-case analysis** alongside imputed datasets. - Compared distributions of observed vs. imputed data to detect anomalies. - Re-estimated models with alternative imputation strategies to check stability of effect estimates.
+
+------------------------------------------------------------------------
+
+**Table: Summary of Missing Data Handling Techniques**
+
+| Variable Type | Example Variable | Method Applied | Rationale |
+|----------------|----------------|------------------|-----------------------|
+| **Static, continuous** | Age at menarche | Multiple Imputation (20 datasets, chained equations) | Single-time measurement; high missingness; categorical imputation adjusted for predictors |
+| **Time-varying, continuous** | BMI prior to birth | Row mean imputation using available values from same participant | Preserves within-person trajectory; missing at intermittent waves |
+| **Chronic binary condition** | Hypertension, diabetes | Last Observation Carried Forward (LOCF) | Lifetime conditions assumed persistent once reported |
+| **Lifetime event binary** | Ever violated by partner | LOCF + Next Observation Carried Backward (NOCB) | Ensures capture of lifetime exposure regardless of reporting wave |
+
+------------------------------------------------------------------------
+
+**In summary**, the combination of diagnostic mapping, mechanism classification, tailored imputation, and sensitivity analyses allowed me to address missingness in a scientifically sound manner, maximising the analytic value of this 20-year longitudinal dataset.
+
+## **5. Statistical Modelling & Analysis** – Model selection, longitudinal methods, and modelling approaches.
+
+In this study, statistical modelling was guided by the **biopsychosocial model**, which provided a structured framework for identifying and categorising potential risk factors. This approach ensured that biological, psychological, and social determinants were considered holistically when examining adverse pregnancy outcomes.
+
+The statistical strategy was designed to:\
+- Correctly model **repeated measures** for women having \>= births during the study period.\
+- Adjust for both **time-varying** and **time-invariant** covariates.\
+- Select parsimonious yet clinically meaningful models.\
+- Address missingness using **variable-specific imputation strategies**.
+
+------------------------------------------------------------------------
+
+### 5.1 Model Selection Strategy
+
+Model selection followed a multi-stage, evidence-based process:
+
+1.  **Literature Review**\
+    Existing literature on prematurity and related birth outcomes was reviewed to identify relevant variables available in the ALSWH dataset. Factors were categorised according to the biopsychosocial framework.
+
+2.  **Univariate Screening**
+
+    -   Each potential predictor was tested individually against the outcome of interest.\
+    -   Covariates with unadjusted associations at **p \< 0.25** were selected for consideration in the multivariable model.\
+    -   This inclusive threshold ensured potentially important predictors were not excluded prematurely.
+
+3.  **Multivariable Model Building**
+
+    -   Candidate variables were refined using:
+        -   **Bayesian Information Criterion (BIC)** – prioritising model parsimony while balancing goodness-of-fit.
+        -   **Change-in-Estimate Criterion** – retaining variables that materially influenced effect sizes or confidence intervals.
+    -   Only variables with biological and conceptual relevance and statistical contribution were retained in the final models.
+
+------------------------------------------------------------------------
+
+### 5.2 Handling of Missing Data in Models
+
+some predictors had notable missingness:\
+- **BMI** – Imputed using each participant’s row mean across available survey waves preceding the birth.\
+- **Age at Menarche** – Imputed using Multiple Imputation by Chained Equations (MICE) with 20 imputations, incorporating auxiliary variables predictive of missingness.
+
+The imputed values were included in all relevant analyses.
+
+------------------------------------------------------------------------
+
+### 5.3 Descriptive and Outcome Measures
+
+Before modelling, descriptive statistics summarised participant characteristics:\
+- **Categorical variables** – Frequency and proportion.\
+- **Continuous variables** – Mean and standard deviation.\
+
+Outcome calculations:\
+- **Overall Preterm Birth Rate** – Total number of preterm births divided by total number of births.\
+- **Recurrence Rate** – Number of repeat preterm births divided by total births occurring after a prior preterm birth (i.e., ≥ second-order births to women with preterm history).
+
+------------------------------------------------------------------------
+
+### 5.4 Longitudinal Methods
+
+Given the panel structure of the ALSWH data, many women contributed multiple birth records, resulting in **within-person correlation**.\
+To account for this:\
+- **First births only** – Binomial logistic regression was used.\
+- **All births** – **Generalised Linear Mixed Model (GLMM)** with a random intercept for participant ID was applied, adjusting for clustering of births within the same woman.
+
+This mixed-effects framework: - Controlled for unmeasured time-invariant characteristics of individuals. - Improved efficiency and reduced bias in estimates.
+
+------------------------------------------------------------------------
+
+### 5.5 Modelling Steps
+
+1.  **Data Preparation**
+    -   Declared longitudinal structure using `xtset idalias child_order` in Stata.\
+    -   Reshaped to **long format** for repeated measures modelling.
+2.  **Univariate Analysis**
+    -   Each predictor assessed; *p* \< 0.25 threshold for progression.
+3.  **Multivariate Modelling**
+    -   Used `xtmelogit` (GLMM) for all-births models.\
+    -   Applied BIC and effect-size change criteria.
+4.  **Diagnostics & Fit**
+    -   Checked intra-class correlation (ICC), ROC curves, and residual plots.
+5.  **Sensitivity Analyses**
+    -   Compared complete-case vs. imputed results.\
+    -   Tested alternative correlation structures.
+
+------------------------------------------------------------------------
+
+### 5.6 Example Syntax – GLMM in Stata
+
+-   Declare panel structure xtset idalias child_order
+
+-   Fit GLMM with multiple imputation\
+    mi estimate: xtmelogit preterm_birth /// i.age_group c.bmi i.smoking_status i.education_level \|\| idalias:, covariance(independent) or
+
+**Summary**:\
+The modelling approach combined rigorous univariate screening, theory-driven multivariable selection, and advanced longitudinal and causal methods. This ensured that the identified predictors of preterm birth and labour interventions were robust, interpretable, and grounded in the biopsychosocial framework.
+
+## **6. Data Governance & Ethics**
+
+Working with the ALSWH data and linked administrative datasets required strict adherence to **ethical standards** and **data governance protocols**.
+
+-   I prepared and submitted **human research ethics applications** specifically for linked and longitudinal data projects, receiving approval.
+-   For this project, I ensured compliance with the **NHMRC National Statement on Ethical Conduct in Human Research**, the **Privacy Act 1988**, and relevant state-based health privacy legislation.
+-   Data was stored securely and analysed only in approved environments, with access restricted to authorised personnel.
+-   I executed rigorous **data accuracy and sample integrity checks**, identifying and correcting:
+    -   Duplicate observations
+    -   Outliers and structural errors
+    -   Incorrect data entries
+    -   Missing values using suitable methods
+
+By combining **methodological rigour** with **strict privacy and confidentiality safeguards**, I ensured that the analysis met both scientific and ethical requirements while protecting participant trust.
+
+## **7. Research Outputs & Dissemination**
+
+The findings from my longitudinal analyses using the **Australian Longitudinal Study on Women’s Health (1973–78 cohort)** were disseminated through high-impact peer-reviewed publications, multiple conferences, and direct stakeholder engagement to inform policy and practice.
+
+------------------------------------------------------------------------
+
+### 7.1 Peer-Reviewed Publications
+
+1.  **Bizuayehu HM**, Harris ML, Chojenta C, Forder PM, Loxton D.\
+    *Biopsychosocial factors influencing the occurrence and recurrence of preterm singleton births among Australian women: A prospective cohort study*. **Midwifery**, 2022; 110:103334.\
+    https://doi.org/10.1016/j.midw.2021.103334
+
+2.  **Bizuayehu HM**, Harris ML, Chojenta C, Forder PM, Loxton D.\
+    *Low birth weight and its associated biopsychosocial factors over a 19-year period: findings from a national cohort study*. **European Journal of Public Health**, 2021.\
+    https://doi.org/10.1093/eurpub/ckab181.477
+
+3.  **Bizuayehu HM**, Harris ML, Chojenta C, et al.\
+    *Patterns of Labour Interventions and Associated Maternal Biopsychosocial Factors in Australia: a Path Analysis*. **Reproductive Sciences**, 2023; 30: 2767–2779.\
+    https://doi.org/10.1007/s43032-023-01219-7
+
+------------------------------------------------------------------------
+
+### 7.2 Conference Presentations
+
+-   **Preterm birth and its biopsychosocial predictors: a national prospective cohort study in Australia**\
+    Australian Public Health Conference (PHAA), October 19–30, 2020.\
+    [Conference Program & Abstract](https://2e8aeb40-1dd3-462f-ad71-d9246255fc45.filesusr.com/ugd/a52314_d1e62c17583745c1a5f2635f87d67d00.pdf)
+
+-   **Low birth weight rate and predictors: a prospective study using the Australian Longitudinal Study on Women’s Health**\
+    Strategic Centre for African Research, Engagement and Partnerships (CARE-P) & Africa Postgraduate Students Association (APSA) Conference, October 16, 2020.\
+    Focused on maternal and child health research and longitudinal method application between Australia and Ethiopia.
+
+-   **Patterns of labour interventions and associated biopsychosocial factors: path analysis of a prospective cohort study (1996–2015)**\
+    Inaugural Conference of the Health in Preconception Pregnancy and Postpartum (HiPPP) & Early and Mid-career Researcher Collective (EMR-C), December 3, 2020.
+
+------------------------------------------------------------------------
+
+### 7.3 Knowledge Translation and Impact
+
+-   Published in **open-access journals** to ensure broad accessibility.\
+-   Contributed to **ALSWH methodological resources**, enhancing institutional data management practices.\
+-   This work strengthened the national evidence base on the life-course determinants of adverse birth outcomes, translating complex longitudinal findings into actionable insights for both public health policy and clinical practice.
+
+## **8. Lessons Learned & Reflections** – Strategies used to manage a large multi-decade dataset.
+
+Working with a large, multi-decade dataset like the **Australian Longitudinal Study on Women’s Health (ALSWH)** was both a privilege and a challenge.\
+When I began this work, I had just arrived from overseas to study, stepping into a research environment where I had limited skills and experience in working with longitudinal data of this scale.\
+This meant I needed to quickly adapt — not only to the analytical complexities of **repeated-measures data**, but also to understanding the broader **Australian health system context** to interpret findings correctly and meaningfully.
+
+------------------------------------------------------------------------
+
+### 8.1 The Nature of the Longitudinal Data
+
+Longitudinal datasets are **living entities** — they grow, change, and adapt over time.\
+In ALSWH:\
+- Some variables collected in early surveys were **removed** in later waves.\
+- New variables were **added** to reflect **emerging health priorities**.\
+- Even **definitions and response categories shifted**— for example, the way *marital status* was recorded changed after Survey 4, omitting “legal marriage” as a category.
+
+These changes occurred for reasons such as:\
+- **Participant feedback** on sensitivity of questions.\
+- **Shifting policy priorities** in public health.\
+- **Advances in health knowledge** and improved survey design.
+
+On top of this:\
+- It requires **harmonising variable formats** for longitudinal analysis.\
+- The complexity of **linking multiple datasets** and preserving participant-level consistency over two decades.
+
+------------------------------------------------------------------------
+
+### 8.2 Strategies for Managing a Large Longitudinal Dataset
+
+To address these challenges, I developed a **structured workflow**:
+
+1.  **Deep Understanding of the Data Source**
+    -   Read *technical reports* for each wave to grasp methodology and variable context.\
+    -   Reviewed *data dictionaries* in detail, mapping variable name changes and coding schemes.\
+    -   Analysed *previous publications* using ALSWH data to understand standard practices.
+2.  **Identifying Research Gaps**
+    -   Cross-referenced my research interests with existing literature to ensure novelty.\
+    -   Aligned project concepts with the **biopsychosocial framework** to cover biological, psychological, and social domains.
+3.  **Continuous Skills Development**
+    -   Attended the **ALSWH Data Workshop** for direct training from custodians and research team.\
+    -   Completed advanced statistical courses:
+        -   *Applied Longitudinal Analysis (BIOS6990)*\
+        -   *Generalised Linear Models (BIOS6940)*\
+    -   Engaged in discussions with supervisors, senior mentors, and the research team.\
+    -   Pursued targeted training in **causal modelling** and **missing data strategies**.
+4.  **Data Management**
+    -   Cleaned each wave individually before merging.\
+    -   Applied consistent **naming conventions** and maintained a central codebook.\
+    -   Documented every data transformation step to ensure reproducibility and transparency.
+
+------------------------------------------------------------------------
+
+### 8.3 Reflections on the Journey
+
+This work taught me that **longitudinal research is as much about patience, persistence, and strategic thinking as it is about statistical modelling**.
+
+I learned:\
+- **Data storytelling** – turning complex multi-decade trends into clear, actionable public health insights.\
+- **Adaptability** – navigating changing variable definitions, evolving health policies, and shifting analytical needs.\
+- **Collaboration** – leveraging expertise from statisticians, domain experts, and data custodians.
+
+> *Large longitudinal datasets are like living organisms — to work with them successfully, you should grow, change, and adapt alongside them.*
+
+## **9. Conclusion** – Contributions, skills, and future applications.
+
+This project has been an important and rewarding stage in my large and complex project management and research career — applying advanced longitudinal data analysis to more than **20 years of prospective cohort data** from the *Australian Longitudinal Study on Women’s Health (ALSWH, 1973–78 cohort)*. This project has provided valuable opportunities to build skills, contribute new evidence, and engage with diverse research and policy audiences.
+
+------------------------------------------------------------------------
+
+### 9.1 Contributions
+
+Through this work, I have:
+
+-   **Applied rigorous statistical methods** — from univariate screening to multivariable modelling — using Bayesian Information Criterion (BIC) and Generalised Linear Mixed Models (GLMMs) to handle repeated measures and complex correlation structures.\
+-   **Implemented advanced missing data strategies**, including mean imputation, Last Observation Carried Forward (LOCF), Next Observation Carried Backward (NOCB), and multiple imputation with chained equations, paired with diagnostic plots and sensitivity checks.\
+-   **Managed complex, evolving datasets** across seven survey waves, addressing **structural inconsistencies**, **changes in derived variables**, and harmonisation of variable definitions over time.\
+-   **Adhered to high ethical and governance standards**, securing human research ethics approvals, navigating privacy legislation, and ensuring secure data storage and handling.\
+-   **Generated new evidence** on maternal and child health outcomes — including preterm birth, low birth weight, and patterns of labour interventions — framed within the **biopsychosocial model** to capture the complexity of social, behavioural, and biological influences.
+-   **Disseminated findings widely** through high-impact journal articles, conference presentations, and professional networks.
+
+------------------------------------------------------------------------
+
+### 9.2 Skills Strengthened
+
+Through this project, I strengthened my:
+
+-   **Technical expertise** in longitudinal modelling, causal pathways, and missing data handling.\
+-   **Data governance skills**, including ethics applications, data linkage protocols, and privacy compliance.\
+-   **Project management abilities**, overseeing multi-wave data preparation, documentation, and reproducibility planning.\
+-   **Science communication**, translating complex results for diverse audiences — from policymakers to academic peers.
+
+------------------------------------------------------------------------
+
+### 9.3 Publications
+
+My work has resulted in three peer-reviewed publications, and you may refer to each paper for detailed methods and findings. Portions of the code used to generate these results are also available and can be adapted for similar projects.\
+
+1. **Bizuayehu, H.M.**, Harris, M.L., Chojenta, C., Forder, P.M., & Loxton, D. (2022).Biopsychosocial factors influencing the occurrence and recurrence of preterm singleton births among Australian women: A prospective cohort study. *Midwifery, 110*, 103334.  [https://doi.org/10.1016/j.midw.2022.103334](https://doi.org/10.1016/j.midw.2022.103334)\
+2. **Bizuayehu, H.M.**, Harris, M.L., Chojenta, C., et al. (2023). Patterns of labour interventions and associated maternal biopsychosocial factors in Australia: A path analysis. *Reproductive Sciences, 30*, 2767–2779.  [https://doi.org/10.1007/s43032-023-01219-7](https://doi.org/10.1007/s43032-023-01219-7)\
+3. **Bizuayehu, H.M.**, Harris, M.L., Chojenta, C., Forder, P.M., & Loxton, D. (2021). Low birth weight and its associated biopsychosocial factors over a 19-year period: Findings from a national cohort study. *European Journal of Public Health.*
+[https://doi.org/10.1093/eurpub/ckab033](https://doi.org/10.1093/eurpub/ckab033)
+
+These papers provide full methodological details, statistical approaches, and the public health implications of my findings.
+
+------------------------------------------------------------------------
+
+> **Final Reflection:**\
+> I have had the privilege of contributing to one of Australia’s most significant longitudinal studies, producing results that are both methodologically robust and policy-relevant.\
+> The lessons I have gained — about rigour, adaptability, and the potential of data to drive meaningful change — will remain central to my work and collaborations. I will apply these skills in future projects that connects advanced analytics with real-world health outcomes, both in Australia and internationally.
+
+**If you are interested in exploring each paper in greater depth, including the methods applied, please read the links below**. I hope you find them insightful.
+
+-   [Preterm Birth](https://doi.org/10.1016/j.midw.2022.103334): https://doi.org/10.1016/j.midw.2022.103334\
+-   [Low Birthweight](https://doi.org/10.1093/eurpub/ckab033): https://doi.org/10.1093/eurpub/ckab033\
+-   [Caesarean Section and Labour Intervention](https://doi.org/10.1007/s43032-023-01219-7): https://doi.org/10.1007/s43032-023-01219-7

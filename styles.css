@@ -1,0 +1,141 @@
+/* ====================================================
+   GENERAL PAGE STYLING (Typography, Layout)
+==================================================== */
+body {
+  font-family: "Segoe UI", sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #222;
+  background-color: #fff;
+  margin: 0;
+  padding: 0;
+}
+
+/* ====================================================
+   1. FIX NAVBAR: STICKY AT TOP (Visible When Scrolling)
+==================================================== */
+header.navbar,
+.navbar,
+.navbar-container,
+.navbar-light {
+  position: sticky !important;
+  top: 0;
+  z-index: 9999;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* ====================================================
+   2. FIX TOC (Sidebar Index) – Font Size + Scrollable
+==================================================== */
+.sidebar nav,
+.toc {
+  font-size: 0.85rem !important;
+  line-height: 1.4 !important;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.toc a {
+  text-decoration: none;
+  color: #333;
+}
+.toc a:hover {
+  text-decoration: underline;
+}
+.toc ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+.toc li {
+  margin-bottom: 0.2rem;
+}
+
+/* ====================================================
+   3. FIX JUMPED HEADINGS (TOC Anchor Links)
+==================================================== */
+:target::before {
+  content: "";
+  display: block;
+  height: 100px;        /* height of navbar */
+  margin-top: -100px;
+}
+
+/* ====================================================
+   4. HEADINGS – REDUCE SPACING TO FIX VERTICAL GAPS
+==================================================== */
+h1, h2, h3 {
+  margin-top: 1.2rem !important;     /* ↓ from 2rem */
+  margin-bottom: 0.8rem !important;  /* ↓ from 1rem */
+}
+
+h1 {
+  font-size: 1.8rem !important;
+}
+h2 {
+  font-size: 1.5rem !important;
+}
+h3 {
+  font-size: 1.3rem !important;
+}
+
+/* ====================================================
+   5. PARAGRAPH TEXT – TIGHTER VERTICAL SPACING
+==================================================== */
+p {
+  text-align: justify;
+  margin-top: 0.4rem;
+  margin-bottom: 0.8rem;
+}
+
+/* ====================================================
+   6. IMAGES – SCALE RESPONSIVELY
+==================================================== */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ====================================================
+   7. REMOVE UNWANTED STICKY BEHAVIOR EXCEPT NAVBAR
+==================================================== */
+.page-columns,
+.content {
+  position: relative !important;
+}
+
+/* ====================================================
+   8. ABOUT BLOCK – REMOVE SPACE BEFORE AND AFTER
+==================================================== */
+.quarto-about-jolla {
+  margin-top: 1rem !important;     /* ↓ reduce top space */
+  margin-bottom: 1rem !important;  /* ↓ reduce bottom space */
+  padding-top: 0rem;
+  padding-bottom: 0rem;
+}
+
+.quarto-about-jolla img.about-image {
+  margin-bottom: 1rem;
+}
+
+/* ====================================================
+   9. HORIZONTAL LINES (HR) – TIGHTER SPACING
+==================================================== */
+hr {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* ====================================================
+   10. MAIN SECTION LAYOUT – (OPTIONAL: add if needed)
+==================================================== */
+section.level1 {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+section.level2 {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}

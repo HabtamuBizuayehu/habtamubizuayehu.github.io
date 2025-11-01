@@ -1,0 +1,1442 @@
+---
+title: "Visalisation and Data Story Telling using R"
+description: |
+  Guide to designing clear, reproducible visuals that support public
+  health decision-making and monitoring, using ggplot2, forcats, and scales.
+author: "Habtamu Bizuayehu"
+website: "https://habtamubizuayehu.com/"
+github: "https://github.com/HabtamuBizuayehu"
+orcid: "https://orcid.org/0000-0002-1360-4909"
+date: 2025-05-20
+image: "data_manipulation.png"
+highlight-style: github
+output-dir: "docs"
+categories: [Data management via R]
+format: html
+toc: true
+toc-depth: 3
+self-contained: true
+number-sections: false
+code-fold: false
+code-tools: true
+code-summary: "Show the code"
+theme: united
+knitr: 
+ opts_knit: 
+   warning: false
+   message: false
+editor: visual
+---
+
+# **Overview**
+
+Effective data visualisation is a core part of data analytics. It compresses complex data into **interpretable evidence**—accelerating surveillance, highlighting disparities, and informing resource allocation and policy. 
+
+This guide focuses on **practical, reproducible patterns** for turning tidy data into clear visuals. We emphasise:\
+- **Interpretability:** factor ordering with `forcats`, readable axes and labels with `scales`, and minimal, consistent theming.\
+- **Equity lenses:** stratifying by key subgroups (e.g., age, educational status, remoteness) to make disparities visible.\
+- **Transparency:** plots that make assumptions, denominators, and uncertainty explicit.
+
+**Why visualisation matters in public health**
+
+-   **Timely decisions:** concise visuals support rapid decisions during outbreaks, immunisation drives, and service planning.\
+-   **Equity & accountability:** disaggregated displays can reveal gaps that averages hide, prompting targeted action.\
+-   **Reproducibility:** code-driven charts ensure the same inputs produce the same outputs—essential for audit and publication.
+
+## **What you will learn**
+
+-   Robust patterns for **comparisons**, **time trends**, **small multiples**, and **annotated rate displays**.\
+-   How to control category order and groupings with `forcats`, and apply human-friendly scales with `scales`.\
+-   Lightweight theming for **publication-ready** figures that prioritise the message over the styling.\
+
+**This Presentation/Project Covers**
+
+\- **DATA VISUALIZATION WITH `ggplot2`**\
+Chart components, common plots, multivariate visuals, geospatial maps, overlays, themes and labels.
+
+\- **SHINY APP – BUILDING WEB APPS**\
+UI and server structure, reactive inputs/outputs, DT tables, app deployment.
+
+------------------------------------------------------------------------
+
+**Visualization Contents and Types Overview**
+
+-   **Layers**: Theme, Coordinates, Facets, Statistics, Geometries, Aesthetics, Data
+-   **Chart Types**: line, histogram, boxplot, bar, area, density, violin, dotplot, ECDF, scatter, bubble, QQ plot
+-   **Comparative & Multivariate**: faceted plot, pair plot, heatmap, treemap, radar chart, ridgeline plot, forest plot
+-   **Geospatial Visualization**: choropleth map, point map, heatmap overlay
+-   **Statistical Overlays**: error bars, confidence intervals, regression lines, smoothers
+-   **Interactive Visualization**: scatter/line/bar (Plotly), interactive tables (DT), interactive maps (Leaflet), dashboards (Shiny, flexdashboard)
+
+Effective visualizations help uncover patterns, trends, and insights in data. In R, we commonly use the `ggplot2` package for static plots and tools like `plotly`, `DT`, and `leaflet` for interactive dashboards and graphics.
+
+The sections below summarize different types of visualizations and how they fit into analysis workflows.
+
+------------------------------------------------------------------------
+
+## **🔹 Visualization Layer Components**
+
+Every ggplot chart is built using multiple composable layers: - **Data**: The dataset to visualize. - **Aesthetics (`aes()`)**: Mappings between variables and visual elements (e.g., x, y, color). - **Geometries (`geom_*`)**: Plot types (e.g., `geom_line()`, `geom_bar()`). - **Statistics (`stat_*`)**: Summaries or transformations (e.g., `stat_smooth()`). - **Facets**: Create multiple plots by group (`facet_wrap()`, `facet_grid()`). - **Coordinates**: Set axis and aspect ratio (`coord_cartesian()`, `coord_flip()`). - **Themes**: Control overall appearance (e.g., `theme_minimal()`, `theme_bw()`).
+
+### **🔹 Common Chart Types**
+
+| **Chart Type** | **Function** | **Used For** |
+|----|----|----|
+| Line Chart | `geom_line()` | Trends over time |
+| Histogram | `geom_histogram()` | Distribution of continuous variables |
+| Boxplot | `geom_boxplot()` | Distribution & outliers |
+| Bar Plot | `geom_bar()` | Counts or categorical comparison |
+| Area Plot | `geom_area()` | Cumulative trends |
+| Density Plot | `geom_density()` | Smoothed distribution |
+| Violin Plot | `geom_violin()` | Combination of boxplot + density |
+| Dot Plot | `geom_dotplot()` | Count-based plots |
+| ECDF Plot | `stat_ecdf()` | Cumulative distribution |
+| Scatter Plot | `geom_point()` | Bivariate relationships |
+| Bubble Plot | `geom_point(aes(size = ...))` | 3-variable comparison using size |
+
+------------------------------------------------------------------------
+
+### **🔹 Comparative & Multivariate Visuals**
+
+| **Visual Type** | **Purpose** |
+|----|----|
+| **Faceted Plot** (`facet_wrap`) | Compare subgroups in separate panels |
+| **Pair Plot** (`GGally::ggpairs`) | Explore all pairwise relationships |
+| **Heatmap** (`geom_tile`, `heatmap()`) | Show intensity using color |
+| **Treemap** (`treemapify`) | Hierarchical categories and values |
+| **Radar Chart** (`fmsb`) | Compare multivariate profiles |
+| **Ridgeline Plot** (`ggridges`) | Distribution comparison across groups |
+| **Forest Plot** (`forestplot`, `ggforestplot`) | Confidence intervals and effect sizes |
+
+------------------------------------------------------------------------
+
+### **🔹 Geospatial Visualizations**
+
+| **Map Type** | **Function/Use** |
+|----|----|
+| Choropleth Map | Show values by region (e.g., `geom_sf()`, `tmap`) |
+| Point Map | Locations with coordinates (e.g., `geom_point()`, `leaflet::addMarkers`) |
+| Heatmap Overlay | Density of spatial events (e.g., `leaflet::addHeatmap()`) |
+
+------------------------------------------------------------------------
+
+### **🔹 Statistical Enhancements (Overlays)**
+
+-   **Error bars**: `geom_errorbar()` for confidence or SD intervals
+-   **Regression lines**: `geom_smooth(method = "lm")`
+-   **Trend smoothing**: `geom_smooth()` with `method = "loess"`
+-   **Labeling**: `geom_text()`, `geom_label()` to annotate plots
+
+------------------------------------------------------------------------
+
+This section demonstrates how to visualize breast cancer screening and vaccination data. We'll walk through common chart types such as line plots, bar charts, boxplots, and faceted views. Each example is designed with annotations and descriptions to aid understanding.
+
+------------------------------------------------------------------------
+
+### **🔹 Visualization Layer Components with Examples**
+
+Each chart demonstrates how different `ggplot2` components come together using real health datasets.
+
+```{r, message=FALSE, warning=FALSE, results='hide'}
+
+# Install if not already installed
+if (!requireNamespace("treemapify", quietly = TRUE)) {install.packages("treemapify")}
+if (!requireNamespace("ggridges", quietly = TRUE)) {install.packages("ggridges")}
+if (!requireNamespace("gganimate", quietly = TRUE)) install.packages("gganimate")
+if (!requireNamespace("gifski", quietly = TRUE)) install.packages("gifski")
+
+library(gganimate)
+library(gifski)
+library(ggridges)
+library(dplyr)
+library(ggplot2)
+library(plotly)
+library(treemapify)
+library(stringr)  # for str_to_title()
+library(tidyr)
+library(forcats)
+library(scales)
+
+```
+
+```{r, echo=FALSE}
+
+# Read the RDS file
+data_frames <- readRDS("C:/Users/User/Desktop/Materials_ Course and proposals/Course Related/DataCamp/Data/data_manipulation.rds")
+
+# Restore each data frame into the global environment
+list2env(data_frames, envir = .GlobalEnv)
+
+# Calculate Age as of 31 December 2024
+
+library(lubridate)
+str(vacc_1524$birthdate) 
+
+vacc_1524 <- vacc_1524 %>%
+  mutate(
+    age = floor(time_length(difftime(as.Date("2024-12-31"), birthdate), unit = "years"))
+  )
+
+table (vacc_1524$age)
+
+
+# Categorize into Age Groups
+
+vacc_1524 <- vacc_1524 %>%
+  mutate(
+    age_group = cut(
+      age,
+      breaks = c(0, 9, 19, 29, 49, 100),
+      labels = c("0–9", "10–19", "20–29", "30–49", "50+"),
+      right = TRUE
+    )
+  )
+
+table (vacc_1524$age_group)
+
+
+# extract values like "201617", "201718".
+breast_cancer_data <- breast_cancer_data %>%
+  mutate(year_4digit = as.integer(gsub("^([0-9]{4}).*", "\\1", year)))
+
+table(breast_cancer_data$year_4digit)
+
+```
+
+**Line Chart – Breast Cancer Screening Trends by Region in Australia**
+
+The example below shows a **line chart** illustrating trends in **breast cancer screening rates** across Australian states from 2016 to 2019.
+
+-   Breast cancer screening rates across most Australian states appeared relatively consistent from 2016 to 2018, with minor year-to-year variations.
+
+-   A notable decline in screening rates is evident after 2018 and particularly in 2019, coinciding with the early stages of the COVID-19 pandemic
+
+**State-specific Observations:**
+
+-   **Tasmania (Tas)** consistently had the highest screening rate, around 60%, but showed a clear decline post-2018.
+
+-   The **Northern Territory (NT)** had the lowest rates, around 40%, also experiencing a slight decline during this period.
+
+-   Other states (**ACT, NSW, Qld, SA, Vic, WA**) maintained relatively stable rates (around 55%) until 2018, after which a distinct downturn is noticeable, particularly in Western Australia (WA) and Victoria (Vic).
+
+**Impact of COVID-19:**
+
+-   The observed decline in breast cancer screening from 2019 onwards aligns with the emergence of the COVID-19 pandemic, which disrupted routine healthcare services globally.
+
+This analysis underscores the importance of maintaining consistent access to healthcare services, particularly preventive screenings, even during periods of significant healthcare disruption.
+
+```{r}
+# Visualizing changes in screening rates (50–74 years) over time by state
+
+breast_cancer_data %>%
+  group_by(state, year_4digit) %>%  # group by state and year
+  summarise(mean_rate = mean(rate50_74, na.rm = TRUE), .groups = "drop") %>%
+  ggplot(aes(x = year_4digit, y = mean_rate, color = state)) +  # map axes and color
+  geom_line(size = 1.2) +  # trend lines
+  geom_point(size = 2) +   # points for each year
+  labs(
+    title = "Breast Cancer Screening Rates (50–74 yrs)",  
+    subtitle = "Aggregated by State and Year",           
+    x = "Year", y = "Screening Rate (%)",  # Axis labels
+    color = "State"   # Legend title
+  ) +
+  
+  theme_minimal()  
+```
+
+**Histogram – Distribution of Age**\
+Displays the frequency of vaccinated individuals by age, with a density line overlay to visualize the distribution shape.
+
+The example below shows a histogram illustrating the **age distribution** within our studied population. The distribution highlights a clear **bimodal pattern**, indicating two main age groups. The largest group comprises younger adults, predominantly around 20–30 years old, suggesting a significant representation of young adults. A smaller secondary group emerges around 55–65 years old, reflecting a noticeable segment of older adults. This pattern may indicate specific target groups or demographic characteristics relevant to the population from which the data was collected. Understanding these age clusters can help tailor appropriate health strategies, services, or interventions accordingly.
+
+```{r}
+vacc_1524 %>%
+  ggplot(aes(x = age)) +
+  geom_histogram(aes(y = ..density..), binwidth = 5, fill = "darkblue", color = "white", alpha = 0.7) +
+  geom_density(color = "red", size = 1.2) +
+  labs(title = "Age Distribution with Density Curve", x = "Age", y = "Density") +
+  theme_minimal()
+```
+
+**Pie Chart – Proportion by Vaccine Group**\
+Shows how vaccine groups are proportionally represented in the dataset. Useful for visualizing categorical outcomes.
+
+In the example below, the pie chart represents the proportion of vaccinations grouped into three categories:
+
+-   **Respiratory vaccines** account for the largest proportion, comprising **61%** of all vaccines administered.
+
+-   **Childhood vaccines** represent a significant portion as well, making up **30%**.
+
+-   The category labeled **Other** includes **8%** of vaccines administered, indicating a smaller but notable group of vaccinations outside the respiratory and childhood classifications.
+
+```{r}
+vacc_1524 %>%
+  count(vacc_group3) %>%
+  mutate(perc = n / sum(n), label = scales::percent(perc)) %>%
+  ggplot(aes(x = "", y = perc, fill = vacc_group3)) +
+  geom_col(width = 1) +
+  coord_polar(theta = "y") +
+  geom_text(aes(label = label), position = position_stack(vjust = 0.5)) +
+  labs(title = "Vaccine Group Proportions", fill = "Vaccine Group") +
+  theme_void()
+```
+
+**Bar Plot – Vaccination Count by Vaccine Group**\
+This plot compares the absolute count of vaccinations across groups, with horizontal bars for better readability of long labels.
+
+The example below shows a **horizontal bar chart** illustrating the total number of vaccinations administered, grouped into three distinct categories:
+
+-   **Respiratory vaccines** clearly represent the largest group, indicating that these vaccines were administered most frequently within the population.
+
+-   The **Other** category accounts for the smallest number of vaccinations, suggesting a relatively minor proportion of miscellaneous or specialized vaccines.
+
+```{r}
+vacc_1524 %>%
+  count(vacc_group3) %>%
+  ggplot(aes(x = reorder(vacc_group3, n), y = n, fill = vacc_group3)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  labs(title = "Vaccination Count by Group", x = NULL, y = "Count") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+**Grouped Bar Plot – Vaccination by Race and Vaccine Group**\
+The example below shows a **stacked bar chart** presenting the distribution of vaccinations by race and vaccine category.
+
+-   **Respiratory vaccines** (represented in blue) dominate across all racial groups, consistently making up the largest proportion of administered vaccines, especially noticeable among **Black** and **White** groups.
+
+-   **Childhood vaccines** (represented in red) form a significant proportion of vaccinations among the **Asian** and **Native** groups, highlighting targeted or population-specific vaccination programs for younger age groups within these communities.
+
+-   The **Other vaccines** category (represented in green) comprises a relatively minor proportion and appears more prominent among the **Asian** and **White** populations.
+
+```         
+**Implications:**
+
+These patterns may suggest varying public health strategies, demographic factors, or differing healthcare access across racial groups. Understanding these variations can guide targeted healthcare interventions and improve vaccine coverage equity.
+```
+
+```{r}
+# Prepare data: count vaccinations by race and vaccine group
+
+vacc_1524$race <- tools::toTitleCase(vacc_1524$race)
+
+vacc_summary <- vacc_1524 %>%
+  count(race, vacc_group3) %>%
+  group_by(race) %>%
+  mutate(prop = n / sum(n)) %>%
+  ungroup()
+
+ggplot(vacc_summary, aes(x = race, y = prop, fill = vacc_group3)) +
+  geom_col(position = "dodge") +
+  labs(
+    title = "Vaccination Distribution by Race and Vaccine Group",
+    x = "Race", y = "Proportion",
+    fill = "Vaccine Group"
+  ) +
+  scale_y_continuous(labels = scales::percent_format()) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+rm(vacc_summary)
+```
+
+**Stacked Bar Chart – Race by Vaccine Group**
+
+The example below shows a **stacked bar chart** illustrating the number of vaccinations administered, grouped by vaccine type and categorized by racial groups.
+
+-   The **White** population received the highest number of vaccinations across all vaccine categories (**Childhood, Other, and Respiratory vaccines**).
+
+-   Other racial groups (**Asian, Black, Native, and Other**) also received vaccinations, though in smaller numbers across each vaccine type, indicating ongoing efforts to reach diverse communities.
+
+-   **Respiratory vaccines** had the highest total number of vaccinations administered, suggesting these vaccines were a primary focus within the vaccination program.
+
+```         
+This data helps to illustrate which groups have higher vaccine coverage and highlights the importance of ensuring equitable access and distribution across all communities.
+```
+
+```{r}
+vacc_1524 %>%
+  mutate(race = stringr::str_to_title(race)) %>%
+  count(vacc_group3, race) %>%
+  ggplot(aes(x = vacc_group3, y = n, fill = race)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Stacked Bar Chart: Race by Vaccine Group", x = "Vaccine Group", y = "Count") +
+  theme_minimal()
+```
+
+**Boxplot – Age Distribution by Vaccine Group**\
+Visualizes how age varies across vaccine groups using standard boxplots.
+
+The example below shows a **box plot** depicting age distribution for three vaccine categories (**Childhood vaccines, Other vaccines, and Respiratory vaccines**):
+
+**Key Observations:**
+
+-   **Childhood vaccines** primarily cover younger ages, with most recipients under 25 years old. Some individuals beyond this age range appear as outliers, suggesting occasional vaccinations in older groups.
+
+-   **Respiratory vaccines** generally target an older age group, with the median age around 50 years, and a broad range from younger adults to elderly populations.
+
+-   The **Other vaccines** category has a wider age distribution overall, suggesting these vaccines serve diverse age groups, though with fewer individuals compared to the other two groups.
+
+**Implications:**
+
+This visualization highlights clear age-based targeting for different vaccine categories. Childhood vaccines are expectedly administered primarily to younger populations, while respiratory vaccines predominantly reach older adults. Understanding these age patterns helps to plan targeted public health campaigns and resource allocation effectively.
+
+```{r}
+vacc_1524 %>%
+  ggplot(aes(x = vacc_group3, y = age, fill = vacc_group3)) +
+  geom_boxplot() +
+  labs(title = "Age Distribution by Vaccine Group",
+       x = "Vaccine Group", y = "Age (Years)") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+**Boxplot with Jittered (Individual Data) Points**\
+Combines summary and raw data by overlaying individual age points on the boxplot.
+
+The example below shows a **boxplot with individual data points (jittered)**, displaying the **age distribution** of individuals across three vaccine groups: **Childhood vaccines, Other vaccines, and Respiratory vaccines**.
+
+-   **Childhood vaccines**:
+
+-   Most individuals who received childhood vaccines are young, with a median age around 10 years.
+
+-   The distribution is tightly concentrated, though some older individuals (outliers) also received these vaccines.
+
+-   The data points clearly cluster in younger age ranges, which is expected for this vaccine group.
+
+    -   **Respiratory vaccines**:
+
+        -   This group has the highest median age, around 40–50 years.
+
+        -   The data points are more evenly spread out across a wide age range, with many individuals above 60 years, indicating respiratory vaccines are frequently administered to older populations.
+
+    **Other vaccines**:
+
+    -   This group shows a wide range of ages, from infants to older adults.
+
+    -   While the median age is still relatively low, the spread is broader compared to childhood vaccines, suggesting this category includes various vaccines administered across different age groups.
+
+    **Implications:**
+
+    By combining summary statistics (boxplot) with individual-level data (dots), this chart offers a clear view of both overall trends and variation in vaccination by age. It confirms that vaccine distribution aligns with age-specific health needs—young children for childhood vaccines, and older adults for respiratory vaccines—while also showing the diversity within each group.
+
+```{r}
+vacc_1524 %>%
+  ggplot(aes(x = vacc_group3, y = age, fill = vacc_group3)) +
+  geom_boxplot(outlier.shape = NA, alpha = 0.6) +
+  geom_point(position = position_jitter(width = 0.2),
+             alpha = 0.3, color = "black", size = 1.2) +
+  labs(title = "Boxplot with Individual Data Points",
+       x = "Vaccine Group", y = "Age") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+**Boxplot with Violin Overlay**\
+Adds a violin plot to visualize the full distribution of ages while preserving boxplot summary stats.
+
+The plot below combines a **boxplot** and **violin plot** to display the age distribution across different vaccine groups: **Childhood vaccines**, **Other vaccines**, and **Respiratory vaccines**.
+
+-   **Childhood vaccines**:\
+    The age distribution is heavily concentrated among younger individuals, with most recipients under 25 years. The violin shape is widest near the lower ages, tapering quickly, which indicates that childhood vaccines are rarely given to older individuals.
+
+-   **Respiratory vaccines**:\
+    The distribution leans toward older age groups, with the median age higher than in other categories. The violin is widest in the 40–70 age range, suggesting respiratory vaccines are more commonly administered to older adults.
+
+<!-- -->
+
+-   **Other vaccines**:\
+    This group shows a broader age range. The shape suggests two areas of concentration: one among younger children and another around age 60–70, indicating this group includes vaccine types used across diverse age groups.
+
+    **Overall**, this combined plot provides both statistical summaries (via boxplot) and full distribution shapes (via violin plot), helping to clearly distinguish the age-related usage patterns across vaccine types.
+
+```{r}
+vacc_1524 %>%
+  ggplot(aes(x = vacc_group3, y = age, fill = vacc_group3)) +
+  geom_violin(alpha = 0.4, color = NA) +
+  geom_boxplot(width = 0.2, outlier.shape = NA) +
+  labs(title = "Boxplot with Violin Overlay", x = NULL, y = "Age") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+**Notched Boxplot – Median Comparison**\
+Notches allow a rough comparison of medians across groups. Non-overlapping notches suggest a significant difference.
+
+The plot below presents a **notched boxplot** showing the age distribution for each vaccine group—**Childhood vaccines**, **Other vaccines**, and **Respiratory vaccines**.
+
+-   The **notches** around the medians provide a visual guide for comparing the central values (medians) across groups. If the notches do not overlap, it suggests that the medians are likely different in a statistically meaningful way.
+
+**Key insights:**
+
+-   **Childhood vaccines** show a younger age distribution, with a median age around 10 years and a narrow spread. Outliers indicate a few older individuals also received these vaccines.
+
+-   **Respiratory vaccines** are mainly administered to older age groups, with the highest median age among the three categories.
+
+-   **Other vaccines** span a wider range of ages, but the median remains lower than that of respiratory vaccines.
+
+**Median Comparison:**
+
+-   The **non-overlapping notches** between childhood and respiratory vaccines suggest a clear difference in median ages.
+
+-   The **other vaccines** group overlaps slightly with both, indicating a more mixed age distribution and less pronounced difference.
+
+```{r}
+vacc_1524 %>%
+  ggplot(aes(x = vacc_group3, y = age, fill = vacc_group3)) +
+  geom_boxplot(notch = TRUE) +
+  labs(title = "Notched Boxplot: Vaccine Group vs Age", x = "Group", y = "Age") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+**Faceted Boxplot by Gender**\
+Breaks down the age distribution by vaccine group and gender to compare across subgroups.
+
+The plot below shows **boxplots of age distribution** by **vaccine group** (**Childhood**, **Respiratory**, and **Other vaccines**), separated into two panels by **gender** (**Female** and **Male**).
+
+**Key Observations:**
+
+-   **Childhood vaccines**:
+
+```         
+-    Age distributions are similar for both females and males, with most recipients being under 25 years.
+
+-    A few older outliers are present, especially among females, but the bulk of vaccine recipients are children and adolescents.
+```
+
+-   **Respiratory vaccines**:
+
+```         
+-    This group shows a wide age range in both genders, with median ages around 40–45 years.
+
+-    The distribution is slightly more spread out among males, but the overall trend remains consistent across genders.
+```
+
+-   **Other vaccines**:
+
+```         
+-    A notable gender difference is visible here:
+
+    -   Among **females**, recipients span a broad age range, including many older adults.
+
+    -    Among **males**, the age distribution is narrower and skewed toward younger adults.
+```
+
+**Summary:**
+
+This faceted view helps highlight how **age patterns differ by both vaccine group and gender**. While childhood and respiratory vaccine distributions are generally similar across genders, the **"Other" vaccine group shows more variation**, possibly reflecting differences in vaccine eligibility, access, or health needs.
+
+```{r}
+vacc_1524 %>%
+  ggplot(aes(x = vacc_group3, y = age, fill = vacc_group3)) +
+  geom_boxplot() +
+  facet_wrap(~ gender) +
+  labs(title = "Age by Vaccine Group, Faceted by Gender", x = NULL, y = "Age") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+**Ordered Boxplot – by Median Age**\
+Reorders vaccine groups by median age to emphasize differences in distribution centrality.
+
+The plot below shows **age distributions by vaccine group**, with the groups reordered by **median age** to highlight differences in central tendency.
+
+**Key Observations:**
+
+-   **Childhood vaccines** have the **lowest median age**, with most recipients being under 20 years. A small number of older individuals appear as outliers.
+
+-   **Other vaccines** show a **moderate median age**, but with a wide spread across age groups—ranging from infants to older adults. This suggests these vaccines are used in more varied contexts.
+
+-   **Respiratory vaccines** have the **highest median age**, with recipients typically ranging from their 30s to older adulthood, reflecting their common use among older populations.
+
+**Conclusion:**
+
+By ordering the boxplots by median age, this visual emphasizes the different age profiles targeted by each vaccine group. This approach helps communicate age-related trends in vaccine administration more clearly .
+
+```{r}
+vacc_1524 %>%
+  mutate(vacc_group3 = fct_reorder(vacc_group3, age, median, na.rm = TRUE)) %>%
+  ggplot(aes(x = vacc_group3, y = age, fill = vacc_group3)) +
+  geom_boxplot() +
+  labs(title = "Boxplot Ordered by Median Age", x = NULL, y = "Age") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+**Area Plot – Monthly Vaccination Trends Over Years**\
+Uses an area chart to show monthly vaccination volumes over multiple years, stacked by year.
+
+The area chart below displays **monthly vaccination counts** over multiple years (2015–2024), helping visualize seasonal and annual trends in vaccine uptake.
+
+**Key Observations:**
+
+-   **2020** stands out with the highest overall vaccination counts, especially between **April and June**, likely reflecting a surge due to public health responses such as the COVID-19 pandemic.
+
+-   In other years, vaccination numbers are more evenly distributed, with moderate peaks around **March–April** or **August–September**, possibly aligning with seasonal vaccination programs (e.g., flu campaigns).
+
+-   **2023 and 2024** show a relatively steady pattern throughout the year, with less fluctuation month-to-month.
+
+-   **Earlier years** (2015–2017) have lower and more variable volumes compared to recent years.
+
+**Conclusion:**
+
+This chart highlights both **seasonal vaccination patterns** and the **impact of specific public health events**, such as the elevated activity in 2020. Monitoring these trends over time supports planning for future vaccination campaigns and resource allocation.
+
+```{r}
+vacc_1524 %>%
+  count(vacc_year, vacc_month_name) %>%
+  ggplot(aes(x = vacc_month_name, y = n, group = vacc_year, fill = factor(vacc_year))) +
+  geom_area(alpha = 0.7, position = "identity") +
+  labs(title = "Monthly Vaccination Trends by Year",
+       x = "Month", y = "Number of Vaccinations", fill = "Year") +
+  theme_minimal()
+```
+
+**Faceted Plot – Proportional Vaccination Trends by Group and Race**\
+Displays how the proportion of vaccinations among different races changed across years, separately for each vaccine group.
+
+The faceted line plot below shows how the **proportion of vaccinations** among different **racial groups** has changed over time (**2015–2024**), presented separately for each **vaccine group**: **Childhood**, **Respiratory**, and **Other**.
+
+**Key Observations:**
+
+-   **Childhood vaccines**:
+
+```         
+-   Proportions vary notably year to year, especially for **Asian**, **Black**, and **Native** groups.
+
+-   The **"Other"** and **White** groups show a more consistent presence but with modest fluctuations.
+
+-    Some groups (e.g., Native) show a steady rise in recent years.
+
+**Respiratory vaccines**:
+
+-    Several racial groups (notably **Native**, **Black**, and **Other**) show periods of very high proportions, including years where proportions reached **100%**, likely due to small subgroup sample sizes or data dominance.
+
+-    The **White** and **Asian** groups tend to remain stable, though proportions fluctuate in certain years (e.g., 2020–2022).
+```
+
+-   **Other vaccines**:
+
+```         
+-   Representation is generally lower and more variable across all racial groups.
+
+-    The **White** group maintains a small but steady share throughout most years.
+
+**Interpretation:**
+```
+
+This faceted view enables comparisons within and between vaccine types, highlighting potential shifts in **vaccine access**, **uptake**, or **data coverage** by racial group over time. It also suggests where disparities or changes in focus may have occurred, helping to inform more equitable vaccination strategies.
+
+```{r}
+# Prepare data: floor year, count by group, compute proportions within each group
+
+# Clean and count total per race/year (for denominator)
+total_by_race_year <- vacc_1524 %>%
+  mutate(
+    age = as.integer(round(age)),
+    vacc_year = as.integer(floor(vacc_year)),
+    race = str_to_title(as.character(race))
+  ) %>%
+  count(vacc_year, race, name = "total_race_year")
+
+#  Count per vaccine group (for numerator), then join
+vacc_plot_data <- vacc_1524 %>%
+  mutate(
+    age = as.integer(round(age)),
+    vacc_year = as.integer(floor(vacc_year)),
+    race = str_to_title(as.character(race))
+  ) %>%
+  count(vacc_year, race, vacc_group3, name = "n") %>%
+  left_join(total_by_race_year, by = c("vacc_year", "race")) %>%
+  mutate(prop = n / total_race_year)
+
+# Plot proportion by race within group
+ggplot(vacc_plot_data, aes(x = vacc_year, y = prop, color = race)) +
+  geom_line(size = 1) +
+  facet_wrap(~ vacc_group3) +
+  scale_y_continuous(labels = percent_format()) +
+  scale_x_continuous(breaks = pretty(unique(vacc_plot_data$vacc_year))) +
+  labs(
+    title = "Proportion of Race Within Vaccine Groups by Year",
+    x = "Year", y = "Proportion", color = "Race"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+rm(vacc_plot_data, total_by_race_year)
+
+```
+
+**Statistical Overlay – Regression Line on Vaccination Age**\
+Adds a linear regression to examine the relationship between income and age at vaccination.
+
+The scatterplot below visualizes the relationship between **income** (horizontal axis) and **age at vaccination** (vertical axis), with a **linear regression line** and confidence band overlaid to summarize the trend.
+
+**Key Observations:**
+
+-   The fitted **regression line** shows a **slight negative slope**, suggesting that as income increases, the age at which individuals receive vaccination tends to **decrease modestly**.
+
+-   The **confidence band** (shaded region) around the line is relatively narrow, indicating a fair level of certainty in the trend across the central range of income.
+
+-   The majority of data points are concentrated in the lower income ranges, while higher income values are more sparsely populated and show greater variability.
+
+```         
+**Interpretation:**
+```
+
+This trend suggests a **possible inverse relationship** between income and vaccination age—individuals with higher income may be more likely to receive vaccines at younger ages. This could reflect differences in healthcare access, awareness, or proactive health behaviors associated with income level.
+
+```{r}
+vacc_1524 %>%
+  ggplot(aes(x = income, y = age)) +
+  geom_point(alpha = 0.3, color = "gray50") +
+  geom_smooth(method = "lm", se = TRUE, color = "blue") +
+  labs(
+    title = "Association Between Income and Age at Vaccination",
+    x = "Income", y = "Age"
+  ) +
+  theme_minimal()
+```
+
+**Regression Plot – Age vs Income by Vaccine Group (Log Scale)**\
+Adds linear regression and facets by vaccine group. The x-axis is log-scaled to handle skewed income data.
+
+The plot below shows **scatterplots with linear regression lines**, examining the relationship between **income** and **age at vaccination**. The plots are faceted by **vaccine group**: **Childhood**, **Other**, and **Respiratory**. The x-axis uses a **logarithmic scale** to better handle the skewed distribution of income.
+
+**Key Observations:**
+
+-   **Childhood vaccines**:
+
+```         
+-    A **slight negative trend** is observed, indicating that as income increases, age at vaccination tends to decrease slightly.
+
+-    This may reflect earlier or more timely vaccinations among higher-income individuals for childhood vaccines.
+```
+
+-   **Other vaccines**:
+
+```         
+-   The regression line is nearly flat with a wide confidence interval, suggesting **no strong or consistent relationship** between income and age at vaccination in this group.
+
+-    This likely reflects diverse vaccine purposes and use across a broad age and income range.
+```
+
+-   **Respiratory vaccines**:
+
+```         
+-   A **mild negative trend** is also seen here, where higher-income individuals may receive respiratory vaccines at slightly younger ages.
+
+-    However, the relationship is subtle and the confidence interval overlaps considerably with the regression line.
+
+**Interpretation:**
+```
+
+While the strength of association varies across groups, both the childhood and respiratory vaccine panels suggest a small trend where **higher income is associated with younger age at vaccination**. This may be related to differences in **access**, **preventive health behaviors**, or **healthcare utilization** by income level.
+
+```{r}
+vacc_1524 %>%
+  mutate(vacc_group3 = str_to_title(vacc_group3)) %>%
+  ggplot(aes(x = income, y = age)) +
+  geom_point(alpha = 0.3, color = "gray50") +
+  geom_smooth(method = "lm", se = TRUE, color = "blue") +
+  scale_x_log10(labels = scales::comma_format()) +
+  facet_wrap(~ vacc_group3) +
+  labs(
+    title = "Association Between Income and Age at Vaccination",
+    x = "Income (log scale)", y = "Age"
+  ) +
+  theme_minimal()
+```
+
+**ECDF – Age at Vaccination**
+
+The empirical cumulative distribution function (ECDF) shows the proportion of individuals vaccinated at or below each age. This helps visualize the age distribution in a cumulative way.
+
+The plot below presents shows the **cumulative proportion** of individuals who received a vaccination at or below each age.
+
+**Key Observations:**
+
+-   The curve rises steeply in the early age range, indicating that a large proportion of individuals were vaccinated at younger ages (e.g., before 30).
+
+-   By around **age 50**, approximately **80%** of individuals had been vaccinated.
+
+-   The curve flattens out after age 75, suggesting fewer vaccinations occur at older ages.
+
+**Interpretation:**
+
+The ECDF provides an intuitive way to understand the **distribution of vaccination ages**. It highlights that most vaccinations occur in **childhood and early adulthood**, with fewer individuals vaccinated later in life. This cumulative view complements histograms and boxplots by showing the proportion of individuals affected up to each age.
+
+```{r}
+vacc_1524 <- vacc_1524 %>% filter(income > 0, !is.na(age))
+
+vacc_1524 %>%
+  ggplot(aes(x = age)) +
+  stat_ecdf(geom = "step", color = "steelblue") +
+  labs(title = "ECDF of Age at Vaccination", x = "Age", y = "Cumulative Proportion") +
+  theme_minimal()
+```
+
+**Treemap – Vaccination by Race and Vaccine Group**
+
+This treemap visualizes the distribution of vaccinations by race and vaccine group. Larger areas indicate more individuals within each combination.
+
+The treemap below displays the **distribution of vaccinations** across **racial groups**, further categorized by **vaccine group** (Childhood, Respiratory, and Other). Each rectangle represents a combination of race and vaccine type, with **area size corresponding to the number of individuals** vaccinated.
+
+**Key Observations:**
+
+-   The **White** population accounts for the **largest share overall**, with:
+
+```         
+-    **788 individuals (50.7%)** in the **Respiratory** vaccine group.
+
+-    **404 individuals (26.0%)** in the **Childhood** vaccine group.
+
+-    **114 individuals (7.3%)** in the **Other** vaccine group.
+```
+
+-   Other racial groups have smaller shares:
+
+```         
+-    **Black** individuals make up a modest proportion across groups, particularly **4.5%** in the Respiratory group and **1.4%** in Childhood vaccines.
+
+-    **Asian** individuals represent **4.4%** of Respiratory vaccines and **2.1%** of Childhood vaccines.
+
+-    **Native** and **Other** groups have minimal representation overall.
+
+**Interpretation:**
+```
+
+This treemap visually emphasizes the dominant contribution of the White population across all vaccine types, especially for respiratory vaccines. It also illustrates disparities in representation among racial groups, which can be important for assessing **equity in vaccine access**, **uptake**, and **program targeting**.
+
+```{r}
+# Cross-platform “new device”:
+dev.new(width = 8, height = 6)  
+
+p <- vacc_1524 %>%
+  count(race, vacc_group3) %>%
+  mutate(race = str_to_title(race)) %>%
+  ggplot(aes(area = n, fill = vacc_group3, label = race)) +
+  geom_treemap() +
+  geom_treemap_text(colour = "white", place = "centre", grow = TRUE) +
+  labs(
+    title = "Treemap: Vaccination by Race and Vaccine Group",
+    fill  = "Vaccine Group"
+  ) +
+  theme_minimal()
+
+print(p)
+
+rm (p)
+```
+
+```{r}
+#  Treemap - with Labels Showing Counts and Proportions by Race and vaccine Group
+vacc_1524 %>%
+  count(race, vacc_group3) %>%
+  mutate(
+    race = str_to_title(race),
+    total = sum(n),
+    proportion = n / total,
+    label_text = paste0(race, "\n", n, " (", percent(proportion, accuracy = 0.1), ")")
+  ) %>%
+  ggplot(aes(area = n, fill = vacc_group3, label = label_text)) +
+  geom_treemap() +
+  geom_treemap_text(colour = "white", place = "centre", grow = TRUE, reflow = TRUE) +
+  labs(
+    title = "Treemap: Vaccination by Race and Vaccine Group",
+    fill = "Vaccine Group"
+  ) +
+  theme_minimal()
+```
+
+**Correlation Heatmap – Numeric Variables**
+
+This heatmap displays Pearson correlation coefficients between selected numeric variables. Strong positive or negative values help identify relationships worth further analysis.
+
+The heatmap below displays **Pearson correlation coefficients** between selected numeric variables: **age**, **income**, **healthcare expenses**, and **healthcare coverage**. Correlation values range from **-1 to 1**, where values closer to ±1 indicate stronger relationships.
+
+**Key Observations:**
+
+-   **Age and healthcare coverage** show a **strong positive correlation** (**0.65**), suggesting that as individuals age, they are more likely to have greater healthcare coverage.
+
+-   **Age and healthcare expenses** are also **positively correlated** (**0.66**), indicating that older individuals tend to incur higher healthcare costs.
+
+-   **Healthcare coverage and healthcare expenses** show a **moderate positive correlation** (**0.44**), which may reflect that those with more coverage also utilize healthcare services more frequently or thoroughly.
+
+-   **Income** is **not strongly correlated** with any other variable in this set, with the highest being a negligible **0.02** with healthcare coverage and a slightly negative value with age (**-0.04**) and expenses (**-0.05**).
+
+```         
+**Interpretation:**
+```
+
+This heatmap highlights potential relationships that may inform further analysis—especially the connections between **age, coverage, and expenses**. In contrast, **income appears relatively independent** of the other variables in this dataset.
+
+```{r}
+numeric_vars <- vacc_1524 %>%
+  select(age, income, healthcare_expenses, healthcare_coverage) %>%
+  na.omit()
+
+cor_matrix <- round(cor(numeric_vars), 2)
+
+as.data.frame(as.table(cor_matrix)) %>%
+  rename(Var1 = Var1, Var2 = Var2, Correlation = Freq) %>%
+  ggplot(aes(x = Var1, y = Var2, fill = Correlation)) +
+  geom_tile(color = "white") +
+  geom_text(aes(label = Correlation), color = "black") +
+  scale_fill_gradient2(low = "red", high = "blue", mid = "white", midpoint = 0) +
+  labs(title = "Correlation Heatmap of Numeric Variables", x = NULL, y = NULL) +
+  theme_minimal()
+```
+
+**Ridgeline Plot – Age by Vaccine Group**
+
+This ridgeline plot shows the age distribution for each vaccine group. It highlights where age densities differ across categories.
+
+The ridgeline plot below shows **age distributions** for three vaccine groups: **Childhood**, **Other**, and **Respiratory**. Each layer represents the **density of ages** within a vaccine category, allowing for visual comparison of where individuals are most commonly vaccinated within each group.
+
+**Key Observations:**
+
+-   **Childhood vaccines** show a clear peak at very young ages, as expected. The density drops rapidly as age increases, with a small secondary bump around middle age, possibly reflecting catch-up vaccinations or data irregularities.
+
+-   **Other vaccines** have a **bimodal distribution** with one peak in younger adults and another in older adults (around 70+ years), suggesting they are used across multiple life stages.
+
+-   **Respiratory vaccines** have a **broad distribution**, with a peak density around **60–70 years**, consistent with routine respiratory vaccinations for older adults (e.g., influenza or pneumococcal vaccines).
+
+```         
+**Interpretation:**
+```
+
+This visualization effectively highlights **differences in age targeting** across vaccine groups. It shows that:
+
+-   Childhood vaccines are concentrated in early life,
+
+-   Other vaccines are used more broadly across age ranges, and
+
+-   Respiratory vaccines are predominantly administered to older populations.
+
+```{r}
+vacc_1524 %>%
+  mutate(vacc_group3 = stringr::str_to_title(vacc_group3)) %>%
+  ggplot(aes(x = age, y = vacc_group3, fill = vacc_group3)) +
+  geom_density_ridges(scale = 1.5, alpha = 0.6, color = "white") +
+  labs(title = "Ridgeline Plot: Age Distribution by Vaccine Group", x = "Age", y = "Vaccine Group") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+**Interactive Plot – Income vs Age by Race**
+
+This interactive scatter plot shows the relationship between income and age, colored by race. Hovering reveals more details including group and income.
+
+```{r}
+p <- vacc_1524 %>%
+  mutate(race = stringr::str_to_title(race)) %>%
+  ggplot(aes(x = income, y = age, color = race,
+             text = paste("Race:", race,
+                          "<br>Group:", vacc_group3,
+                          "<br>Income:", income,
+                          "<br>Age:", age))) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "gray30") +
+  labs(title = "Interactive: Income vs Age by Race",
+       x = "Income", y = "Age", color = "Race") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+ggplotly(p, tooltip = "text")
+rm(p)
+```
+
+```{r, echo=FALSE, results='hide', warning=FALSE, error=FALSE}
+library(tidyverse)
+library(gganimate)
+library(gifski)
+```
+
+**Animation – Vaccination Trends Over Years**
+
+This animation shows how vaccination counts across vaccine groups change over time. It helps spot temporal trends and emerging patterns.
+
+```{r}
+anim_plot <- vacc_1524 %>%
+  mutate(vacc_year = as.integer(floor(vacc_year))) %>%
+  count(vacc_year, vacc_group3) %>%
+  ggplot(aes(x = vacc_group3, y = n, fill = vacc_group3)) +
+  geom_col(show.legend = FALSE) +
+  labs(title = 'Year: {frame_time}', x = 'Vaccine Group', y = 'Count') +
+  theme_minimal() +
+  transition_time(vacc_year) +
+  ease_aes('linear')
+
+anim_file <- tempfile(fileext = ".gif")
+anim <- animate(anim_plot, nframes = 100, fps = 10, renderer = gifski_renderer(anim_file))
+# print(anim)
+
+rm(anim_plot, anim_file, anim)
+
+```
+
+**Animation – Breast Cancer Screening Uptake by State**
+
+This animated bar chart shows breast cancer screening uptake over time for each Australian state. It uses faceting to compare regional trends.
+
+```{r}
+breast_anim <- breast_cancer_data %>%
+  filter(!state %in% c("Other", "Unknown")) %>%
+  mutate(year_4digit = as.integer(year_4digit)) %>%
+  group_by(state, year_4digit) %>%
+  summarise(total_screened = sum(part50_74, na.rm = TRUE), .groups = "drop") %>%
+  ggplot(aes(x = year_4digit, y = total_screened, fill = state)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ state) +
+  labs(title = 'Year: {frame_time}', x = 'Year', y = 'Women Screened (50–74 yrs)') +
+  theme_minimal() +
+  transition_time(year_4digit) +
+  ease_aes('linear')
+
+screening_gif <- tempfile(fileext = ".gif")
+anim_screen <- animate(breast_anim, nframes = 100, fps = 10, renderer = gifski_renderer(screening_gif))
+# print(anim_screen)
+
+rm(breast_anim, screening_gif, anim_screen)
+```
+
+### **🔹 Formatting, themes and fonts of figures**
+
+**Heatmap – Number of Vaccinations by Month and Weekday** Highlights vaccination activity patterns by day of week and month. Darker tiles represent higher counts.
+
+The heatmap below demonstrates the **number of vaccinations administered** across **each day of the week** and **each calendar month**. Color intensity indicates the relative number of vaccinations, with darker red representing higher uptake and pale yellow representing lower activity.
+
+**Key Observations:**
+
+-   **Saturday consistently shows high uptake**, particularly in **October, September, and July**, suggesting that weekends may be more accessible or preferred for vaccination appointments.
+
+-   **Tuesday in May** and **Wednesday in August** also show pronounced peaks, likely linked to specific campaign efforts or seasonal programs.
+
+-   **Thursday and Friday** generally have moderate activity, while **Sunday and Monday** tend to have lower vaccination counts across most months.
+
+-   Overall, the **summer and early fall months (July to October)** show increased uptake across several weekdays, possibly aligning with back-to-school vaccination drives or respiratory vaccine rollouts.
+
+```         
+**Interpretation:**
+```
+
+The plot reveals both **seasonal** and **weekly rhythms** in vaccination behavior. Recognizing these patterns can guide better **scheduling of clinics**, **resource planning**, and **public messaging** to align with high-demand periods and improve overall vaccine accessibility.
+
+```{r, warning=FALSE, message=FALSE}
+# ................Without  Adding the long Title ........................................................
+# ..............................................................................................
+
+# --- Order weekday and month factors for proper axis display ---
+# --- Convert original vaccination date to Eastern Time (Massachusetts local time) ---
+# Assumes vacc_date is POSIXct or character in UTC or local system time
+vacc_1524 <- vacc_1524 %>%
+  mutate(
+    vacc_datetime_et = with_tz(as.POSIXct(vacc_date, tz = "UTC"), tzone = "America/New_York"),  # Adjust timezone to Eastern Time
+    vacc_weekday = wday(vacc_datetime_et, label = TRUE, abbr = FALSE),                          # Extract weekday (e.g., Monday)
+    vacc_month_name = month(vacc_datetime_et, label = TRUE, abbr = FALSE)                       # Extract month (e.g., January)
+  )
+
+# --- Order weekday and month factors for proper axis display ---
+vacc_1524 <- vacc_1524 %>%
+  mutate(
+    vacc_month_name = factor(vacc_month_name, levels = month.name),  # Ensure months are in calendar order
+    vacc_weekday = factor(vacc_weekday, levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))  # Ensure weekdays are in logical order
+  )
+
+# --- Create heatmap of vaccination counts by weekday and month ---
+vacc_1524 %>%
+  count(vacc_weekday, vacc_month_name) %>%  # Count number of vaccinations by weekday and month
+  ggplot(aes(x = vacc_weekday, y = vacc_month_name, fill = n)) +     # Map weekday to x-axis, month to y-axis, and fill by count
+  geom_tile(color = "white") +                                       # Draw heatmap tiles with white border for readability
+  scale_fill_gradientn(                                              # Use custom yellow-to-red color scale
+    colors = c("#ffffcc", "#ffeda0", "#feb24c", "#f03b20", "#bd0026"),
+    breaks = scales::pretty_breaks(n = 5),                           # Auto-select 5 good breakpoints for legend
+    name = "Vaccinated Number"                                       # Legend title
+  ) +
+  labs(
+    title = "Vaccination Uptake by Weekday and Month",               # Plot title
+    subtitle = "Timestamps interpreted as US Eastern Time (Massachusetts)",  # Timezone context
+    x = "Weekday", y = "Month", fill = "Vaccinated Number",          # Axis and legend labels
+    caption = "Note: Original timestamps converted from UTC to America/New_York"
+  ) +
+  theme_minimal() +
+  theme(
+    text = element_text(family = "Times New Roman"),                 # Font style
+    legend.position = "bottom",                                      # Move legend below the plot
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10, face = "bold"),  # X-axis label formatting
+    axis.text.y = element_text(size = 10, face = "bold"),            # Y-axis label formatting
+    axis.title.x = element_text(face = "bold", size = 11),
+    axis.title.y = element_text(face = "bold", size = 11),
+    plot.title = element_text(size = 12, face = "bold"),
+    legend.title = element_text(size = 10),
+    legend.text = element_text(size = 8)
+  )
+
+
+# Use figure title below to render in Quarto or Rmarkdown 
+#"Figure XX: Vaccination uptake by weekday and month among individuals aged 15–24, 2016–2024."
+```
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Install patchwork if not already installed
+if (!requireNamespace("patchwork", quietly = TRUE)) {install.packages("patchwork")}
+library(patchwork)
+
+```
+
+```{r warning=FALSE, message=FALSE}
+# ................Adding the long Title ........................................................
+# ..............................................................................................
+
+# --- Convert original vaccination date to Eastern Time (Massachusetts local time) ---
+# Assumes vacc_date is POSIXct or character in UTC or local system time
+vacc_1524 <- vacc_1524 %>%
+  mutate(
+    vacc_datetime_et = with_tz(as.POSIXct(vacc_date, tz = "UTC"), tzone = "America/New_York"),  # Adjust timezone to Eastern Time
+    vacc_weekday = wday(vacc_datetime_et, label = TRUE, abbr = FALSE),                          # Extract weekday (e.g., Monday)
+    vacc_month_name = month(vacc_datetime_et, label = TRUE, abbr = FALSE)                       # Extract month (e.g., January)
+  )
+
+# --- Order weekday and month factors for proper axis display ---
+vacc_1524 <- vacc_1524 %>%
+  mutate(
+    vacc_month_name = factor(vacc_month_name, levels = month.name),  # Ensure months are in calendar order
+    vacc_weekday = factor(vacc_weekday, levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))  # Ensure weekdays are in logical order
+  )
+
+# --- Create heatmap of vaccination counts by weekday and month ---
+p <- vacc_1524 %>%
+  count(vacc_weekday, vacc_month_name) %>%  # Count number of vaccinations by weekday and month
+  ggplot(aes(x = vacc_weekday, y = vacc_month_name, fill = n)) +     # Map weekday to x-axis, month to y-axis, and fill by count
+  geom_tile(color = "white") +                                       # Draw heatmap tiles with white border for readability
+  scale_fill_gradientn(                                              # Use custom yellow-to-red color scale
+    colors = c("#ffffcc", "#ffeda0", "#feb24c", "#f03b20", "#bd0026"),
+    breaks = scales::pretty_breaks(n = 5),                           # Auto-select 5 good breakpoints for legend
+    name = "Vaccinated Number"                                       # Legend title
+  ) +
+  labs(
+    title = "Vaccination Uptake by Weekday and Month",               # Plot title
+    x = "Weekday", y = "Month", fill = "Vaccinated Number"           # Axis and legend labels
+  ) +
+  theme_minimal() +
+  theme(
+    text = element_text(family = "Times New Roman"),                 # Font style
+    legend.position = "bottom",                                      # Move legend below the plot
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10, face = "bold"),  # X-axis label formatting
+    axis.text.y = element_text(size = 10, face = "bold"),            # Y-axis label formatting
+    axis.title.x = element_text(face = "bold", size = 11),
+    axis.title.y = element_text(face = "bold", size = 11),
+    plot.title = element_text(size = 12, face = "bold"),
+    legend.title = element_text(size = 10),
+    legend.text = element_text(size = 8)
+  )
+
+# --- Add descriptive figure caption using patchwork's plot_annotation() ---
+final_plot <- p + plot_annotation(
+  caption = "Figure XX: Vaccination uptake by weekday and month among individuals aged 15–24, 2016–2024.",
+  theme = theme(
+    plot.caption = element_text(
+      size = 10, family = "Times New Roman", hjust = 0
+    )
+  )
+)
+
+# --- Display the final plot with caption ---
+final_plot
+
+# setwd ("C:/Users/User/Desktop/Materials_ Course and proposals/VIP collection for Syntax code or project titles/R codes/Data Manipulation and Wrangling")
+# 
+# # Save plots
+# ggsave("Heatmap_vaccination_pattern by day and month.TIFF", plot = last_plot(), device = "tiff", width = 10, height = 6, units = "in")
+# ggsave("Heatmap_vaccination_pattern by day and month.svg", plot = last_plot(), device = "svg", width = 10, height = 6, units = "in")
+
+rm (p, final_plot)
+```
+
+## **SHINY App: BUILDING WEB APPS**
+
+8.1 **UI** `fluidPage()`, `sidebarLayout()`, `sidebarPanel()`, `mainPanel()`, `tabsetPanel()`, `tags$style()`
+
+8.2 **Server** `reactive()`, `observeEvent()`, `req()`, `renderPlotly()`, `renderDT()`, `modalDialog()`, `showModal()`
+
+8.3 **App Launch** `shinyApp(ui, server)`
+
+8.4 **Inputs** `sliderInput()`, `selectInput()`, `colourInput()`, `actionButton()`, `downloadButton()`
+
+8.5 **Outputs** `plotlyOutput()`, `DTOutput()`, `datatable()`, `formatStyle()`
+
+8.6 **DT Features** `extensions = 'Buttons'`, export options: `copy`, `csv`, `excel`, `pdf`, `print`
+
+8.7 **Styling and Themes** `tags$style()`, (`shinythemes::shinytheme()` – loaded but not applied)
+
+Shiny is a web application framework for R that allows analysts to build interactive dashboards and tools using familiar syntax. It provides a structured approach to turning R scripts into accessible apps for broader audiences.
+
+A typical Shiny app includes two core components:
+
+-   **UI (User Interface)**: Defines layout, inputs, and outputs shown on the screen interface.
+-   **Server**: Contains the logic that processes data and responds to user interactions.
+
+Shiny apps can include multiple views (tabs), export buttons, dynamic filtering, charts, and customized design themes.
+
+------------------------------------------------------------------------
+
+### **🔹 UI Layout and Page Structure**
+
+-   `fluidPage()`: Defines the page layout.
+-   `sidebarLayout()`, `sidebarPanel()`, `mainPanel()`: Organize inputs and outputs side-by-side.
+-   `tabsetPanel()`: Allows tab navigation for multi-page apps.
+-   `tags$style()`, `shinythemes::shinytheme()`: Add or apply custom styles/themes.
+
+------------------------------------------------------------------------
+
+### **🔹 Server Logic and Reactivity**
+
+-   `reactive()`: Creates reactive data or expressions.
+-   `observeEvent()`: Executes code when a trigger changes.
+-   `req()`: Validates necessary input before proceeding.
+-   Output functions: `renderPlotly()`, `renderDT()`, `renderText()`, `renderTable()`.
+
+------------------------------------------------------------------------
+
+### **🔹 Inputs and Outputs**
+
+| **Type** | **Function** | **Purpose** |
+|----|----|----|
+| Input | `sliderInput()` | Select a numeric value or range |
+| Input | `selectInput()` | Dropdown menu to choose a category |
+| Input | `colourInput()` | Select a color |
+| Input | `actionButton()` | Trigger processing on click |
+| Input | `downloadButton()` | Download output tables or data |
+| Output | `plotlyOutput()` | Render interactive plots using Plotly |
+| Output | `DTOutput()`, `datatable()` | Render interactive tables |
+| Output | `formatStyle()` | Apply styling (e.g., color, font) to tables |
+
+------------------------------------------------------------------------
+
+### **🔹 Table Export Options (DT Extension)**
+
+-   Add `extensions = 'Buttons'` to enable table exports.
+-   Export types: `"copy"`, `"csv"`, `"excel"`, `"pdf"`, `"print"`.
+
+------------------------------------------------------------------------
+
+### **🔹 Launching the App**
+
+-   `shinyApp(ui, server)`: Runs the Shiny app combining both UI and server logic.
+-   Apps can be hosted on ShinyApps.io, internal servers, or embedded in R Markdown dashboards.
+
+------------------------------------------------------------------------
+
+The Shiny app code below demonstrates how interactive visualizations can be built using R to present health data in an accessible and user-friendly format. Specifically, it explores breast cancer screening uptake across states, years, and age groups in Australia. The app enhances user engagement through customizable features and immediate feedback mechanisms.
+
+Key capabilities demonstrated include: - Dynamic UI generation using `fluidPage()`, `sidebarLayout()`, and interactive widgets - State selection using a dropdown (`selectInput()`), which scales better than radio buttons - Age group filtering with a multiple selection input - Quantile-based filtering with `sliderInput()` for rate grouping - Color customization of output using `colourInput()` for personalizing table aesthetics - A modal popup (`modalDialog()`) triggered by a help button to explain data sources - Export options via `downloadButton()` and `DT` export buttons for multiple file formats - Real-time data filtering using `reactive()` expressions to tailor output to user input - An interactive line plot rendered via `plotly` and `ggplot2` for visualization - Fully styled, downloadable data table with `DT::renderDT()` and export capabilities
+
+See the live app at the following platforms
+
+-   **AnalyticsHub YouTube**: <https://studio.youtube.com/video/5V7SPBH-8BE/edit>
+-   **Live App**: <https://j9eu4e-habtamu-mellie0bizuayehu.shinyapps.io/Breast_Cancer_Screening_Shiny_App/>
+
+```{r, results='hide', warning=FALSE, message=FALSE}
+
+# Install required packages if not already installed
+required_packages <- c("shiny", "ggplot2", "plotly", "DT", "dplyr", "shinyjs", "shinyWidgets", "scales", "colourpicker")
+
+# Install missing ones
+new_packages <- required_packages[!(required_packages %in% installed.packages()[,"Package"])]
+if(length(new_packages)) install.packages(new_packages)
+
+# Load packages
+library(shiny)
+library(ggplot2)
+library(plotly)
+library(DT)
+library(dplyr)
+library(shinyjs)
+library(shinyWidgets)
+library(scales)
+library(colourpicker)
+
+
+# load the data
+load("C:/Users/User/Desktop/Materials_ Course and proposals/VIP collection for Syntax code or project titles/R codes/Shiny App BC Screening/Breast Cancer Screening.RData")
+
+```
+
+```{r, eval=FALSE}
+# -------------------Shiny Application for Breast Cancer Screening---------------------
+
+
+# ------------------- UI and Server Definition ---------------------
+
+# Define custom CSS for styling buttons and other UI elements
+ui <- fluidPage(
+  
+  # Application title displayed at the top of the app
+  h1("Breast Cancer Screening Uptake"),
+
+  # Apply custom styling to the download button
+  tags$style(HTML("
+    #download_data {
+      background: orange;
+      font-size: 20px;
+    }
+  ")),  
+
+  # Layout structure: sidebar for inputs and main panel for outputs
+  sidebarLayout(
+    sidebarPanel(
+      
+      # Quantile-based slider to filter screening rate
+      sliderInput("rate_10_group", "Rate Group", 
+                  min = min(breast_cancer_long$rate_10_group, na.rm = TRUE), 
+                  max = max(breast_cancer_long$rate_10_group, na.rm = TRUE), 
+                  value = c(5, 7)),
+      
+      # Dropdown menu for state selection (simplifies and scales better than radio buttons)
+      selectInput("state", "Select State",  
+                  choices = unique(breast_cancer_long$state), 
+                  selected = "WA"),
+
+      # Multi-select dropdown for age groups (allows viewing multiple demographics)
+      selectInput("age_group", "Women's Age Group", 
+                  choices = unique(breast_cancer_long$age_group), 
+                  multiple = TRUE,
+                  selected = unique(breast_cancer_long$age_group)[1]),
+
+      # Add colour input to allow users to control table font colour
+      colourInput("color", "Point color", value = "blue"),
+
+      # Add a help button that triggers a modal popup for guidance
+      actionButton("show_help", "Help"),
+
+      # Add a download button for exporting filtered dataset
+      downloadButton("download_data", "Download Data")
+    ),
+
+    mainPanel(
+      # Render the interactive line chart
+      plotlyOutput("plot"),
+
+      # Render the data table output
+      DTOutput("table")
+    )
+  )
+)
+
+# Define server-side logic for rendering outputs and interactivity
+server <- function(input, output, session) {
+
+  # Show Help Modal: explains data source when help button is clicked
+  observeEvent(input$show_help, {
+    showModal(modalDialog(
+      title = "Help",
+      "This data was compiled from the Australian Institute of Health and Welfare."
+    ))
+  })
+
+  # Reactive expression to filter and summarize the dataset based on inputs
+  filtered_data <- reactive({
+    req(input$rate_10_group, input$state, input$age_group)  # Ensure all inputs are available
+
+    breast_cancer_long %>%
+      filter(rate_10_group >= input$rate_10_group[1] & 
+               rate_10_group <= input$rate_10_group[2],
+             state == input$state,
+             age_group %in% input$age_group) %>%
+      group_by(year, state, age_group) %>%
+      summarise(year = as.integer(year),  # Convert year to integer for plotting
+                rate = round(mean(rate, na.rm = TRUE), 1),  # Average screening rate
+                .groups = "drop") 
+  })
+
+  # Render Table: displays filtered data in an interactive table with export options
+  output$table <- renderDT({
+    datatable(filtered_data(), 
+              options = list(
+                pageLength = 10,  # Show 10 rows per page
+                dom = 'Bfrtip',  # Include Buttons (copy, csv, pdf, etc.)
+                buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                class = "display nowrap compact"  # Responsive and compact table design
+              ),
+              extensions = 'Buttons',
+              style = "bootstrap", 
+              class = "table table-striped table-bordered") %>%
+      formatStyle(columns = names(filtered_data()), color = input$color)  # Use selected color
+  })
+
+  # Download Handler: enables users to download filtered data
+  output$download_data <- downloadHandler(
+    filename = "Breast_cancer_screening_data.csv",
+    content = function(file) {
+      write.csv(filtered_data(), file, row.names = FALSE)
+    }
+  )
+
+  # Render Plot: displays line plot of screening rates over time by age group
+  output$plot <- renderPlotly({
+    df <- filtered_data()
+
+    p <- ggplot(df, aes(x = year, y = rate, color = age_group, group = interaction(state, age_group))) +
+      geom_line(size = 1) +  # Draw lines to show trend
+      geom_point(size = 3) +  # Add points to emphasize data values
+      labs(title = "Breast Cancer Screening Uptake", 
+           x = "Year", 
+           y = "Screening Rate",
+           color = "Age Group") +
+      theme_minimal()
+
+    ggplotly(p)  # Convert ggplot to interactive plotly chart
+  })
+}
+
+# Launch the app
+shinyApp(ui, server)
+```
+
+## **Conclusion**
+
+High-quality visualisation onverts complex data into **clear evidence** for public health action. When designed with intent, figures surface trends, quantify disparities, and support timely, transparent decisions.
+
+This project addressed the core contents of data visualisation: the ggplot2 layering system (Data, Aesthetics, Geometries, Statistics, Facets, Coordinates, Theme) and a taxonomy of chart types (distribution, comparison, relationship, time). It also covered multivariate displays (facets, heatmaps, treemaps, ridgelines, forest plots), statistical overlays (error bars, CIs, regressions, smoothers), and interactive components via Plotly, DT, Leaflet, and Shiny.
+
+**Key practices**
+
+-   **Interpretability first:** order factors deliberately, label axes in human terms, and annotate denominators and assumptions.
+-   **Equity by default:** disaggregate and compare across meaningful subgroups *(e.g., age, educational status, remoteness)* to reveal gaps hidden by averages.
+-   **Reproducibility & audit:** script plots, version inputs, and keep footnotes/metadata with each figure.
+-   **Accessibility:** use colour-blind-safe palettes, plain-language titles, and adequate contrast.
+
+**Safeguards**
+
+-   Manage **small numbers** (suppress/aggregate) and show **uncertainty** where relevant.
+-   Preserve comparability over time by documenting **definition changes**, **population shifts**, and **data revisions**.
+-   Triangulate sensitive findings before dissemination.
+
+**Operational next steps**
+
+-   Adopt shared templates (themes, scales, captions) and a reproducible pipeline (automated renders, QA checks).
+-   Pair every figure with a one-sentence takeaway and a link to methods so stakeholders can act quickly.
+
+Visualisation turns data into evidence. In public health it enables timely decisions, reveals inequities, and builds trust—when the graphics are designed to be understood. Make visuals useful by prioritising interpretability (plain-language titles, readable scales, clear denominators and uncertainty), reproducibility (scripted plots with code and data traceable via the **Source** link), and equity by default—routinely disaggregate and compare meaningful subgroups *(e.g., age, educational status, remoteness)* rather than relying on averages.\
+**Visualisation is a public-health intervention: publish figures that are honest, interpretable, reproducible, and equity-aware.**
+
+------------------------------------------------------------------------
+
+## **References**
+
+-   Tufte, E. R. (2001). **The Visual Display of Quantitative Information** (2nd ed.). Graphics Press.\
+-   Cleveland, W. S. (1994). **The Elements of Graphing Data** (rev. ed.). Hobart Press.\
+-   unzner, T. (2014). **Visualization Analysis and Design**. CRC Press.\
+-   are, C. (2021). **Information Visualization: Perception for Design** (4th ed.). Morgan Kaufmann.\
+-   Cairo, A. (2016). **The Truthful Art: Data, Charts, and Maps for Communication**. New Riders.
+
+**Data Visualization Websites**
+
+\- Storytelling with Data: https://www.storytellingwithdata.com/chart-guide\
+- The Data Visualisation Catalogue: https://datavizcatalogue.com/\
+- Visualising Data: https://visualisingdata.com/\
+
+------------------------------------------------------------------------
