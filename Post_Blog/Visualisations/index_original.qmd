@@ -1,0 +1,4103 @@
+---
+title: "Date Manipulation and Wrangling using R"
+description: |
+  A guide for essential R techniques for data cleaning, transformation, and visualization.
+author: "Habtamu Bizuayehu"
+website: "https://habtamubizuayehu.com/"
+github: "https://github.com/HabtamuBizuayehu"
+orcid: "https://orcid.org/0000-0002-1360-4909"
+date: 2025-05-20
+image: "treemap.png"
+highlight-style: github
+output-dir: "docs"
+categories: [Data management via R]
+format: html
+toc: true
+toc-depth: 3
+self-contained: true
+number-sections: false
+code-fold: false
+code-tools: true
+code-summary: "Show the code"
+theme: united
+knitr: 
+ opts_knit: 
+   warning: false
+   message: false
+editor: visual
+---
+
+# **Comprehensive Data Manipulation and Wrangling via R**
+
+This presentation provides a comprehensive walkthrough of data manipulation and wrangling in R, covering foundational setup, core syntax, data importing, exploration, and transformation techniques. It systematically introduces essential R packages and functions for cleaning, summarizing, and visualizing data, followed by advanced topics such as working with dates and handling missing values. Practical sections on looping, writing functions, and building interactive Shiny applications are also included to enhance automation and interactivity. The presentation concludes with real-world case studies, demonstrating how to apply these techniques to healthcare and public health datasets. This guide is designed to build technical proficiency and practical confidence for effective data analysis using R.
+
+**This Presentation/Project Covers**
+
+\- **Part I: FOUNDATIONS AND INTRODUCTION**\
+Installing R and RStudio, setting working directories, clearing console, loading packages, R syntax and shortcuts, R object types, Quarto and R Markdown overview.
+
+\- **Part II: DATA LOADING AND EXPLORATION**\
+Importing CSV/Excel data, reading datasets into R.
+
+\- **Part III: WRANGLING WITH `dplyr`**\
+Selecting and renaming columns, creating variables, splitting text, extracting patterns, working with factors, grouping, sorting, reshaping data.
+
+\- **Part IV: ADVANCED WRANGLING AND INTEGRATION**\
+Handling dates, deduplication, merging datasets, identifying and imputing missing values.
+
+\- **Part V: DESCRIPTIVE STATISTICS AND TABULATION**\
+Summary stats, skewness/kurtosis, frequencies, cross tabulations, exporting summaries.
+
+\- **Part VI: DATA VISUALIZATION WITH `ggplot2`**\
+Chart components, common plots, multivariate visuals, geospatial maps, overlays, themes and labels.
+
+\- **Part VII: SHINY APP – BUILDING WEB APPS**\
+UI and server structure, reactive inputs/outputs, DT tables, app deployment.
+
+------------------------------------------------------------------------
+
+## **PART I: FOUNDATIONS AND INTRODUCTION**
+
+### **1.1 Getting Started with R**
+
+This section will cover the following contents
+
+\- Installing R and RStudio
+
+\- Setting working directories
+
+\- Clearing environment and console
+
+\- Installing and loading packages (eg `tidyverse`, `janitor`, etc.)
+
+-   **Installing R and RStudio**
+
+When we begin working with R, the very first step we take is installing two important tools: R itself (the engine) and RStudio (the friendly interface we use every day). I recommend that we install R first and then RStudio immediately after.
+
+To make this clear, I have prepared a complete video tutorial that you can watch step-by-step:
+
+Wathc at [AnalyticsHub YouTube](https://www.youtube.com/watch?v=wFaBBRfaABw){target="_blank"}
+
+The video, shows:
+
+-   How to Download R from the CRAN website.
+
+-   Install RStudio, which gives us a powerful yet simple environment to work in.
+
+-   Briefly explore basic options like font size, theme (dark/light mode), and code editor settings to make RStudio comfortable for coding.
+
+-   **Setting working directories\
+    **When we work in R, it's very important that we know *where* R is reading from and saving to.\
+    I often think of the **working directory** as the "home folder" where all my files live during an R session.
+
+    We can easily **check** our current working directory by typing:
+
+    ```{r}
+    getwd() 
+    ```
+
+This command tells us exactly where R is currently looking for files.
+
+If we want to **change** the working directory to a folder we are working on (for example, a project folder or a course material folder), we can use:
+
+```{r, eval=FALSE, echo=FALSE}
+setwd ("C:/Users/User/Desktop/Materials_ Course and proposals/VIP collection for Syntax code or project titles/R codes/Data Manipulation and Wrangling/")
+```
+
+```{r, eval=FALSE}
+setwd("C:/Users/User/Desktop/Materials_ Course and proposals/")
+```
+
+Always make sure the folder path is in **quotation marks** and I use **forward slashes `/`** or double backslashes `\\` when typing the path.
+
+📌 We can also set the working directory easily by clicking:
+
+> **Session ➔ Set Working Directory ➔ Choose Directory...**
+
+**📚 Note about API tokens and special folders:**
+
+If you are using R for connecting to APIs, cloud storage, or services like GitHub, Dropbox, or Google Drive,\
+sometimes you will need to **set a working directory** where your **API token file** is stored (for authentication).
+
+```{r, eval=FALSE}
+setwd("C:/Users/YourName/.credentials/") 
+```
+
+⚠️ **Important**: Always make sure API tokens and confidential files are in a secure private directory.
+
+-   **Clearing environment and console**
+
+    ```{r}
+
+    # Clear environment and console
+    rm(list = ls()) # To clear the environment (remove all objects in memory)
+    cat("\014") # To clear the console (like wiping a whiteboard)
+    ```
+
+    Before starting fresh in any R session, I like to **clear out everything**—all variables, data, and even the clutter in the console.
+
+-   **Installing and loading packages**
+
+    We rely on a range of **packages** in R for data wrangling, visualization, dashboards, and reporting.\
+    I typically create a vector of required packages and write a small loop to install any missing ones.
+
+```{r, message=FALSE, warning=FALSE, results='hide'}
+# ------------------ Set CRAN Repository ------------------
+
+options(repos = c(CRAN = "https://cran.rstudio.com"))
+
+# ------------------ List of required packages for Data Wrangling and Analysis ------------------
+packages <- c(
+  "lubridate", "dplyr", "stringr", "zoo", "tsibble", "ggplot2", "plotly", 
+  "readr", "readxl", "haven", "openxlsx", "labelled", "forecast",
+  "prettydoc", "janitor", "knitr", "rmarkdown", "yaml", 
+  "flextable", "scales", "gt", "reactable", "DT", "gmodels", "Hmisc",
+  "tidyverse", "tidyr", "officer",
+  "shiny", "shinydashboard", "shinythemes", "mice", "shinyWidgets", "bslib", "quarto"
+)
+
+# ------------------ Install and load packages ------------------
+for (pkg in packages) {
+  if (!require(pkg, character.only = TRUE)) {
+    install.packages(pkg)
+  }
+}
+
+# ------------------ Load required libraries with descriptions ------------------
+library(lubridate)     # Simplifies the manipulation of dates and times in R (e.g., formatting, extracting components)
+library(dplyr)         # Data manipulation: filtering, summarizing, and transforming data
+library(stringr)       # Simplifies string manipulation
+library(tidyr)         # Data tidying: reshaping with pivot_longer, pivot_wider, etc.
+library(purrr)         # Functional programming: map functions over lists/vectors
+library(forcats)       # Categorical data: reordering and labeling factor levels
+
+library(zoo)           # Infrastructure for time series objects
+library(tsibble)       # Tidy temporal data frames and time series modeling
+library(forecast)      # Forecasting functions for time series models
+
+library(readr)         # Read rectangular data like CSVs
+library(readxl)        # Read Excel files (.xls and .xlsx)
+library(haven)         # Import data from SAS, SPSS, and Stata
+library(openxlsx)      # Write to Excel with more control
+library(labelled)      # Attach and work with variable labels
+
+library(ggplot2)       # Create elegant data visualizations using the grammar of graphics
+library(plotly)        # Interactive visualizations using ggplot2 or standalone plotly
+library(scales)        # Provides scale functions for ggplot2 (e.g., log, percent)
+
+library(janitor)       # Clean data: make column names nice, tabulate, etc.
+library(gmodels)       # CrossTables and other classic stats tools
+library(Hmisc)         # Summarization and advanced table/label handling
+library(mice)           # missing data imputation
+
+library(knitr)         # Dynamic report generation in R
+library(rmarkdown)     # Convert R scripts to reports in various formats
+library(prettydoc)     # Beautiful HTML document templates
+library(yaml)          # Read and write YAML files (used in R Markdown, Quarto)
+library(officer)       # Export tables and reports to Word/PowerPoint
+
+library(flextable)     # Create nicely formatted tables
+library(gt)            # Grammar of tables for HTML and PDF output
+library(reactable)     # Interactive data tables
+library(DT)            # Wrapper of JavaScript DataTables for R
+
+library(shiny)         # Build interactive web applications directly from R
+library(shinydashboard)# Create dashboard layouts for Shiny apps
+library(shinythemes)   # Prebuilt UI themes for Shiny apps
+library(shinyWidgets)  # Enhanced UI widgets for Shiny
+library(bslib)         # Bootstrap themes for Shiny and rmarkdown
+
+library(quarto)        # Rendering Quarto documents
+```
+
+### **1.2 R Syntax Symbols and Essentials**
+
+-   Operators: `<-`, `%>%`, `==`, `&`, `|`, `~`
+-   Additional Operators: `%in%`, `::`, `%<>%`, `|>`
+-   Symbols: `()`, `[]`, `{}`, `""`, `#`
+-   Commenting, structure, and help functions (`?function`, `args()`)
+-   Using R scripts vs. R Markdown vs. Quarto
+
+In this section, we walk through the fundamental syntax building blocks of R.\
+Mastering these basics helps write cleaner, more efficient, and more readable code.
+
+🔹 **Operators**
+
+In R, operators are used to perform operations on objects and values:
+
+-   **Assignment operators** (`<-`, `=`) store values into objects.
+-   **Pipe operators** (`%>%`, `%<>%`, `|>`) allow chaining multiple commands together.
+-   **Comparison operators** (`==`, `!=`, `<`, `>`) compare values for equality or relational logic.
+-   **Logical operators** (`&`, `|`, `!`) build logical expressions (AND, OR, NOT).
+-   **Formula operator** (`~`) defines models and formulas, e.g., `y ~ x1 + x2`.
+-   **Membership operator** (`%in%`) checks whether an element belongs to a set.
+-   **Package access operator** (`::`) calls a function from a package without loading the full package.
+
+🔹 **Symbols**
+
+Symbols are special characters used in structuring R code:
+
+-   `()` : Used for function calls and setting arguments.
+-   `[]` : Indexing vectors, matrices, or data frames.
+-   `{}` : Grouping multiple expressions into a code block.
+-   `""` or `''` : Define character strings.
+-   `#` : Create comments that are ignored during code execution.
+
+🔹 **Help Functions**
+
+-   `?function_name` : Access the help documentation for any function.
+
+-   `args(function_name)` : Display the arguments a function accepts.
+
+    🔹 Scripting in .R, .Rmd, .qmd
+
+    | Format | Description | Best Use Case |
+    |----|----|----|
+    | `.R` | Basic R script. Contains code only, no formatting or output. | Exploratory coding, testing snippets |
+    | `.Rmd` | R Markdown file. Supports code + text + output in one file. | Reproducible reports, presentations, notebooks |
+    | `.qmd` | Quarto document. Successor to R Markdown with more flexible publishing. | Polished reports, web publishing, multi-language |
+
+📊 R Syntax Essentials Summary
+
+| **Element** | **Symbol / Syntax** | **What It Does** |
+|:---|:---|:---|
+| Assignment | `<-`, `=` | Assign a value to a variable (e.g., `x <- 5`) |
+| Pipe | `%>%`, `%<>%`, `|>` | Pass or transform results between functions |
+| Comparison | `==`, `!=`, `<`, `>` | Compare values (equal, not equal, less than, etc.) |
+| Logical | `&`, `|`, `!` | Logical conditions: AND, OR, NOT |
+| Formula | `~` | Define model formulas (e.g., `y ~ x1 + x2`) |
+| Membership Test | `%in%` | Check if an element exists within a vector |
+| Package Function Access | `::` | Call a function from a specific package without loading it |
+| Function Call | `()` | Call a function with arguments (e.g., `mean(x)`) |
+| Indexing | `[]` | Access parts of data structures (e.g., `x[1]`, `df[2,3]`) |
+| Code Block | `{}` | Group multiple lines (loops, conditionals) |
+| Strings | `"text"`, `'text'` | Define character strings |
+| Commenting | `#` | Insert a comment ignored by R |
+| Help Functions | `?function`, `args(function)` | Access help or check function arguments |
+| Output Format | `.R`, `.Rmd`, `.qmd` | File formats for scripting or reporting |
+
+?mean \# Opens the help page for the 'mean' function
+
+args(mean) \# Lists input arguments for 'mean'
+
+### **1.3 Keyboard Shortcut and Functions**
+
+In this section, I highlight essential RStudio shortcut keys that improve coding efficiency and simplify the workflow for scripting and reporting.
+
+| **Shortcut**       | **Action**                                   |
+|:-------------------|:---------------------------------------------|
+| `Ctrl + Z`         | Undo the last action                         |
+| `Ctrl + Shift + Z` | Redo the undone action                       |
+| `Ctrl + Enter`     | Execute the current line or selected block   |
+| `Alt + -`          | Insert assignment operator `<-`              |
+| `Ctrl + Shift + M` | Insert pipe operator `%>%`                   |
+| `Ctrl + L`         | Clear the console output                     |
+| `Ctrl + Shift + C` | Comment or uncomment selected lines          |
+| `Ctrl + Shift + S` | Source and run the entire script             |
+| `Ctrl + Alt + I`   | Insert a new R Markdown or Quarto code chunk |
+
+------------------------------------------------------------------------
+
+### **1.4. Terms and Definitions: R Objects**
+
+Element \| Vector \| Matrix \| \|Data Frame \| Data Table \| List \| Factor \| Variable \| Object
+
+This section provides a brief overview of foundational R data structures.\
+For more detailed explanations and demonstrations, refer to:
+
+-   [YouTube: AnalyticsHub](https://studio.youtube.com/channel/UCLVKP0g8GvHhOh0kn20T8eg/videos/upload?filter=%5B%5D&sort=%7B%22columnType%22%3A%22date%22%2C%22sortOrder%22%3A%22DESCENDING%22%7D)
+-   [GitHub: HabtamuBizuayehu Repositories](https://github.com/HabtamuBizuayehu?tab=repositories)
+
+Understanding these fundamental terms is essential for working effectively with R data analysis and wrangling.
+
+🔹 **Brief Narration of Key Terms**
+
+-   **Element**: A single piece of data, such as a number or a character.
+-   **Vector**: An ordered collection of elements of the same type (numeric, character, logical).
+-   **Matrix**: A two-dimensional collection of elements arranged by rows and columns, all of the same type.
+-   **Data Frame**: A two-dimensional table where each column can contain different types of data (numeric, character, factor).
+-   **Data Table**: A high-performance extension from the **`data.table`** package — for very large datasets and faster manipulation.
+-   **List**: A flexible container that can hold elements of different types and structures (vectors, data frames, even other lists).
+-   **Factor**: A special type of vector used for categorical data, storing levels internally.
+-   **Variable**: A named object that holds data (vectors, lists, data frames, etc.).
+-   **Object**: A general term for any data structure stored in R.
+
+------------------------------------------------------------------------
+
+**🔍 Summary Table: R Objects**
+
+| **Term** | **Definition** |
+|:---|:---|
+| Element | A single unit of data (e.g., `5`, `"apple"`) |
+| Vector | A sequence of elements of the same type |
+| Matrix | A two-dimensional collection of homogeneous elements |
+| Data Frame | A two-dimensional table with heterogeneous column types |
+| Data Table | A fast and memory-efficient data frame extension (`data.table` package) |
+| List | A flexible container for different types of elements |
+| Factor | A categorical variable with predefined levels |
+| Variable | A named object that stores data |
+| Object | Any entity stored in R (data, functions, models, etc.) |
+
+### **1.5. Quarto and R Markdown Options**
+
+This section summarizes key chunk options and syntax used in Quarto and R Markdown.\
+These settings allow flexible control over code execution, output display, figure formatting, and reporting behavior.
+
+## 🔍 Summary: Quarto and R Markdown Chunk Options
+
+| **Feature** | **Quarto Syntax** | **Description** |
+|:---|:---|:---|
+| Code Chunks | `{r}` | Used to write and execute R code. You can specify options like echo, results. |
+| Echoing Code | `echo: true` | Displays the code in the output (default is true). Set to `false` to hide the code. |
+| Include Code | `include: false` | Executes code but does not show the code in the final output. |
+| Evaluating Code | `eval: false` | Prevents the code from running but still displays the code in the output. |
+| Results Control | `results: 'markup'` or `results: 'asis'` | Controls how output results are displayed (formatted or raw). |
+| Message and Warnings | `message: false`, `warning: false` | Controls whether messages and warnings appear in the output. |
+| Output File Format | `output: html` | Specifies output format (html, pdf, word). Default is html. |
+| Table Output | `results: 'asis'` or `results: 'markup'` | Ensures clean table rendering for formatted output. |
+| Chunk Labeling | `# Label` | Labels help organize and reference code chunks easily. |
+| Inline Code | `r paste('Your value is', 2, 'times.')` | Embeds live code inside text for dynamic reporting. |
+| Caching Results | `cache: true` | Saves chunk results to avoid rerunning unchanged code. It stores the output (like objects, plots, and printed results) in a cache directory |
+| Figure Options | `fig.width: 7`, `fig.height: 5`, `fig.align: 'center'` | Adjusts figure size and alignment in output documents. |
+| Output as LaTeX | `latex: true` | Allows LaTeX formatting (mainly for PDFs and math expressions). |
+| Commenting Code | `# (within chunks)` | Standard way to comment within R code chunks. |
+
+➡️ Mastering these options ensures smoother report generation, cleaner outputs, and faster rendering when building professional documents in Quarto or R Markdown.
+
+## **PART II: DATA LOADING AND EXPLORATION**
+
+### **2.1 Reading and Importing Data**
+
+-   File path setup and working with `getwd()`, `paste()`
+-   `read_csv()`, `read_excel()`, `read.delim()`, `readRDS()`
+-   Reading `.tsv`, `.dta`, and `.sav` files (foreign and haven packages)
+-   Reading from ZIP Files
+
+Before we begin analyzing data in R, we need to **bring it in** from where it's stored—your computer, the cloud, or an online source.
+
+There are many formats we commonly work with in public health and analytics: CSV, Excel, text files, RDS, SPSS, and others.\
+Below is a **summary table** of functions used to read each data type.
+
+📊 **Reading Common Data Types in R**
+
+| **Data Type** | **Function** | **Package** | **Example** |
+|----|----|----|----|
+| CSV | `read_csv()`, `read.csv()` | readr / base | `read_csv("file.csv")` |
+| Excel (.xls/.xlsx) | `read_excel()` | readxl | `read_excel("file.xlsx")` |
+| Tab-separated (.tsv) | `read_tsv()` | readr | `read_tsv("file.tsv")` |
+| Text (.txt) | `read.delim()` | base | `read.delim("file.txt")` |
+| Stata (.dta) | `read_dta()` | haven | `read_dta("file.dta")` |
+| SPSS (.sav) | `read_sav()` | haven | `read_sav("file.sav")` |
+| RDS (R object) | `readRDS()` | base | `readRDS("object.rds")` |
+| ZIP archives | `unzip()` | utils (base) | `unzip("data.zip", exdir = "folder")` |
+| Online Excel/CSV | `download.file()` + reader | base + readxl | Download file, then `read_excel(temp_file)` |
+
+Before reading files, I usually set the working directory to the folder where my files are saved. This avoids typing full file paths every time.
+
+To combine folder names and filenames dynamically: paste(getwd(), "my_data.csv", sep = "/")
+
+**Reading Local Files**
+
+Once you're in the right working directory, you can read in your files like below:
+
+```{r}
+setwd("C:/Users/User/Desktop/Materials_ Course and proposals/Course Related/DataCamp/Data/Synthetic_data")
+
+patients <- read.csv("patients.csv")
+vaccination <- read.csv("immunizations.csv")
+
+medications <- read.csv (paste(getwd(), "medications.csv", sep = "/"))
+
+```
+
+These are **standard CSVs** and can be read using `read.csv()` from base R, or `read_csv()` from the `readr` package for cleaner output.
+
+**Reading from ZIP Files**
+
+Sometimes, especially when downloading from government databases or health systems, data is compressed into `.zip` files. In R, we can easily unzip these files and extract their contents.
+
+**Set working directory to the folder where the zip file is located**
+
+```{r}
+# --- Define base folder manually (safe way without setwd)
+base_folder <- "C:/Users/User/Desktop/Materials_ Course and proposals/Course Related/DataCamp/Data/Synthetic_data"
+
+# --- Extract ZIP file into 'procedures' folder inside base
+unzip(file.path(base_folder, "procedures.zip"), exdir = file.path(base_folder, "procedures"))
+
+# --- List extracted files
+list.files(file.path(base_folder, "procedures"))
+
+# --- Read extracted CSV
+procedures <- read.csv(file.path(base_folder, "procedures", "procedures.csv"))
+
+```
+
+**Reading Online Files**
+
+If the file is online, we first **download it**, save it to a **temporary file**, and then read it:
+
+It is useful when working with **shared datasets, APIs, or GitHub repos**.
+
+```{r}
+# Upload Online data
+
+url <- "https://raw.githubusercontent.com/HabtamuBizuayehu/Data-sources/main/Breast_cancer_screening.xls"
+temp_file <- tempfile(fileext = ".xls")
+download.file(url, temp_file, mode = "wb")
+
+breast_cancer_data <- read_excel(temp_file)
+```
+
+**2.2 Exploring Data**
+
+-   `str()`, `summary()`, `glimpse()`, `head()`, `tail()`, `count()`
+-   Viewing data: `view()`, `nrow()`, `ncol()`
+-   Cleaning variable names: `janitor::clean_names()`
+-   Creating a data dictionary
+-   Working with column names and types
+
+Once we load data into R, it’s important to **explore it properly** before doing any analysis.\
+This step helps us **understand**:
+
+-   What variables we have
+
+-   How the data is structured
+
+-   If there are any issues (like missing values, wrong data types, weird names)
+
+In this part, we'll look at some essential functions we often use at the very beginning of a project.
+
+🔍 **Key Tools for Exploring Data (with Important Details and Tips)**
+
+**1. `str()`, `summary()`, `glimpse()`, `head()`, `tail()`, `count()`**
+
+-   `str(df)` shows the **structure of the entire dataset**: number of observations (rows), number of variables (columns), and data types.
+
+-   `str(df$var)` shows the **structure of a specific variable** (single column), useful to quickly check type and contents.
+
+-   `summary(df)` gives **basic descriptive statistics** for **all variables** at once.
+
+-   `summary(df$var)` gives a **summary for one specific variable**.
+
+-   `glimpse(df)` (from `dplyr`) provides a **compact sideways overview** showing each variable name, type, and preview of values.
+
+-   `head(df)` shows the **first 6 rows** of the dataset by default.
+
+-   `head(df, n = 10)` shows the **first 10 rows** (you can customize the number with `n =`).
+
+-   `tail(df)` shows the **last 6 rows** of the dataset.
+
+-   `tail(df, n = 8)` shows the **last 8 rows**.
+
+-   `count(df, var)` (from `dplyr`) **counts occurrences** of each unique value in a variable.
+
+➡️ Using `str(df$var)` and `summary(df$var)` is a fast way to inspect just **one column** without needing the whole dataset.
+
+------------------------------------------------------------------------
+
+**2. Viewing Data**
+
+-   `view(df)` opens an **Excel-like data viewer window** inside RStudio for easy manual exploration.
+-   `nrow(df)` returns the **number of rows**.
+-   `ncol(df)` returns the **number of columns**.
+-   `dim(df)` returns a **two-number vector**: (rows, columns).
+
+➡️ Use `view(df)` when you want to **sort/filter manually** without coding.
+
+------------------------------------------------------------------------
+
+**3. Cleaning Variable Names**
+
+-   `janitor::clean_names(df)` standardizes messy variable names:
+    -   Makes all names **lowercase**
+    -   **Replaces spaces and special characters** with underscores
+    -   Removes parentheses, punctuation, etc.
+
+➡️ Run `clean_names()` immediately after loading raw survey, registry, or administrative datasets.
+
+Example:
+
+```{r}
+names(patients)
+
+temp <- janitor::clean_names(patients)
+colnames(temp)
+
+rm(temp)
+
+```
+
+🔍 **Listing All Data Frames and Variables**
+
+To organize and review datasets loaded in the environment, the following workflow lists all data frames and their variables:
+
+```{r}
+rm (breast_cancer_data, patients)
+
+# 1. List all data frames in the environment
+dfs <- ls(envir = .GlobalEnv)[sapply(ls(envir = .GlobalEnv), function(x) is.data.frame(get(x)))]
+
+# 2. For each data frame, list its variable (column) names
+df_variables <- lapply(dfs, function(df_name) {
+  vars <- names(get(df_name))
+  data.frame(
+    DataFrame = df_name,
+    Variable = vars,
+    stringsAsFactors = FALSE
+  )
+})
+
+# 3. Combine into one clean table
+df_variables_all <- do.call(rbind, df_variables)
+
+# View the result
+print(df_variables_all)
+
+rm (df_variables_all, df_variables) # clean working enviroment 
+
+```
+
+```{r, echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+setwd("C:/Users/User/Desktop/Materials_ Course and proposals/Course Related/DataCamp/Data/Synthetic_data")
+
+patients <- read.csv("patients.csv")
+
+breast_cancer_data <- read.csv("Breast_cancer_screening.csv") 
+```
+
+**4. Creating a Data Dictionary**
+
+A **data dictionary** is a simple but critical table that documents:
+
+-   **Variable names** (column names)
+-   **Descriptions** (what each variable represents)
+-   **Types** (numeric, character, factor)
+
+➡️ We can automate building a basic data dictionary by combining `names()`, `sapply()`, and `class()` functions.
+
+```{r}
+data_dictionary <- data.frame(
+  Variable = names(patients),
+  Type = sapply(patients, class)
+)
+```
+
+The dictionary can be expanded by manually adding descriptions, coding instructions, or value mappings where necessary.
+
+**5. Working with Column Names and Types**
+
+-   `names(df)` or `colnames(df)` retrieves a list of all column names.
+
+-   `class(df$var)` reveals the **data type of a specific variable**.
+
+-   `sapply(df, class)` applies `class()` across all variables and summarizes their types.
+
+-   If needed, variables can be recast to appropriate types.
+
+📊 **Summary Table: Key Functions for Exploring Data**
+
+| **Task** | **Function** | **Purpose / What It Does** |
+|:---|:---|:---|
+| View structure of dataset | `str(df)` | Shows structure: number of rows, columns, and variable types |
+| View structure of variable | `str(df$var)` | Shows structure/type of a specific variable |
+| Summarize statistics (dataset) | `summary(df)` | Provides summary stats (min, max, mean, NA count) for all variables |
+| Summarize statistics (variable) | `summary(df$var)` | Summary stats for a specific variable |
+| Compact structure overview | `glimpse(df)` | Quick, sideways compact view of dataset (from `dplyr`) |
+| Preview first rows | `head(df)`, `head(df, n = 10)` | Displays first 6 or specified number of rows |
+| Preview last rows | `tail(df)`, `tail(df, n = 8)` | Displays last 6 or specified number of rows |
+| Count frequencies | `count(df, var)` | Counts unique values and frequency of a specified variable |
+| Open full viewer | `view(df)` | Opens Excel-style data viewer window (RStudio) |
+| Check number of rows | `nrow(df)` | Returns number of rows (observations) |
+| Check number of columns | `ncol(df)` | Returns number of columns (variables) |
+| Check both dimensions | `dim(df)` | Returns (rows, columns) as a two-number vector |
+| Clean column names | `janitor::clean_names(df)` | Converts messy names into lowercase, underscore-separated names |
+| List variable names | `names(df)`, `colnames(df)` | Lists all column names in a data frame |
+| Check variable type | `class(df$var)` | Returns data type of a specific variable |
+| Check types for all variables | `sapply(df, class)` | Returns data types for every column in the dataset |
+| Create basic data dictionary | `data.frame(Variable = names(df), Type = sapply(df, class))` | Table summarizing variable names and types |
+| List all data frames in environment | `dfs <- ls(...)[sapply(...)]` | Identifies and lists all data frames currently loaded |
+| List all variables from all data frames | `lapply(dfs, function(x) names(get(x)))` | Creates table listing data frames and their variables |
+
+Now I can apply some of the above to my datasets (df): such as breast_cancer_data, vaccination, patients
+
+```{r}
+breast_cancer_data_demo <- breast_cancer_data %>%
+  select(sa3name, state, year, part50_74, rate50_74)
+
+# Structure of the demo dataset
+str(breast_cancer_data_demo)
+
+# Summary statistics for rate50_74
+summary(breast_cancer_data_demo$rate50_74)
+
+# Display first 10 rows
+head(breast_cancer_data_demo, 10)
+
+# Count number of records
+count(breast_cancer_data_demo)
+
+# Show variable names
+names(breast_cancer_data_demo)
+```
+
+## **PART III: WRANGLING WITH `dplyr`**
+
+In this part, we focus on mastering core data wrangling skills using the `dplyr` package, one of the most powerful tools in R for data manipulation.\
+We will learn how to select, rename, create, modify, group, sort, slice, and reshape datasets.\
+These operations form the foundation for preparing clean, organized, and analysis-ready data.
+
+Each subsection introduces a set of essential verbs (`select()`, `mutate()`, `group_by()`, etc.) that allow for data transformation pipelines. Examples and practical applications will be provided throughout to demonstrate how to use `dplyr`.
+
+------------------------------------------------------------------------
+
+### **3.1 Selecting, Dropping, Reordering, and Renaming Variables (Columns)**
+
+-   `select()`, `rename()`, relocate()\`
+-   Column helpers: `starts_with()`, `ends_with()`, `contains()`, `last_clos`, `matches`
+-   Allow modifying entire groups of column names by adding prefixes or suffixes
+-   Handling null/missing column names
+
+Selecting, reordering, and renaming variables is often the first step when preparing a dataset for analysis.\
+In `dplyr`, we use functions such as `select()`, `rename()`, and `relocate()` to organize variables, clean up data, and prepare for transformations.\
+Dropping unnecessary columns or reordering variables can make the data cleaner, faster to work with, and easier to understand.
+
+Additional tools allow modifying groups of column names by adding prefixes or suffixes, and safely handling missing columns during selection.
+
+------------------------------------------------------------------------
+
+**🔹 Summary of Functions for Selecting, Reordering, Dropping, and Renaming**
+
+| **Task** | **Function** | **Purpose** |
+|:---|:---|:---|
+| Select specific columns | `select()` | Choose a subset of columns based on name or condition |
+| Rename columns | `rename()` | Rename one or multiple columns |
+| Relocate columns | `relocate()` | Move selected columns to a new position |
+| Reorder manually | `select(a, b, c, everything())` | Explicitly define column order |
+| Find columns by pattern | `starts_with()`, `ends_with()`, `contains()`, `matches()` | Select columns matching a pattern |
+| Drop single column | `select(-col1)` | Remove one variable |
+| Drop multiple columns | `select(-col1, -col2)` | Remove several variables |
+| Drop by pattern | `select(-starts_with("temp"))`, `select(-contains("score"))` | Remove variables based on naming patterns |
+| Add prefix to column names | `rename_with(~ paste0("prefix_", .x))` | Add a prefix to selected columns |
+| Add suffix to column names | `rename_with(~ paste0(.x, "_suffix"))` | Add a suffix to selected columns |
+| Handle missing columns safely | `if("var" %in% names(df)) {}` | Avoid errors when column does not exist |
+
+------------------------------------------------------------------------
+
+➡️ These techniques allow quick restructuring of datasets, improving workflow efficiency and clarity.
+
+------------------------------------------------------------------------
+
+🔹 Examples Using the `vaccination` Dataset
+
+```{r}
+# Selecting specific columns manually
+breast_selected <- breast_cancer_data %>%
+  select(sa3code, sa3name, year, part50_74, pop50_74)
+
+head(breast_selected, n = 3)
+
+# Reordering columns manually (bring year, sa3name, state first)
+bc_reorder_manual <- breast_cancer_data %>%
+  select(year, sa3name, state, everything())
+
+head(bc_reorder_manual, n = 3)
+
+# Relocating specific columns before another variable
+bc_relocate_before <- breast_cancer_data %>%
+  relocate(part50_74, pop50_74, .before = rate50_74)
+
+head(bc_relocate_before, n = 3)
+
+# Relocating specific columns after another variable
+bc_relocate_after <- breast_cancer_data %>%
+  relocate(sa3name, state, .after = year)
+
+head(bc_relocate_after, n = 3)
+
+# Dropping one variable
+bc_drop_one <- breast_cancer_data %>%
+  select(-expct50_74)
+
+head(bc_drop_one, n = 3)
+
+# Dropping multiple variables
+bc_drop_multiple <- breast_cancer_data %>%
+  select(-expct50_74, -expct50_69)
+
+head(bc_drop_multiple, n = 3)
+
+# Dropping variables by pattern (e.g., columns ending with "_69")
+bc_drop_by_pattern <- breast_cancer_data %>%
+  select(-ends_with("_69"))
+
+head(bc_drop_by_pattern, n = 3)
+
+# Renaming a column for clarity
+breast_renamed <- breast_selected %>%
+  rename(SA3_Code = sa3code, SA3_Name = sa3name, Year = year)
+
+head(breast_renamed, n = 3)
+
+# Adding a prefix to all column names
+bc_prefixed <- breast_cancer_data %>%
+  rename_with(~ paste0("bc_", .x))
+
+head(bc_prefixed, n = 3)
+
+# Adding a suffix to all column names
+bc_suffixed <- breast_cancer_data %>%
+  rename_with(~ paste0(.x, "_info"))
+
+head(bc_suffixed, n = 3)
+
+# Handling missing columns safely during selection
+if ("non_existing_column" %in% names(breast_cancer_data)) {
+  bc_safe_select <- breast_cancer_data %>%
+    select(non_existing_column)
+  head(bc_safe_select, n = 3)
+} else {
+  message("Column 'non_existing_column' not found in breast_cancer_data.")
+}
+
+# ....................................................
+# Remove all temporary objects created in this chunk
+# ....................................................
+rm(breast_selected, breast_renamed, bc_drop_one, bc_drop_multiple, bc_drop_by_pattern,
+   bc_reorder_manual, bc_relocate_before, bc_relocate_after,
+   bc_prefixed, bc_suffixed)
+```
+
+### **3.2 Creating and Modifying Variables (Columns)**
+
+-   `mutate()`, `transmute()`, recoding, `case_when()`, `if_else()`
+-   `str_detect(), regex(), %in%`
+-   Creating dummy/flag variables
+-   String manipulation: `strsplit()`, `sub()`, `gsub()`, `` tolower(), `janitor::clean_names()` ``
+
+Creating new variables or modifying existing ones is a key part of preparing data for analysis.\
+In `dplyr`, we use functions like `mutate()` and `transmute()` to add, transform, or recode variables.\
+We can also create conditional variables with `case_when()` or `if_else()`, and apply string operations such as splitting, replacing, or converting text.
+
+These steps help structure the data more logically, highlight important features, or derive new indicators for analysis.
+
+------------------------------------------------------------------------
+
+🔹 **Summary of Functions for Creating and Modifying Variables**
+
+| **Task** | **Function** | **Purpose** |
+|:---|:---|:---|
+| Create or modify variables | `mutate()` | Add or transform variables, keeping all columns |
+| Create new variables only | `transmute()` | Keep only new variables created |
+| Conditional variable creation | `case_when()` | Create new variables based on multiple conditions |
+| Simple conditional assignment | `if_else()` | Assign based on TRUE/FALSE logic |
+| Split strings into parts | `strsplit()` | Split a string into components |
+| Replace text (first occurrence) | `sub()` | Replace first match of a pattern |
+| Replace text (all occurrences) | `gsub()` | Replace all matches of a pattern |
+| Convert text to lowercase | `tolower()` | Standardize text to lowercase |
+| Detect text patterns | `str_detect()` | Check if a pattern exists in text |
+| Flexible pattern matching | `regex()` | Use regular expressions for complex patterns |
+| Membership check | `%in%` | Test if a value is part of a group |
+
+------------------------------------------------------------------------
+
+➡️ These functions allow transforming the dataset systematically to extract new features, categorize information, or clean fields.
+
+```{r}
+# Creating and Modifying Variables (patients dataset)
+
+# Creating a new age group variable
+patients_mutated <- patients %>%
+  mutate(age_group = if_else(BIRTHDATE <= as.Date("1970-01-01"), "Below 70", "70+")) %>%
+  relocate(age_group, .after = BIRTHDATE) %>%
+  select(-Id, -DEATHDATE, -SSN, -LAT, -LON, -SUFFIX, -ZIP)
+
+head(patients_mutated, 10)
+
+# extract month and year from date in form of date is YYYY-MM-DD HH:MM:SS
+str (vaccination$DATE) # date is YYYY-MM-DD HH:MM:SS format.
+
+vaccination <- vaccination %>%
+  mutate(
+    vacc_date = as.Date(strptime(DATE, format = "%Y-%m-%dT%H:%M:%SZ")),  # First create vacc_date
+    year = format(vacc_date, "%Y"),         # Extract year
+    month = format(vacc_date, "%B")          # Extract full month name (January, February, etc.)
+  )
+
+colnames(vaccination)
+head(vaccination)
+
+# Creating a dataset keeping only new variables (transmute)
+patients_transmuted <- patients %>%
+  transmute(
+    full_name = paste(FIRST, LAST, sep = " "), 
+    birth_year = format(as.Date(BIRTHDATE), "%Y")
+  )
+
+head (patients_transmuted)
+
+# generate a birth_year_group variable based on birth_year values
+
+patients_transmuted <- patients_transmuted %>%
+  mutate(birth_year_group = case_when(
+    birth_year < 1940 ~ "Before 1940",
+    birth_year >= 1940 & birth_year <= 1959 ~ "1940–1959",
+    birth_year >= 1960 & birth_year <= 1979 ~ "1960–1979",
+    birth_year >= 1980 & birth_year <= 1999 ~ "1980–1999",
+    birth_year >= 2000 ~ "2000 and later",
+    TRUE ~ NA_character_
+  ))
+
+head(patients_transmuted)
+
+# other option to achieve similar result for the above 
+
+patients_transmuted <- patients_transmuted %>%
+  mutate(birth_year = as.numeric(birth_year),   # Convert to numeric
+         birth_year_group = cut(birth_year,     # Apply cut()
+                                breaks = c(0, 1939, 1959, 1979, 1999, Inf),
+                                labels = c("Before 1940", "1940–1959", "1960–1979", "1980–1999", "2000 and later"),
+                                right = TRUE
+         ))
+
+
+head(patients_transmuted)
+
+
+# Using case_when to assign marital status values
+patients_case_when <- patients %>%
+  mutate(marital_status_group = case_when(
+    MARITAL == "M" ~ "Married",
+    MARITAL == "S" ~ "Single",
+    MARITAL == "D" ~ "Divorced",
+    TRUE ~ "Unknown"
+  )) %>% 
+  select(MARITAL, marital_status_group, RACE)
+
+head(patients_case_when, n = 10)
+
+table(patients_case_when$marital_status, useNA = "ifany")  # Show missing values in the table
+
+# Recode marital status while leaving unknown values as missing
+patients_case_when <- patients_case_when %>%
+  mutate(marital_2group = case_when(
+    MARITAL == "M" ~ "Partnered",
+    MARITAL == "D" | MARITAL == "S" | MARITAL == "W" ~ "Not partnered",
+    TRUE ~ NA_character_  # Replaces unknown values with missing (NA)
+  )) 
+
+head(patients_case_when)
+
+# Recode race status while leaving unknown values as missing
+patients_case_when <- patients_case_when %>%
+  mutate(race_grouped = case_when(
+    RACE == 'white' ~ "White",
+    RACE == "asian" ~ "Asian",
+    RACE == "native" | RACE == "other" ~ "Other",
+    TRUE ~ NA_character_
+  )) %>% 
+  select(RACE, race_grouped)
+
+head(patients_case_when, n=10)
+
+# Simple conditional assignment with if_else
+patients$PASSPORT[patients$PASSPORT == ""] <- NA # formatting the variable to know missing values
+print(sum(is.na(patients$PASSPORT))) #  31 missing value
+
+patients_if_else <- patients %>%
+  mutate(has_passport = if_else(!is.na(PASSPORT), "Yes", "No")) %>% 
+  select(PASSPORT, has_passport)
+
+head(patients_if_else, n = 10)
+
+
+# Replace the first occurrence (e.g., fix misspelled city name)
+patients_sub <- patients %>%
+  mutate(city_fixed = sub("Nwe York", "New York", CITY)) %>% 
+  select(-Id, -DEATHDATE, -SSN, -LAT, -LON, -SUFFIX, -ZIP)
+
+head(patients_sub, n = 3)
+
+# Replace all occurrences (e.g., replace spaces with underscores)
+patients_gsub <- patients %>%
+  mutate(birthplace_clean = gsub(" ", "_", BIRTHPLACE)) %>% 
+  select(BIRTHPLACE, birthplace_clean)
+
+head(patients_gsub, n = 3)
+
+
+# Convert last names to lowercase
+temp <- patients %>% 
+  select(-Id, -DEATHDATE, -SSN, -LAT, -LON, -SUFFIX, -ZIP)
+
+patients_tolower <- temp 
+colnames(patients_tolower) <- tolower(colnames(patients_tolower)) 
+
+head(patients_tolower, n = 3)
+rm(temp)
+
+#`janitor::clean_names(df)` standardizes variable names:
+
+names(patients)
+
+temp <- janitor::clean_names(patients)
+colnames(temp)
+
+# Remove all temporary objects created in this chunk
+rm(patients_mutated, patients_transmuted, patients_case_when, patients_if_else,
+   patients_split, patients_sub, patients_gsub, patients_tolower, temp)
+
+```
+
+#### **3.2.1 Creating variable from long text: Splitting text: Extracting words in to different variables**
+
+**Parsing Text Fields in R: Handling Multi-Word Names**
+
+In real-world datasets, it's common to encounter text fields where multiple data elements—such as city, state, and country—are embedded within a single string. These entries often include inconsistent spacing, making them challenging to analyze directly.
+
+**Parsing** refers to the process of systematically breaking down these complex text fields into structured, usable components.
+
+**parsing involves**
+
+-   **Detecting patterns** in spacing—for instance, identifying how many spaces exist between different parts of a string.
+-   **Deciding where to split** the string. For example, a single space might separate words within a single name such as city name (e.g., `"East Falmouth"`), while two or more spaces might indicate the boundary between city, state, and country (e.g., `"East Falmouth  Massachusetts  US"`).
+-   **Creating new variables or columns** such as `city`, `state`, and `country` for cleaner and more structured data representation.
+
+**parsing is important**
+
+-   Many administrative or imported datasets contain **combined or messy fields** that hinder direct analysis.
+-   Proper parsing helps to **standardize** and **clean** these fields, which is a critical step for effective **data management, visualization, and analysis**.
+-   It enables downstream tasks such as **geographic grouping**, **mapping**, and **report generation**.
+
+**Summary Table**
+
+| Step | Purpose |
+|----|----|
+| `str_view()` | Visually inspect spacing patterns between components |
+| `str_extract_all(" +")` | Extract all space sequences |
+| `map_int(..., length)` | Count the number of space groups per entry |
+| `str_count("\\S+")` | Count the number of words |
+| `nchar()` with `map_chr()` | Show the length of each space between words |
+| `arrange(desc(word_count))` | Identify rows with the most words (potential outliers) |
+
+**Detecting and Understanding Space Patterns**
+
+To begin, I used example data from the `patients$BIRTHPLACE` column to identify how different rows are structured and where inconsistencies might exist.
+
+**1. Visual Inspection of Spacing** We can use str_view() from the stringr package to highlight space sequences:
+
+```{r}
+str_view(patients$BIRTHPLACE[1:15], pattern = " +", match = TRUE)
+```
+
+This shows, for example: East\< \>Falmouth\< \>Massachusetts\< \>US Where: - One space connects city words ("East Falmouth") - Two spaces separate city, state, and country
+
+**2. Extract and Inspect Space Sequences** Each row shows the space segments between words. This helps us detect whether extra or inconsistent spacing is present.
+
+```{r}
+patients %>%
+  mutate(space_groups = str_extract_all(BIRTHPLACE, " +")) %>%
+  select(BIRTHPLACE, space_groups) %>%
+  head()
+```
+
+**3. Count Number of Space Groups** This gives a frequency table showing how many rows have 2, 3, 4, or more space groups. A row with more than 2 groups may have extra words or inconsistent formatting.
+
+```{r}
+patients %>%
+  mutate(
+    space_groups = str_extract_all(BIRTHPLACE, " +"),
+    n_spaces = map_int(space_groups, length)
+  ) %>%
+  count(n_spaces)
+```
+
+**4. Count the Number of Words** This confirms how many "word segments" are in each row and helps identify malformed entries.
+
+```{r}
+patients %>%
+  mutate(space_count = str_count(BIRTHPLACE, " +")) %>%
+  count(space_count)
+```
+
+**5. Combine Word Count and Space Width** To fully understand the complexity of each row, I extracted the number of words and the exact space widths between them:
+
+This helps in identifying patterns like:
+
+"East Falmouth Massachusetts US" → 4 words, with spacing like 1 \| 2 \| 1
+
+"Boston Massachusetts US" → 3 words, spacing 2 \| 2
+
+```{r}
+patients %>%
+  mutate(
+    word_count = str_count(BIRTHPLACE, "\\S+"),  # count non-space words
+    space_groups = str_extract_all(BIRTHPLACE, " +"),
+    space_lengths = map_chr(space_groups, ~ paste(nchar(.x), collapse = " | "))  # lengths of spaces
+  ) %>%
+  arrange(desc(word_count)) %>%
+  select(BIRTHPLACE, word_count, space_lengths) %>%
+  head(20)
+```
+
+From observations in the data, split BIRTHPLACE by 2+ spaces would be more appropriate. Those two words having one space are the names for a city, state or country
+
+```{r}
+# Clean and split birthplace into city, state/region, and country
+patients_clean <- patients %>%
+  mutate(
+    parts = str_split(BIRTHPLACE, " {2,}"),             # split BIRTHPLACE by 2+ spaces
+    # %||% is a shorthand from the rlang package (used implicitly here via purrr) that returns the left-hand side if it exists, otherwise returns the right-hand side.
+    # eg If .x[2] exists, use it; otherwise, use NA (missing character).
+    city = map_chr(parts, ~ .x[1] %||% NA_character_),  # city name (first part)
+    state = map_chr(parts, ~ .x[2] %||% NA_character_), # state or region (second part)
+    country = map_chr(parts, ~ .x[3] %||% NA_character_)# country code (third part)
+  ) %>%
+  select(BIRTHPLACE, city, state, country)
+head(patients_clean, 10)
+tail(patients_clean, 10)
+```
+
+**Conclusion** From this exploration, we observe that:
+
+-   Most entries use single spaces within city names (e.g., "East Falmouth")
+
+-   Two or more spaces are commonly used to separate city, state, and country names
+
+-   Parsing using a split on "{2,}" (two or more spaces) is a reliable strategy
+
+#### **3.2.2 Text Pattern Analysis and Variable Extraction from Free/unstructured Text**
+
+Free-text fields are common in public-health, administrative, and clinical datasets. While they are rich in information, the lack of structure and consistent vocabulary can limit their usefulness. In real-world datasets, especially in health, administration, and survey data, free-text fields often contain rich information hidden in inconsistent or varied language. A single concept (e.g., "COVID-19 vaccine") might appear in many forms such as "covid jab", "covid-19 injection", or "SARS-CoV-2 shot". This presentation demonstrates how to transform unstructured text into structured, analyzable data using R. The workflow covers
+
+-   tokenization,
+-   word-frequency analysis,
+-   stop-word removal,
+-   TF–IDF to highlight context-specific terms,
+-   word-cloud visualisation,
+-   bigram and trigram extraction, and
+-   pattern detection with regular expressions to create categorical variables.
+
+**Basic Tokenisation and Word-Frequency Table**
+
+Tokenisation splits long strings of text into individual words or terms ("tokens"). This enables us to calculate how often each word appears, which is essential for understanding vocabulary patterns.
+
+We begin by loading the necessary R packages. If a package is not already installed.
+
+```{r message=FALSE, warning=FALSE}
+# Install packages when they are not already available
+if (!require("tidytext")) install.packages("tidytext", dependencies = TRUE)
+if (!require("wordcloud")) install.packages("wordcloud", dependencies = TRUE)
+if (!require("tm"))        install.packages("tm",        dependencies = TRUE)
+
+library(tidytext)   # text mining utilities
+library(wordcloud)  # word-cloud plots
+library(tm)         # text-mining helpers used by wordcloud
+```
+
+```{r message=FALSE, warning=FALSE}
+word_freq <- vaccination %>%
+  unnest_tokens(word, DESCRIPTION) %>%
+  count(word, sort = TRUE) %>%
+  filter(!is.na(word) & word != "")
+
+head(word_freq)
+```
+
+**Remove Stop Words**
+
+Stop words are common terms like "and", "the", or "in" that typically do not contribute meaningful information in analysis. Removing these helps us focus on content-rich terms.
+
+```{r}
+data("stop_words")          # built-in tidytext stop-word list
+
+word_freq_clean <- vaccination %>%
+  unnest_tokens(word, DESCRIPTION) %>%
+  anti_join(stop_words, by = "word") %>%
+  count(word, sort = TRUE)
+
+head(word_freq_clean)
+```
+
+------------------------------------------------------------------------
+
+**Visualise Word Frequencies**
+
+This bar chart provides a visual overview of the most common meaningful words in the dataset after stop-word removal.
+
+```{r}
+word_freq_clean %>%
+  filter(n > 20) %>%
+  ggplot(aes(x = reorder(word, n), y = n)) +
+  geom_col() +
+  coord_flip() +
+  labs(title = "Most Frequent Words After Stop-Word Removal",
+       x = "Word",
+       y = "Count")
+```
+
+------------------------------------------------------------------------
+
+**Create a Word Cloud**
+
+A word cloud presents word frequencies visually, with more frequent words appearing larger. It offers a quick snapshot of key terms in the dataset.
+
+```{r}
+par(mar = c(1, 1, 1, 1))  # reduce plot margins
+wordcloud(words = word_freq_clean$word,
+          freq = word_freq_clean$n,
+          min.freq = 1,
+          max.words = 100,
+          random.order = FALSE)
+```
+
+------------------------------------------------------------------------
+
+**TF–IDF Analysis**
+
+TF–IDF (Term Frequency–Inverse Document Frequency) highlights words that are common within a group but rare across groups. This helps identify terms that are contextually important for specific subgroups.
+
+```{r, eval=FALSE}
+# Example assumes a column called 'source_id' identifies individual documents
+
+tfidf_result <- vaccination %>%
+  select(source_id, DESCRIPTION) %>%
+  unnest_tokens(word, DESCRIPTION) %>%
+  anti_join(stop_words, by = "word") %>%
+  count(source_id, word, sort = TRUE) %>%
+  bind_tf_idf(word, source_id, n) %>%
+  arrange(desc(tf_idf))
+
+head(tfidf_result)
+```
+
+------------------------------------------------------------------------
+
+**Bigrams and Trigrams (n-grams)**
+
+Sometimes the context of words matters more than individual terms. N-grams (bigrams, trigrams, etc.) allow us to capture meaningful phrases instead of isolated words.
+
+**Bigrams – two-word phrases**
+
+```{r}
+bigrams <- vaccination %>%
+  unnest_tokens(bigram, DESCRIPTION, token = "ngrams", n = 2) %>%
+  count(bigram, sort = TRUE)
+
+head(bigrams)
+```
+
+**Trigrams – three-word phrases**
+
+```{r}
+trigrams <- vaccination %>%
+  unnest_tokens(trigram, DESCRIPTION, token = "ngrams", n = 3) %>%
+  count(trigram, sort = TRUE)
+
+head(trigrams)
+```
+
+------------------------------------------------------------------------
+
+**Create Categorical Variables from free and unstructured Text**
+
+We use regular expressions to classify unstructured free-text values into consistent categories. This transformation is critical for summarising or modelling based on text. We can identify and map all words that contain a certain substring (like "covid" in "COVID-19", "covid_19", or "covid"). You can use str_detect() with a case-insensitive regular expression to filter your word frequency table.
+
+```{r}
+vaccination <- vaccination %>%
+  mutate(vaccine_group = case_when(
+    str_detect(DESCRIPTION, regex("covid|sars-cov-2", ignore_case = TRUE)) ~ "COVID-19",
+    str_detect(DESCRIPTION, regex("influenza", ignore_case = TRUE)) ~ "Influenza",
+    str_detect(DESCRIPTION, regex("hepatitis|hep a|hep b", ignore_case = TRUE)) ~ "Hepatitis",
+    str_detect(DESCRIPTION, regex("hpv", ignore_case = TRUE)) ~ "HPV",
+    str_detect(DESCRIPTION, regex("mmr", ignore_case = TRUE)) ~ "MMR",
+    str_detect(DESCRIPTION, regex("dtap|tdap|tetanus|td \\(?adult\\)?", ignore_case = TRUE)) ~ "DTP group",
+    str_detect(DESCRIPTION, regex("ipv", ignore_case = TRUE)) ~ "IPV",
+    str_detect(DESCRIPTION, regex("hib", ignore_case = TRUE)) ~ "Hib",
+    str_detect(DESCRIPTION, regex("meningococcal|mcv4", ignore_case = TRUE)) ~ "Meningococcal",
+    str_detect(DESCRIPTION, regex("pneumococcal.*13", ignore_case = TRUE)) ~ "Pneumococcal PCV13",
+    str_detect(DESCRIPTION, regex("pneumococcal.*23", ignore_case = TRUE)) ~ "Pneumococcal PPV23",
+    str_detect(DESCRIPTION, regex("rotavirus", ignore_case = TRUE)) ~ "Rotavirus",
+    str_detect(DESCRIPTION, regex("varicella", ignore_case = TRUE)) ~ "Varicella",
+    str_detect(DESCRIPTION, regex("zoster", ignore_case = TRUE)) ~ "Zoster",
+    TRUE ~ "Other"
+  ))
+
+# Frequency check
+
+table(vaccination$vaccine_group)
+
+# Grouping Values Using %in% Inside case_when()
+
+vaccination <- vaccination %>%
+  mutate(vacc_group3 = case_when(
+    vaccine_group %in% c("COVID-19", "Influenza") ~ "Respiratory vaccines",
+    vaccine_group %in% c("DTP group", "Hepatitis", "HPV", "Hib", "IPV", 
+                         "Meningococcal", "MMR") ~ "Childhood vaccines",
+    TRUE ~ "Other"
+  )) %>% 
+  select(-ENCOUNTER, -CODE)
+
+head (vaccination)
+```
+
+**Conclusion**
+
+By combining the `tidytext`, `stringr`, and `dplyr` packages we converted messy free-text into structured data ready for analysis. This approach supports reproducible work, clearer insights, and more robust statistical modelling.
+
+### **3.3 Factors and Labels**
+
+-   Creating factor levels and relabeling\
+-   Applying labels with `label()` and `val_labels()`\
+-   Descriptive summaries with `describe()`
+
+In R, categorical variables can be represented as **factors** to support grouping, modeling, and formatting for reporting. Factor variables store both the value and its associated level label.
+
+This section introduces key functions to:
+
+-   Convert variables into factors\
+-   Rename or reorder levels for clarity\
+-   Apply variable-level labels using `label()` or `var_label()`\
+-   Assign value labels using `val_labels()` (e.g., `1 = Male`)\
+-   Generate descriptive metadata summaries using `Hmisc::describe()`
+
+**Value labels** are especially useful when numeric codes represent categorical responses. These can be shown in summaries or retained for export and display.
+
+You can choose to display or hide value labels:
+
+options(labelled::val_labels_visible = TRUE) \# Show values like "1 = Male" options(labelled::val_labels_visible = FALSE) \# Show only "Male"
+
+**🔹 Summary of Functions for Working with Factors and Labels**
+
+| **Task** | **Function** | **Description** |
+|----|----|----|
+| Convert to factor | `as.factor(x)` | Convert a character or numeric variable into a factor |
+| Reorder levels | `factor(x, levels = ...)` | Define a specific order for levels |
+| Rename factor levels | `levels(x) <- c(...)` | Manually change the displayed names of factor levels |
+| Recode with `forcats` | `fct_recode()`, `fct_relevel()` | Relabel, reorder, or collapse factor levels using tidyverse tools |
+| Apply variable label | `label(x) <- "..."` or `var_label(x) <- "..."` | Assign a description to a variable |
+| Apply value labels | `val_labels(x) <- c("Label" = code)` | Define how codes map to category names (e.g., `1 = Male`) |
+| Retrieve labels | `label(x)`, `val_labels(x)` | View current labels or mappings |
+| Generate summary with labels | `Hmisc::describe(df)` | Return a summary including variable names, labels, types, and distributions |
+
+```{r, echo=FALSE}
+
+# Convert column names to lowercase
+colnames(patients) <- tolower(colnames(patients))
+colnames(vaccination) <- tolower(colnames(vaccination))
+
+vacc_pt_merged <- left_join(patients, vaccination, by = c("id" = "patient"))
+```
+
+```{r}
+# Select two categorical variables
+vacc_factor <- vacc_pt_merged %>%
+  select(gender, marital)
+
+# Convert character to factor
+vacc_factor <- vacc_factor %>%
+  mutate(
+    gender = factor(gender),
+    marital = factor(marital)
+  )
+
+# Relabel factor levels using fct_recode()
+vacc_factor <- vacc_factor %>%
+  mutate(
+    gender = fct_recode(gender, "Male" = "M", "Female" = "F"),
+    marital = fct_recode(marital,
+                         "Married" = "M",
+                         "Divorced" = "D",
+                         "Single" = "S",
+                         "Widowed" = "W")
+  )
+
+tail(vacc_factor)
+
+# Assign variable labels
+var_label(vacc_factor$gender) <- "Biological Sex"
+var_label(vacc_factor$marital) <- "Marital Status"
+
+# Assign value labels
+vacc_factor$gender_chr <- as.character(vacc_factor$gender) # Convert factor to character
+val_labels(vacc_factor$gender_chr) <- c("1" = "Male", "2" = "Female")
+
+
+# View internal structure and label info
+str(vacc_factor)
+
+# Remove bad labels if needed:
+var_label(vacc_factor$gender) <- NULL
+
+# Remove temporary object
+rm(vacc_factor)
+```
+
+### **3.4 Grouping and Summarizing Data**
+
+```{r}
+# Select two categorical variables
+vacc_factor <- vacc_pt_merged %>%
+  select(gender, marital)
+
+# Convert character to factor
+vacc_factor <- vacc_factor %>%
+  mutate(
+    gender = factor(gender),
+    marital = factor(marital)
+  )
+
+# Relabel factor levels using fct_recode()
+vacc_factor <- vacc_factor %>%
+  mutate(
+    gender = fct_recode(gender, "Male" = "M", "Female" = "F"),
+    marital = fct_recode(marital,
+                         "Married" = "M",
+                         "Divorced" = "D",
+                         "Single" = "S",
+                         "Widowed" = "W")
+  )
+
+tail(vacc_factor)
+
+# Assign variable labels
+var_label(vacc_factor$gender) <- "Biological Sex"
+var_label(vacc_factor$marital) <- "Marital Status"
+
+# Assign value labels
+vacc_factor$gender_chr <- as.character(vacc_factor$gender) # Convert factor to character
+val_labels(vacc_factor$gender_chr) <- c("1" = "Male", "2" = "Female")
+
+
+# View internal structure and label info
+str(vacc_factor)
+
+# Remove bad labels if needed:
+var_label(vacc_factor$gender) <- NULL
+
+# Remove temporary object
+rm(vacc_factor)
+```
+
+-   `group_by()`, `summarize()`, `ungroup()`
+-   Row and column percentages: details presented in section 7.2 below
+-   Weighted summaries with `wt =`
+
+Grouping and summarizing data is fundamental for understanding patterns, distributions, and relationships within datasets.\
+In `dplyr`, the functions `group_by()` and `summarize()` are used together to calculate statistics across different groups.\
+We can also calculate proportions (row-wise or column-wise) and perform weighted summaries when necessary. The details regarding row and column percentages are presented in section 7.2 below.
+
+These steps are critical for aggregating information into meaningful insights, especially when working with categorical, grouped, or longitudinal data.
+
+------------------------------------------------------------------------
+
+🔹 **Summary of Functions for Grouping and Summarizing**
+
+| **Task** | **Function** | **Purpose** |
+|:---|:---|:---|
+| Group data by one or more variables | `group_by()` | Define groups for aggregation |
+| Summarize grouped data | `summarize()` | Apply aggregation functions (e.g., mean, sum, count) |
+| Remove grouping structure | `ungroup()` | Return to ungrouped state after summary |
+| Calculate row-wise or column-wise proportions | Manual with `mutate()`, `prop.table()`, etc. | Understand percentage distribution within/between groups |
+| Weighted summaries | `summarize(wt = )` | Compute weighted means, sums, or percentages when different rows contribute differently |
+
+------------------------------------------------------------------------
+
+➡️ Grouping and summarization allow efficient exploration of key relationships and preparation of clean summary tables.
+
+------------------------------------------------------------------------
+
+```{r}
+# ....................................................
+# Grouping and Summarizing Breast Cancer Data
+# ....................................................
+
+# Grouping by SA3 name, State, and Year, and summarizing participation
+bc_summary_year <- breast_cancer_data %>%
+  group_by(year) %>%
+  summarise(
+    total_participants = sum(part50_74, na.rm = TRUE),
+    total_population = sum(pop50_74, na.rm = TRUE),
+    mean_screening_rate = mean(rate50_74, na.rm = TRUE),
+    .groups = "drop"
+  )
+head(bc_summary_year, n = 3)
+
+# --- Create Vaccination Pattern Dataset ---
+df_vaccination_plot <- vaccination %>%
+  group_by(year, month, vaccine_group) %>%
+  summarise(
+    count = n(),  # Number of records per year-month-vaccine_group combination
+    .groups = "drop"
+  ) %>%
+  ungroup() %>%
+  group_by(year, month) %>%
+  mutate(
+    count_month = sum(count)  # Total vaccines in that year-month across all groups
+  ) %>%
+  ungroup() %>%
+  mutate(
+    proportion_month = round((count / count_month) * 100, 1)  # % per vaccine group within month
+  ) %>%
+  group_by(year) %>%
+  mutate(
+    total_year = sum(count)  # Total vaccines across the year
+  ) %>%
+  mutate(
+    proportion_year = round((count / total_year) * 100, 1)  # % per vaccine group within year
+  ) %>%
+  ungroup()
+
+# View first few rows
+tail(df_vaccination_plot)
+
+# Enhanced summary of breast cancer screening data with SA3, State, and National Year-level proportions
+# use na.rm = TRUE to remove (ignore) missing values (NA) when calculating
+
+bc_summary <- breast_cancer_data %>%
+  # Group by SA3 area, State, and Year
+  group_by(sa3name, state, year) %>%
+  summarise(
+    total_participants = sum(part50_74, na.rm = TRUE),  # Sum of screened participants
+    total_population = sum(pop50_74, na.rm = TRUE),     # Sum of target population
+    .groups = "drop"
+  ) %>%
+  # Calculate SA3-level screening rate and proportion
+  mutate(
+    screening_rate = round((total_participants / total_population) * 100, 1),  # % screened in that SA3
+    proportion_area = round((total_participants / sum(total_participants)) * 100, 1)  # % contribution to national participants
+  ) %>%
+  # Add State-level aggregated summaries
+  group_by(state, year) %>%
+  mutate(
+    state_sa3 = n(),  # Number of SA3 areas within each State-Year
+    state_total_participants = sum(total_participants, na.rm = TRUE),  # State-wide participants
+    state_total_population = sum(total_population, na.rm = TRUE),      # State-wide target population
+    state_screening_rate = round((state_total_participants / state_total_population) * 100, 1),  # % screened at State level
+    state_proportion = round((state_total_participants / sum(total_participants)) * 100, 1)  # State share of total participants
+  ) %>%
+  ungroup() %>%
+  # Add National Year-level aggregated summaries
+  group_by(year) %>%
+  mutate(
+    year_sa3 = n(),  # Number of SA3 areas within each Year
+    year_total_participants = sum(total_participants, na.rm = TRUE),  # Australia-wide participants for that year
+    year_total_population = sum(total_population, na.rm = TRUE),      # Australia-wide target population for that year
+    year_screening_rate = round((year_total_participants / year_total_population) * 100, 1),  # National % screened
+    year_proportion = round((year_total_participants / sum(total_participants)) * 100, 1)  # National share
+  ) %>%
+  ungroup() %>%
+  arrange(year, state, sa3name)   # Final arrangement for neat viewing
+
+# View the last few rows
+tail(bc_summary)
+
+# ....................................................
+# Calculating Proportions: details presented in section 7.2 below
+# ....................................................
+
+# Adding participation proportion within each SA3-year group
+bc_summary_with_prop <- bc_summary %>%
+  mutate(
+    participation_rate = (total_participants / total_population) * 100
+  ) %>% 
+  select(participation_rate)
+
+head(bc_summary_with_prop)
+
+# ....................................................
+# Weighted Summarization (Weighted Average Screening Rate)
+# ....................................................
+
+# Calculate weighted mean screening rate by SA3
+bc_weighted_summary <- breast_cancer_data %>%
+  group_by(sa3name, state, year) %>%
+  summarise(
+    total_participants = sum(part50_74, na.rm = TRUE),
+    total_population = sum(pop50_74, na.rm = TRUE),
+    weighted_screening_rate = round(sum(rate50_74 * pop50_74, na.rm = TRUE) / sum(pop50_74, na.rm = TRUE), 1),
+    .groups = "drop"
+  )
+
+head(bc_weighted_summary)
+
+# ....................................................
+# Remove all temporary objects created in this chunk
+# ....................................................
+rm(bc_summary, bc_summary_with_prop, bc_weighted_summary)
+```
+
+### **3.5 Sorting, Reordering, Slicing, and Arranging**
+
+-   `arrange()`, `desc()`
+-   `slice_max()`, `slice_min()`, `top_n()`
+-   Ranking data and filtering top/bottom groups
+
+Sorting and reordering data is important for finding trends, identifying extremes (top or bottom performers), and preparing tables for reporting or visualization.\
+In `dplyr`, the `arrange()` function sorts datasets by one or more variables, while `desc()` allows descending (reverse) order.\
+For selecting specific rows like top N or bottom N values, `slice_max()` and `slice_min()` are commonly used.
+
+These techniques allow focusing on key records, comparing rankings across groups, and making datasets easier to review.
+
+------------------------------------------------------------------------
+
+**🔹 Summary of Functions for Sorting and Reordering**
+
+| **Task** | **Function** | **Purpose** |
+|:---|:---|:---|
+| Sort ascending order | `arrange()` | Sort rows by one or more variables (lowest to highest) |
+| Sort descending order | `arrange(desc())` | Sort rows highest to lowest |
+| Select top N rows by a variable | `slice_max()` | Keep top N records based on a variable |
+| Select bottom N rows by a variable | `slice_min()` | Keep bottom N records based on a variable |
+| Select top N rows (old method) | `top_n()` | Deprecated alternative to `slice_max()` (not recommended now) |
+| Rank within groups | `mutate(rank = row_number())` | Create custom ranking inside grouped data |
+
+------------------------------------------------------------------------
+
+➡️ Sorting and slicing help prioritize key data points and create targeted outputs for decision-making or visualization.
+
+------------------------------------------------------------------------
+
+```{r}
+# ....................................................
+# Sorting, Reordering, Slicing, and Arranging (Breast Cancer Data)
+# ....................................................
+
+# Sorting by Screening Rate in Ascending Order
+bc_sorted_rate <- breast_cancer_data %>%
+  arrange(rate50_74) %>%
+  select(sa3code, sa3coden, sa3name, state, year,
+         part50_74, pop50_74, rate50_74, agen50_74, expct50_74)
+
+head(bc_sorted_rate)
+
+# Sorting by Screening Rate in Descending Order
+bc_sorted_rate_desc <- breast_cancer_data %>%
+  arrange(desc(rate50_74)) %>%
+  select(sa3code, sa3coden, sa3name, state, year,
+         part50_74, pop50_74, rate50_74, agen50_74, expct50_74)
+
+head(bc_sorted_rate_desc)
+
+# Slicing Top 10 SA3s with Highest Screening Rates
+bc_top_screening <- breast_cancer_data %>%
+  slice_max(order_by = rate50_74, n = 10) %>%
+  select(sa3code, sa3coden, sa3name, state, year,
+         part50_74, pop50_74, rate50_74, agen50_74, expct50_74)
+
+bc_top_screening
+
+# Slicing Bottom 5 SA3s with Lowest Screening Rates
+bc_bottom_screening <- breast_cancer_data %>%
+  slice_min(order_by = rate50_74, n = 5) %>%
+  select(sa3code, sa3coden, sa3name, state, year,
+         part50_74, pop50_74, rate50_74, agen50_74, expct50_74)
+
+bc_bottom_screening
+
+# Ranking Within Each State
+bc_ranked <- breast_cancer_data %>%
+  group_by(state) %>%
+  arrange(desc(rate50_74), .by_group = TRUE) %>%
+  mutate(screening_rank = row_number()) %>%
+  select(screening_rank, rate50_74, state) %>% 
+  ungroup()
+
+head(bc_ranked, n = 10)
+
+# ....................................................
+# Remove all temporary objects created in this chunk
+# ....................................................
+rm(bc_sorted_rate, bc_sorted_rate_desc, bc_top_screening, bc_bottom_screening, bc_ranked)
+
+```
+
+### **3.6 Reshaping and Tidy Data**
+
+-   `pivot_longer()`, `pivot_wider()`
+-   Wide-to-long and long-to-wide transformations
+-   Separating and uniting columns with `separate()` and `unite()`\
+
+In data analysis, datasets often need to be reorganized — from wide format to long format, or vice versa — to suit different types of analysis or visualization.\
+The goal is to follow **Tidy Data principles** where: - Each variable forms a column - Each observation forms a row - Each type of observational unit forms a table
+
+`dplyr` and `tidyr` provide key functions for reshaping: - `pivot_longer()` turns many columns into two columns (variable name and value). - `pivot_wider()` spreads one column into multiple columns. - `separate()` splits one column into multiple columns based on a separator. - `unite()` combines multiple columns into one.
+
+These tools help create clean, organized datasets ready for efficient analysis and plotting.
+
+------------------------------------------------------------------------
+
+**🔹 Summary of Functions for Reshaping and Tidy Data**
+
+| **Task** | **Function** | **Purpose** |
+|:---|:---|:---|
+| Reshape wide to long | `pivot_longer()` | Collapse multiple columns into key-value pairs |
+| Reshape long to wide | `pivot_wider()` | Spread key-value pairs across multiple columns |
+| Split a column into multiple parts | `separate()` | Separate one column into several columns by a delimiter |
+| Combine multiple columns into one | `unite()` | Merge several columns into a single column |
+
+------------------------------------------------------------------------
+
+➡️ These reshaping techniques make it easy to transform datasets into a tidy structure for summaries, modeling, or visualization.
+
+> \*\* 🔎 Regular Expression Tip for `names_pattern`\*\*
+
+> In `pivot_longer()`, we use a regular expression to split the column names into two components: - `part`, `pop`, `rate`, or `expct` → **measure** - `50_54`, `55_59`, etc. → **age group** The pattern `([0-9]{2}_[0-9]{2})` works as follows:
+
+> | **Component** | **Meaning**           |
+> |:--------------|:----------------------|
+> | `[0-9]`       | Match any digit (0–9) |
+> | `{2}`         | Exactly two digits    |
+> | `_`           | An underscore         |
+> | `[0-9]{2}`    | Another two digits    |
+>
+> ➡️ This captures typical age formats like `50_54`, `60_64`, etc.
+
+Original Column Name: rate50_54
+
+Components: ┌───┐ ┌───┐ ....\> │rate │ │50_54 │ \> └─┘ └──┘
+
+```{r}
+# ....................................................
+# Reshaping, Separate and Unite Columns: Breast Cancer Data
+# ....................................................
+
+# Pivot longer by extracting measure type and age group separately
+breast_cancer_long <- breast_cancer_data %>%
+  pivot_longer(
+    cols = starts_with("part") | starts_with("pop") | starts_with("rate") | starts_with("expct"),
+    names_to = c("measure", "age_group"),
+    names_pattern = "(part|pop|rate|expct)([0-9]{2}_[0-9]{2})",
+    values_to = "value"
+  ) %>%
+  relocate(measure, age_group, .before = sa3code)
+
+head(breast_cancer_long, n = 10)
+
+# Pivot wider to spread measures into separate columns
+breast_cancer_final <- breast_cancer_long %>%
+  pivot_wider(
+    names_from = measure,
+    values_from = value
+  ) %>%
+  relocate(part, pop, rate, expct, .before = sa3code)
+
+head(breast_cancer_final, n = 5)
+
+# Separate 'age_group' into two new columns: start and end age
+breast_cancer_separated <- breast_cancer_long %>%
+  separate(
+    col = age_group,
+    into = c("age_start", "age_end"),
+    sep = "_",
+    convert = TRUE
+  ) %>% 
+  select("age_start", "age_end", everything())
+
+head(breast_cancer_separated, n = 3)
+
+# Unite 'age_start' and 'age_end' into a single age group label
+breast_cancer_united <- breast_cancer_separated %>%
+  unite(
+    col = age_group_combined,
+    age_start, age_end,
+    sep = "-",
+    remove = FALSE
+  )
+
+head(breast_cancer_united, n = 3)
+
+# ....................................................
+# Remove temporary objects created in this chunk
+# ....................................................
+rm(breast_cancer_long, breast_cancer_separated, breast_cancer_united, breast_cancer_final)
+```
+
+------------------------------------------------------------------------
+
+## **PART IV: ADVANCED WRANGLING AND INTEGRATION**
+
+### **4.1 Date and Time data manipulation**
+
+-   `lubridate::ymd()`, `as_date()`, `format()`, `%p`, `weekdays()`
+-   Extracting date components: year, month, quarter
+
+Working with dates is essential in many datasets, particularly for time-based trends, age calculations, seasonal effects, and survival analysis.\
+We use the `lubridate` package to parse, extract, and manipulate dates efficiently. The details about time and date data has been presented separately.
+
+➡️ **For full tutorials and videos:** - **YouTube (AnalyticsHub)**: [Watch Full Video](https://studio.youtube.com/video/AZjUWcakEEY/edit) - **GitHub**: [Access Here](https://github.com/HabtamuBizuayehu/Date-and-Time-Manipulation-and-Analysis_Data_insight)
+
+**Summary of Functions for Date Handling**
+
+| **Task** | **Function** | **Purpose** |
+|:---|:---|:---|
+| Parse ISO dates | `as.Date()`, `strptime()` | Read and convert raw string timestamps |
+| Format date output | `format()` | Customize how dates are displayed |
+| Extract components | `year()`, `month()`, `day()`, `quarter()`, `week()` | Pull year, month, day, quarter, week from dates |
+| Weekday labels | `wday(label = TRUE)` | Get day of week in text form |
+| Date arithmetic | `difftime()`, `-` | Calculate differences between dates |
+| Logical operations | `<`, `>`, `between()` | Filter by date ranges |
+| Fiscal/seasonal grouping | `case_when()` | Categorize based on seasons or financial years |
+
+------------------------------------------------------------------------
+
+**Demonstration using Vaccination Dataset**
+
+```{r}
+# Convert DATE into usable R date format
+vaccination <- vaccination %>%
+  mutate(
+    vacc_date = as.Date(strptime(date, format = "%Y-%m-%dT%H:%M:%SZ")),
+    vacc_year = year(vacc_date),
+    vacc_month = month(vacc_date, label = TRUE, abbr = FALSE)
+  ) %>% 
+  select(-description, base_cost)
+
+head(vaccination)
+```
+
+Calculating Time Differences
+
+```{r}
+# Calculating Time Differences
+
+# Convert column names to lowercase
+colnames(patients) <- tolower(colnames(patients))
+colnames(vaccination) <- tolower(colnames(vaccination))
+
+# vacc_pt_merged <- left_join(patients, vaccination, by = "id" )
+vacc_pt_merged <- left_join(patients, vaccination, by = c("id" = "patient"))
+
+str (vacc_pt_merged)
+
+vacc_pt_merged %>% 
+  mutate(
+    vacc_date = as.Date(strptime(date, format = "%Y-%m-%dT%H:%M:%SZ")),
+    birthdate = as.Date(birthdate),
+    days_to_vax = as.numeric(difftime(vacc_date, birthdate, units = "days")),
+    weeks_to_vax = as.numeric(difftime(vacc_date, birthdate, units = "weeks")),
+    months_to_vax = as.numeric(difftime(vacc_date, birthdate, units = "days")) / 30.44,
+    years_to_vax = floor(as.numeric(difftime(vacc_date, birthdate, units = "days")) / 365.25)
+  ) -> vacc_pt_merged
+
+summary(vacc_pt_merged$days_to_vax)
+summary(vacc_pt_merged$years_to_vax)
+
+```
+
+Extracting Date Components
+
+```{r}
+vacc_pt_merged <- vacc_pt_merged %>%
+  mutate(
+    vacc_day = day(vacc_date),
+    vacc_month_num = month(vacc_date),
+    vacc_month_name = month(vacc_date, label = TRUE, abbr = FALSE),
+    vacc_weekday = wday(vacc_date, label = TRUE, abbr = FALSE),
+    vacc_week = week(vacc_date),
+    vacc_quarter = quarter(vacc_date),
+    vacc_year = year(vacc_date),  # Define vacc_year first
+    vacc_fy = if_else(vacc_month_num >= 7, vacc_year, vacc_year - 1),  # FY starts 1 July in Australia
+    vacc_season = case_when(
+      vacc_month_num %in% 12:2 ~ "Summer",
+      vacc_month_num %in% 3:5  ~ "Autumn",
+      vacc_month_num %in% 6:8  ~ "Winter",
+      vacc_month_num %in% 9:11 ~ "Spring"
+    ),
+    is_weekend = wday(vacc_date) %in% c(1, 7),
+    days_since_ref = floor(as.numeric(difftime(vacc_date, as.Date("2020-01-01"), units = "days")))
+  )
+
+temp <- vacc_pt_merged %>%
+  select(vacc_day, vacc_month_num, vacc_month_name, vacc_weekday, vacc_week,
+         vacc_quarter, vacc_year, vacc_fy, vacc_season, is_weekend, days_since_ref)
+
+head(temp, n = 8)
+rm (temp)
+
+```
+
+Filtering Between Date Ranges
+
+```{r}
+# Calculate Age as of 31 December 2024
+# str(vacc_pt_merged$birthdate) 
+
+vacc_pt_merged <- vacc_pt_merged %>%
+  mutate(
+    age = floor(time_length(difftime(as.Date("2024-12-31"), birthdate), unit = "years"))
+  )
+
+table (vacc_pt_merged$age)
+
+# Categorize into Age Groups
+vacc_pt_merged <- vacc_pt_merged %>%
+  mutate(
+    age_group = cut(
+      age,
+      breaks = c(0, 9, 19, 29, 49, 100),
+      labels = c("0–9", "10–19", "20–29", "30–49", "50+"),
+      right = TRUE
+    )
+  )
+
+table (vacc_pt_merged$age_group)
+
+# Vaccinations only in 2022
+vacc_2022 <- vacc_pt_merged %>%
+  filter(vacc_date >= ymd("2022-01-01") & vacc_date <= ymd("2022-12-31"))
+
+# Vaccinations between 2015 and 2024
+vacc_1524 <- vacc_pt_merged %>%
+  filter(vacc_year >= 2015 & vacc_year <= 2024)
+
+table(vacc_1524$vacc_year)
+
+rm(vacc_2022)
+
+```
+
+### **4.2 Duplicate Observations and Creating ID**
+
+-   ID Creation (if missing): paste(), substr(), as.Date(), unite()
+-   Detecting Duplicates: duplicated(), distinct(), n_distinct(), row_number(), count(distinct(...))
+-   Tagging Duplicates: row_number(), duplicated(), mutate(dup = row_number())
+-   Validating Duplicates: group_by() + filter(n() \> 1), arrange(), subset()
+-   Removing Duplicates: filter(dup == 1), distinct(), summarise()
+-   Optional Filtering Rules: Keep first/last by date, non-missing only, domain-specific logic
+
+Duplicate records in health or survey data can compromise the integrity of analyses. A critical first step is ensuring each individual has a consistent and unique identifier (ID). When explicit IDs are missing or unreliable, they can be constructed using combinations of variables such as names, dates of birth, and location (e.g., using `paste()`, `substr()`, or `unite()`). Once IDs are established, duplicates can be detected, reviewed, and resolved systematically through tagging (`row_number()`), visual inspection, and appropriate retention or removal strategies.
+
+------------------------------------------------------------------------
+
+🔹 Key Aspects of Duplicate Management
+
+| **Aspect** | **What to Address** | **Why It Matters** |
+|----|----|----|
+| Detection Methods | Use `duplicated()`, `distinct()`, `n_distinct()`, `row_number()` by ID or keys | Helps quantify and locate potential duplicates |
+| Validation | Visual/manual review using `arrange()`, `group_by()` + `filter()` | Prevents removal of legitimate but similar entries |
+| Tagging Duplicates | Label using `row_number()` or `duplicated()` | Allows flexible filtering or analysis of repeats |
+| Deciding What to Keep | Keep first, latest (by date), or non-missing based on rules | Avoids loss of useful or most complete records |
+| Removal or Aggregation | Drop with `filter()`, or use `summarise()` to collapse duplicates | Depends on context: reporting vs. recordkeeping |
+| ID Creation / Fixing | Use `mutate()` to create or correct IDs | Enables future joins and tracking |
+
+------------------------------------------------------------------------
+
+The following table shows the summary with some data manipulation options
+
+| **Task** | **Function / Code** | **Purpose** |
+|----|----|----|
+| Identify blank IDs or fields | `x[x == ""] <- NA` | Convert empty strings to `NA` for proper detection |
+| Count missing values | `sum(is.na(x))` | Check how many values are missing |
+| Count unique observations | `count(distinct(df, id))` | Determine the number of unique records |
+| Generate row numbers per group | `group_by(id) %>% mutate(dup = row_number())` | Label duplicates within each ID |
+| Check duplication status | `table(df$dup)` or `sum(dup >= 2)` | Summarise duplication pattern |
+| Subset for review | `subset(df, dup == 2)` | View specific duplicates for manual inspection |
+| Filter duplicated individuals | `filter(n() > 1)` | Extract only duplicated IDs |
+| Remove duplicates | `filter(!(dup >= 2))` | Keep only the first instance per group (if needed) |
+| Clean temporary object | `rm()` | Remove intermediate datasets from environment |
+
+This setup ensures duplicates are clearly identified, reviewed, and removed where appropriate.
+
+```{r echo=FALSE}
+# --- Create ID by combining first 4 letters of first & last names + birthdate ---
+setwd("C:/Users/User/Desktop/Materials_ Course and proposals/Course Related/DataCamp/Data/Synthetic_data")
+
+patients <- read.csv("patients.csv")
+colnames(patients) <- tolower(colnames(patients))
+```
+
+```{r}
+
+patients <- patients %>%
+  mutate(
+    birthdate = as.Date(birthdate),
+    id_text = paste0(substr(first, 1, 4), "|", substr(last, 1, 4), "|", birthdate)
+  )
+# Preview new ID
+head(patients$id_text, n = 3)
+
+# --- Step 2: Create random numeric ID per individual ---
+set.seed(1234)  # for reproducibility
+patients <- patients %>%
+  mutate(id_num = sample(100000:999999, n(), replace = FALSE))
+
+# Preview both ID columns
+patients %>%
+  select(first, last, birthdate, id_text, id_num) %>%
+  head(5)
+
+# ....................................................
+# Clean-up if needed
+# ....................................................
+# rm(id_text, id_num) # optional if you store externally
+
+table (patients$race)
+otherrace <- patients %>%
+  filter(race != "white")
+
+patients <- rbind(patients, otherrace)
+
+# Count total and unique records
+n_total <- nrow(patients)
+n_unique <- n_distinct(patients$id_text)
+message(glue::glue("Total records: {n_total}, Unique IDs: {n_unique}"))
+
+# Tag duplicates using row_number()
+patients <- patients %>%
+  arrange(id_text) %>%
+  group_by(id_text) %>%
+  mutate(dup = row_number()) %>%
+  ungroup()
+# Count number of true duplicates
+table(patients$dup)
+print(sum(patients$dup >= 2))
+
+# Keep only records from individuals who have duplicates
+duplicates <- patients %>%
+  group_by(id_text) %>%
+  filter(n() >= 2) %>%
+  select(id_text, id_num, race, marital, gender, birthdate) %>%
+  ungroup()
+
+# Preview records from duplicated individuals
+head(duplicates)
+
+rm(duplicates, n_total, n_unique)
+```
+
+### **4.3 Merging (Joining) and Appending Datasets**
+
+-   `left_join()`, `right_join()`, `inner_join()`, `full_join()`
+-   `semi_join()` and `anti_join()`
+-   `bind_rows()`, `rbind()` , `bind_cols()` and `cbind()`
+
+When analyzing real-world datasets, it’s often necessary to **merge** or **append** multiple datasets.\
+This could involve matching rows based on common identifiers, appending additional cases, or combining variables side-by-side.
+
+We can **join**, **bind**, or **filter** datasets efficiently using `dplyr` and base R techniques.
+
+**Brief Descriptions**
+
+-   **left_join()**: Keep all records from the left (main) table; bring matching records from the right table.
+-   **right_join()**: Keep all records from the right table; bring matching records from the left.
+-   **inner_join()**: Keep only rows where keys match in both tables.
+-   **full_join()**: Keep all records from both tables; missing matches filled with `NA`.
+-   **semi_join()**: Keep rows from the left table where a match exists in the right.
+-   **anti_join()**: Keep only rows from the left table that **don't** match the right.
+
+➡️ `bind_rows()` and `rbind()` are used for **stacking** datasets.\
+➡️ `bind_cols()` and `cbind()` are used for **attaching new columns** horizontally.
+
+**Summary Table: Key Functions for Joining and Appending**
+
+| **Task** | **Function** | **Purpose** |
+|:---|:---|:---|
+| Merge by common key | `left_join()`, `right_join()`, `inner_join()`, `full_join()` | Merge datasets using common variables |
+| Filter matching rows | `semi_join()` | Keep rows from left table that have matches in right table |
+| Filter non-matching rows | `anti_join()` | Keep rows from left table with no match in right table |
+| Row-wise append | `bind_rows()` | Stack two datasets vertically (must have same columns) |
+| Column-wise append | `bind_cols()` | Add columns side-by-side (matching by row position) |
+| Basic base R row bind | `rbind()` | Append rows (base R equivalent to `bind_rows`) |
+| Basic base R column bind | `cbind()` | Append columns (base R equivalent to `bind_cols`) |
+| Join a table to itself | Self-join | Analyze relationships within a single dataset (e.g., hierarchy) |
+
+------------------------------------------------------------------------
+
+**Important Reminders** - Joins (`left_join`, etc.) match based on a **key** (column/s). - `bind_rows()` assumes **same column names and types**. - `bind_cols()` assumes **same number of rows**. - `rbind()` and `cbind()` are **base R** methods but `dplyr::bind_*()` are more flexible. ---
+
+**Demonstrating Different Types of Joins with Brief Descriptions**
+
+**Standardizing variable Names**
+
+Before performing joins, it is essential to ensure column names match in both datasets.\
+This avoids errors caused by case differences or inconsistent naming.
+
+```{r, echo=FALSE, include=FALSE}
+
+setwd("C:/Users/User/Desktop/Materials_ Course and proposals/Course Related/DataCamp/Data/Synthetic_data")
+patients <- read.csv("patients.csv")
+vaccination <- read.csv("immunizations.csv")
+
+# Convert column names to lowercase
+colnames(vaccination) <- tolower(colnames(vaccination))
+colnames(patients) <- tolower(colnames(patients))
+
+```
+
+```{r}
+
+# ......................................
+# Full Join: Keep everything from both datasets
+# ......................................
+vacc_full_join <- full_join(
+  patients,
+  vaccination,
+  by = c("id" = "patient")
+)
+
+head(vacc_full_join, n = 3)
+
+# ......................................
+# Left Join: Keep all patients, add vaccination if available
+# ......................................
+vacc_left_join <- left_join(
+  patients,
+  vaccination,
+  by = c("id" = "patient")
+)
+
+head(vacc_left_join, n = 3)
+# ......................................
+# Right Join: Keep all vaccinations, add patients if available
+# ......................................
+vacc_right_join <- right_join(
+  patients,
+  vaccination,
+  by = c("id" = "patient")
+)
+
+head(vacc_right_join, n = 3)
+
+# ......................................
+# Inner Join: Keep only matched patients and vaccinations
+# ......................................
+vacc_inner_join <- inner_join(
+  patients,
+  vaccination,
+  by = c("id" = "patient"))
+
+head(vacc_inner_join, n = 3)
+
+# ......................................
+# Semi Join: Keep only patients that have a vaccination match
+# (Only patient columns are kept)
+# ......................................
+
+vacc_semi_join <- semi_join(
+  patients,
+  vaccination,
+  by = c("id" = "patient"))
+
+head(vacc_semi_join, n = 3)
+
+# ......................................
+# Anti Join: Keep only patients that do not have a vaccination match
+# ......................................
+vacc_anti_join <- anti_join(
+  patients,
+  vaccination,
+  by = c("id" = "patient"))
+
+head(vacc_anti_join, n = 3)
+
+# ......................................
+# Remove temporary datasets
+# ......................................
+rm(vacc_left_join, vacc_right_join, vacc_inner_join, vacc_full_join, vacc_semi_join, vacc_anti_join)
+```
+
+```{r, echo=FALSE, include=FALSE}
+# Prepare data for appending data
+
+# 1. Filter NSW separately
+breast_cancer_NSW <- breast_cancer_data %>%
+  filter(state == "NSW")
+
+# 2. Filter WA separately
+breast_cancer_WA <- breast_cancer_data %>%
+  filter(state == "WA")
+
+# 3. Filter Others (NOT NSW and NOT WA)
+breast_cancer_others <- breast_cancer_data %>%
+  filter(!(state == "NSW" | state == "WA"))
+
+# 4. Prepare Participation Data (Remove SA3 columns)
+participation <- breast_cancer_data %>%
+  select(-sa3code, -sa3coden, -sa3name, -state)
+
+# 5. Prepare SA3 metadata (for mapping etc.)
+breast_cancer_SA3_info <- breast_cancer_data %>%
+  select(sa3code, sa3coden, sa3name, state) 
+
+# 6. Check
+nrow(breast_cancer_NSW)
+nrow(breast_cancer_WA)
+nrow(breast_cancer_others)
+nrow(participation)
+nrow(breast_cancer_SA3_info)
+```
+
+**Appending (Binding) DataFrames: Rows and Columns**
+
+```{r}
+
+# Binding Rows Together (bind_rows): Combine NSW, WA, and Others into one dataset
+
+bc_combined_rows <- bind_rows(
+  breast_cancer_NSW,
+  breast_cancer_WA,
+  breast_cancer_others
+)
+
+# Check result
+head(bc_combined_rows, n = 3)
+
+# Confirm number of rows
+nrow(bc_combined_rows)
+
+# Binding Columns Together (bind_cols): Combine Participation Data with SA3 metadata
+# (needs same number of rows)
+
+bc_combined_cols <- bind_cols(
+  participation,
+  breast_cancer_SA3_info )
+# Check result
+head(bc_combined_cols, n = 3)
+
+# Appending Rows Using Base R rbind()
+# (Equivalent to bind_rows but simpler cases, needs identical columns)
+bc_combined_rbind <- rbind(
+  breast_cancer_NSW,
+  breast_cancer_WA
+)
+
+# Check result
+head(bc_combined_rbind, n = 3)
+
+# Appending Columns Using Base R cbind()
+# (Simple column binding, assumes same number of rows)
+
+bc_combined_cbind <- cbind(
+  participation,
+  breast_cancer_SA3_info)
+
+# Check result
+head(bc_combined_cbind, n = 3)
+
+# Important Notes:
+# - bind_rows() can handle different column orders safely
+# - rbind() requires identical column names and order
+# - bind_cols() simply pastes side-by-side, no matching by keys
+# - cbind() assumes same number of rows
+
+# ....................................................
+# Remove all temporary objects created in this chunk
+# ....................................................
+rm(
+  breast_cancer_NSW, breast_cancer_WA, breast_cancer_others, participation, breast_cancer_SA3_info,
+  bc_combined_rows, bc_combined_cols, bc_combined_rbind, bc_combined_cbind
+)
+
+```
+
+### **4.4 Missing Value Identification and Imputations**
+
+**A. Identifying Missing Values**
+
+-   is.na(), anyNA(), sum(is.na(x)), colSums() – detect/count missing values
+
+-   complete.cases() – filter complete rows
+
+-   Convert blanks to NA: x\[x == ""\] \<- NA
+
+**B. Handling Missing Values**
+
+-   Basic Removal/Replacement: na.omit(), replace_na() (tidyr), ifelse()
+
+-   Forward/Backward Fill: fill() (tidyr) with .direction = "down" / "up"
+
+-   Statistical Imputation:
+
+-Simple: mean/median imputation
+
+-Multiple: mice::mice()()
+
+\-**Advanced**: Hmisc::aregImpute, missForest, Amelia, zoo::na.fill
+
+Missing data is a common issue in real-world datasets. In R, handling missing values properly is essential to ensure the integrity of analyses and avoid misleading results.
+
+This section covers how to **identify**, **clean**, and **impute** missing values using base R and tidyverse tools. Techniques range from basic filtering to advanced imputation models.
+
+➡️ Missing values are typically represented as `NA` in R. Empty strings (e.g., `""`) or special codes (e.g., `-99`, `"missing"`) may also indicate missingness and need conversion before analysis.
+
+🔹 Summary of Functions for Handling Missing Values
+
+| **Task** | **Function** / **Code** | **Purpose** |
+|----|----|----|
+| Detect missing values | `is.na(x)`, `anyNA(x)`, `sum(is.na(x))` | Identify/count missing values |
+| Missing per column | `colSums(is.na(df))` | Count NAs per column |
+| Filter complete rows | `complete.cases(df)` | Keep only rows without any missing values |
+| Convert blanks to `NA` | `x[x == ""] <- NA` | Convert empty strings to missing values |
+| Remove missing rows | `na.omit(df)` | Remove rows with any missing value |
+| Replace missing values | `replace_na(df, list(...))`, `ifelse(is.na(x), ...)` | Impute or replace NA with custom logic |
+| Forward/backward fill | `fill(df, .direction = "down" / "up")` | Fill NA using nearby values |
+| Mean/median imputation | `x[is.na(x)] <- mean(x, na.rm = TRUE)` | Replace NA with summary statistic |
+| Multiple imputation | `mice::mice(df)` | Create multiple imputed datasets using chained equations |
+| Advanced imputation | `Hmisc::aregImpute`, `missForest`, `Amelia`, `zoo::na.fill()` | Specialized techniques for complex imputations |
+
+📚 **Further Learning and Resources**
+
+Additional tutorials, demonstrations, and datasets are available on:
+
+-   **YouTube Channel – AnalyticsHub**\
+    <https://studio.youtube.com/channel/UCLVKP0g8GvHhOh0kn20T8eg/videos/upload?filter=%5B%5D&sort=%7B%22columnType%22%3A%22date%22%2C%22sortOrder%22%3A%22DESCENDING%22%7D>
+
+-   **GitHub Repository**\
+    <https://github.com/HabtamuBizuayehu?tab=repositories>
+
+------------------------------------------------------------------------
+
+```{r, echo=FALSE}
+
+setwd("C:/Users/User/Desktop/Materials_ Course and proposals/Course Related/DataCamp/Data/Synthetic_data")
+visits_all <- read.csv("patients.csv")
+
+colnames(visits_all) <- tolower(colnames(visits_all))
+
+# Generate variables for demonstrating bassAckward and forward imputation
+
+set.seed(123)  # For reproducibility
+
+visit_1 <- visits_all %>%
+  slice_sample(n = 10) %>% 
+  mutate(visit = 1)
+
+# Label visit_1 if not already done
+visit_1 <- visit_1 %>%
+  mutate(visit = 1)
+
+# Create visit_2 (all race & income missing)
+visit_2 <- visit_1 %>%
+  mutate(
+    visit = 2,
+    race = NA,
+    income = NA
+  )
+
+# Create visit_3: 5 missing race, 5 missing income, others income - 1000
+set.seed(123)
+race_miss_idx_v3 <- sample(1:nrow(visit_1), 5)
+income_miss_idx_v3 <- sample(setdiff(1:nrow(visit_1), race_miss_idx_v3), 5)
+
+visit_3 <- visit_1 %>%
+  mutate(
+    visit = 3,
+    race = ifelse(row_number() %in% race_miss_idx_v3, NA, race),
+    income = case_when(
+      row_number() %in% income_miss_idx_v3 ~ NA_real_,
+      TRUE ~ income - 1000
+    )
+  )
+
+# Create visit_4: reverse missing pattern of visit_3
+visit_4 <- visit_1 %>%
+  mutate(
+    visit = 4,
+    race = ifelse(row_number() %in% income_miss_idx_v3, NA, race),
+    income = case_when(
+      row_number() %in% race_miss_idx_v3 ~ NA_real_,
+      TRUE ~ income - 1000
+    )
+  )
+
+# Combine all visits
+visits_all <- bind_rows(visit_1, visit_2, visit_3, visit_4)
+# Optional: preview
+head(visits_all)
+rm(visit_1, visit_2, visit_3, visit_4)
+
+# Standardise missing values
+visits_all <- visits_all %>%
+  mutate(
+    across(where(is.character), ~ na_if(.x, "")),
+    across(where(is.numeric), ~ ifelse(.x == 0, NA, .x)))
+
+# Create a unique patient ID by combining parts of first and last name with birthdate
+visits_all <- visits_all %>%
+  mutate(
+    birthdate = as.Date(birthdate),
+    id_text = paste0(substr(first, 1, 4), "|", substr(last, 1, 4), "|", birthdate))
+```
+
+```{r, echo=FALSE, results='hide', include=FALSE, eval=FALSE}
+# Check patterns of missing data (optional: mice)
+md.pattern(visits_all)
+```
+
+```{r}
+
+# Summarise missing values across all columns
+missing_summary <- colSums(is.na(visits_all))
+print(missing_summary[missing_summary > 0])
+
+# Total number of missing cells
+total_missing <- sum(is.na(visits_all))
+cat("Total missing values in dataset:", total_missing, "\n")
+
+# Count of individuals with at least one missing value
+n_missing_individuals <- sum(!complete.cases(visits_all))
+cat("Number of individuals with at least one missing value:", n_missing_individuals, "\n")
+
+# Sort records by patient ID and visit number
+visits_all <- visits_all %>%
+  arrange(id_text, visit)
+
+# View rows with any missing values
+missing_rows <- visits_all %>%
+  filter(!complete.cases(.))
+head(missing_rows, n = 12) %>% select(id_text, race, income, passport)
+
+# Impute passport with "UNKNOWN"
+df_passport <- visits_all %>%
+  mutate(passport_imputed = replace_na(passport, "UNKNOWN")) %>%
+  filter(is.na(passport)) %>%
+  select(id, id_text, visit, passport, passport_imputed)
+
+head(df_passport, n = 12)
+
+# Sort records by patient ID and visit number (to prepare for forward/backward fill)
+visits_all <- visits_all %>%
+  arrange(id_text, visit)
+
+# Preview sorted data (tail)
+tail(visits_all %>% select(id_text, visit, race, income), n = 12)
+
+# Forward fill missing race values within each patient (downward)
+visits_all <- visits_all %>%
+  group_by(id_text) %>%
+  mutate(race_forward = race) %>%
+  fill(race_forward, .direction = "down") %>%
+  ungroup()
+
+# Preview forward-filled race values (head)
+head(visits_all %>% select(id_text, visit, race, race_forward), n = 12)
+
+# Backward fill missing race values within each patient (upward)
+visits_all <- visits_all %>%
+  group_by(id_text) %>%
+  mutate(race_backward = race) %>%
+  fill(race_backward, .direction = "up") %>%
+  ungroup()
+
+# Preview backward-filled race values (tail)
+tail(visits_all %>% select(id_text, visit, race, race_backward), n = 12)
+
+# Calculate the global (overall) mean income
+global_mean_income <- mean(visits_all$income, na.rm = TRUE)
+
+# Use global mean to impute missing income values
+visits_all <- visits_all %>%
+  mutate(income_global_mean = ifelse(is.na(income), global_mean_income, income))
+
+# Preview global mean-imputed income (head)
+head(visits_all %>% select(id_text, visit, income, income_global_mean), n = 12)
+
+# Calculate mean income per participant (id_text)
+participant_mean_income <- visits_all %>%
+  group_by(id_text) %>%
+  summarise(mean_income_id = mean(income, na.rm = TRUE), .groups = "drop")
+
+# Use participant-level mean to impute missing income values
+visits_all <- visits_all %>%
+  left_join(participant_mean_income, by = "id_text") %>%
+  mutate(income_participant_mean = ifelse(is.na(income), mean_income_id, income))
+
+# Preview participant mean-imputed income (tail)
+tail(visits_all %>% select(id_text, visit, income, income_participant_mean), n = 12)
+
+# Multiple imputation for fips, zip, healthcare_coverage, and income
+patients_mice <- visits_all %>%
+  select(id_text, fips, zip, healthcare_coverage, income)
+
+# Apply mice
+imputed <- mice(patients_mice %>% select(-id_text), method = "pmm", m = 1, printFlag = FALSE)
+
+# Retrieve completed dataset
+mice_result <- complete(imputed)
+colnames(mice_result) <- paste0(colnames(mice_result), "_imputed")
+
+# Join ID and filter rows with original missing values
+df_mice <- bind_cols(patients_mice, mice_result) %>%
+  filter(is.na(fips) | is.na(zip) | is.na(healthcare_coverage) | is.na(income)) %>%
+  select(id_text,
+         fips, fips_imputed,
+         zip, zip_imputed,
+         healthcare_coverage, healthcare_coverage_imputed,
+         income, income_imputed)
+
+head(df_mice, n = 12)
+
+# Optional: Inspect logged events from mice
+imputed$loggedEvents
+
+# Final summary: compare original and imputed values for rows with missingness
+
+final_impute_check <- visits_all %>%
+  filter(is.na(race) | is.na(income)) %>%
+  select(id_text, visit,
+         race, race_forward, race_backward,
+         income, income_global_mean, income_participant_mean)
+
+# Preview top 12
+head(final_impute_check, n = 12)
+
+# Preview bottom 12
+tail(final_impute_check, n = 12)
+
+# Clean up temporary objects 
+rm( participant_mean_income, final_impute_check, global_mean_income, df_passport, df_mice,
+    patients_mice, imputed, mice_result, missing_summary, total_missing, n_missing_individuals, missing_rows
+)
+```
+
+------------------------------------------------------------------------
+
+## **🔢 PART V: Descriptive Statistics and Tabulation**
+
+In data analysis, summarising and tabulating variables is often the first step before conducting modelling or drawing conclusions. Descriptive statistics reveal the central tendency, variability, distribution shape, and frequency patterns in your dataset.
+
+This section provides an overview of the most commonly used R functions for summarising both numeric and categorical variables. These tools help detect outliers, missing data, or skewed distributions and are essential for generating publication-ready summary tables.
+
+📚 *Further are available via:*
+
+-   YouTube: [AnalyticsHub](https://studio.youtube.com/video/5V7SPBH-8BE/edit)\
+-   Github: [Summary Tools Repository](https://github.com/HabtamuBizuayehu)
+
+------------------------------------------------------------------------
+
+Some of the contents essential for this section are presented below.
+
+**Basic Summary Statistics**\
+summary(), mean(), median(), min(), max(), sd(), var(), range(), quantile(), IQR()
+
+**Distribution Shape / Skewness**: skewness(), kurtosis() **Extended Descriptive Summaries**: describe() ,stat.desc(), skim() **Tabulation (Frequencies and Proportions)**\
+table(), prop.table(), addmargins(), xtabs()
+
+**Tidy Summary and Tabulations**\
+tabyl(), adorn_percentages(), adorn_totals() – From janitor\
+count(), group_by() + summarise() – From dplyr\
+pivot_wider(), pivot_longer() – From tidyr
+
+**Cross Tabulations**: CrossTable() – From gmodels
+
+### **🔹 1. Basic Summary Statistics**
+
+These functions are useful for summarising continuous variables such as age, vaccine cost, or time intervals:
+
+-   `summary()` – 5-number summary + mean\
+-   `mean()`, `median()` – Measures of central tendency\
+-   `sd()`, `var()` – Measures of spread\
+-   `min()`, `max()` – Extremes\
+-   `range()` – Min and max in one\
+-   `quantile()` – Percentiles (e.g., 25th, 75th)
+-   `IQR()` – Interquartile range
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+# Recode marital status while leaving unknown values as missing
+vacc_1524 <- vacc_1524 %>%
+  mutate(marital_2group = case_when(
+    marital == "M" ~ "Partnered",
+    marital == "D" | marital == "S" | marital == "W" ~ "Not partnered",
+    TRUE ~ NA_character_  # Replaces unknown values with missing (NA)
+  ))
+
+# Recode race status while leaving unknown values as missing
+vacc_1524 <- vacc_1524 %>%
+  mutate(race_grouped = case_when(
+    race == 'white' ~ "White",
+    race == "asian" ~ "Asian",
+    race == "native" | race == "other" ~ "Other",
+    TRUE ~ NA_character_
+  ))
+
+vacc_1524$vacc_group3 <- vacc_1524$vacc_group3 %>%
+  fct_recode("Childhood" = "Childhood vaccines",
+             "Respiratory" = "Respiratory vaccines",
+             "Other" = "Other") %>%
+  fct_relevel("Childhood", "Respiratory", "Other")
+
+table(vacc_1524$vacc_group3)
+
+library(forcats)
+
+vacc_1524$gender <- fct_recode(vacc_1524$gender,
+                               "Male" = "M",
+                               "Female" = "F")
+table(vacc_1524$gender)
+```
+
+```{r}
+# ....................................................
+# Basic Summary Statistics Using Base R
+# ....................................................
+
+# Select key numeric variables
+summary_vars <- vacc_1524 %>% 
+  select(age, base_cost, healthcare_expenses)
+
+# View summary() for a quick five-number summary + mean
+summary(summary_vars)
+
+# Individual statistics for 'age'
+mean(vacc_1524$age, na.rm = TRUE)             # Mean age
+median(vacc_1524$age, na.rm = TRUE)           # Median age
+min(vacc_1524$age, na.rm = TRUE)              # Minimum age
+max(vacc_1524$age, na.rm = TRUE)              # Maximum age
+sd(vacc_1524$age, na.rm = TRUE)               # Standard deviation of age
+var(vacc_1524$age, na.rm = TRUE)              # Variance of age
+range(vacc_1524$age, na.rm = TRUE)            # Range: min and max
+quantile(vacc_1524$age, probs = c(0.25, 0.5, 0.75), na.rm = TRUE)  # Quartiles
+IQR(vacc_1524$age, na.rm = TRUE)              # Interquartile range
+
+# ....................................................
+# Clean up temporary object
+# ....................................................
+rm(summary_vars)
+
+```
+
+### **🔹 2. Shape of Distribution (Skewness and Kurtosis)**
+
+These indicators describe the **shape** of a numeric variable’s distribution. They help identify when a variable is:
+
+-   Skewed (not symmetric)
+-   Heavy-tailed (high kurtosis)
+
+**Distribution Shape: Skewness and Kurtosis**
+
+| Value Range | **Skewness** | **Kurtosis** (Excess) |
+|----|----|----|
+| ≈ 0 | Symmetrical | Mesokurtic (normal-tailed) |
+| ±0.5 | Approximately symmetrical | Slight deviation |
+| ±0.5 – ±1 | Moderate skew | Moderate peakedness or flatness |
+| \> ±1 | High skew (strong asymmetry) | Substantial deviation from normality |
+| \> 0 (kurtosis - 3 \> 0) | – | Leptokurtic (peaked, heavy tails) |
+| \< 0 (kurtosis - 3 \< 0) | – | Platykurtic (flat, light tails) |
+
+```{r, warning=FALSE, message=FALSE, results='hide'}
+
+# Ensure the 'moments' package is installed
+if (!requireNamespace("moments", quietly = TRUE)) {install.packages("moments")}
+library(moments)
+```
+
+```{r}
+# Calculate distribution shape statistics
+skewness(vacc_1524$age, na.rm = TRUE)     # Skewness: +ve = right-skewed, -ve = left-skewed
+kurtosis(vacc_1524$age, na.rm = TRUE)     # Kurtosis: >3 = heavy tails, <3 = flat distribution
+kurtosis(vacc_1524$age, na.rm = TRUE) - 3  # Excess kurtosis
+
+# ....................................................
+# Histogram to Visualize Distribution Shape
+# ....................................................
+hist(vacc_1524$age, 
+     main = "Histogram of Age",
+     xlab = "Age (Years)", 
+     col = "#69b3a2", 
+     border = "white")
+```
+
+------------------------------------------------------------------------
+
+### **🔹 3. Extended Descriptive Summaries**
+
+To produce a comprehensive summary of all variables (especially helpful in surveys or health system datasets), use:
+
+-   `describe()` – From `Hmisc`: includes labels, missing %, and stats\
+-   `stat.desc()` – From `pastecs`: full statistical description with skew/kurtosis\
+-   `skim()` – From `skimr`: summary with inline histograms and types
+
+------------------------------------------------------------------------
+
+```{r, warning=FALSE, message=FALSE, results='hide'}
+# Install required packages if missing
+packages <- c("Hmisc", "pastecs", "skimr")
+for (p in packages) {if (!requireNamespace(p, quietly = TRUE)) install.packages(p)}
+
+# Explicitly load the packages
+library(Hmisc)     # for describe()
+library(pastecs)   # for stat.desc()
+library(skimr)     # for skim()
+
+rm (packages)
+
+```
+
+```{r}
+# ------------------------------
+# Extended Descriptive Summaries
+# ------------------------------
+
+# Hmisc::describe() – Detailed variable summary
+describe(vacc_1524[, c("age", "gender", "race")])
+
+# pastecs::stat.desc() – Full statistics with skewness/kurtosis
+stat.desc(vacc_1524$age)
+
+# skimr::skim() – Tidy summary with histograms and data types
+skim(vacc_1524[, c("age", "gender", "income")])
+
+```
+
+### **🔹 4. Tabulation (Frequencies and Proportions)**
+
+Used for categorical variables like gender, race, or vaccine group:
+
+-   `table()` – Basic frequency counts\
+-   `prop.table()` – Row/column proportions\
+-   `addmargins()` – Adds totals to tables\
+-   `xtabs()` – Cross-tabulation formula interface
+
+------------------------------------------------------------------------
+
+```{r}
+# --------------------------------------------
+# 🔹 Categorical Variable Summary 
+# --------------------------------------------
+
+# Basic frequency counts for individual vaccine types
+table(vacc_1524$vaccine_group)
+
+# Frequency counts for grouped vaccine categories
+table(vacc_1524$vacc_group3)
+
+# Proportion of grouped vaccine categories
+prop.table(table(vacc_1524$vacc_group3))  # Overall proportions
+
+# Frequency table with row/column totals added
+addmargins(table(vacc_1524$vacc_group3))
+
+# Cross-tabulation between vaccine group and gender
+xtabs(~ vacc_group3 + gender, data = vacc_1524)
+
+```
+
+### **🔹 5. Tidy Summary and Tabulations**
+
+Modern workflows prefer tidy-format summaries using:
+
+-   `tabyl()` – From `janitor`: clean frequency tables\
+-   `adorn_totals()`, `adorn_percentages()` – Add percentages and totals\
+-   `count()` – From `dplyr`: group-level counts\
+-   `group_by()` + `summarise()` – Group-wise summary
+-   `pivot_wider()`, `pivot_longer()` – Reshape tables
+
+The section below demonstrates tabulations using `janitor::tabyl()` and tidyverse functions for grouped summaries and table reshaping.
+
+```{r}
+
+# --------------------------------------------
+# 🔹 Tabulation and Table Reshaping 
+# --------------------------------------------
+
+# 1. Basic clean frequency table with janitor::tabyl()
+vacc_1524 %>%
+  tabyl(vacc_group3)
+
+# 2. Add column percentages and total row
+vacc_1524 %>%
+  tabyl(vacc_group3, gender) %>%
+  adorn_percentages("col") %>%
+  adorn_totals("row") %>%
+  adorn_title("combined")  # Cleaner column names
+
+# 3. Group-level count using dplyr::count()
+vacc_1524 %>%
+  count(vacc_group3, gender)
+
+# 4. Group-wise summary using group_by + summarise
+vacc_1524 %>%
+  group_by(vacc_group3) %>%
+  summarise(n = n(), .groups = "drop") %>%
+  mutate(prop = n / sum(n))
+
+# 5. Pivot table to wide format (e.g., for display or reporting)
+vacc_1524 %>%
+  count(vacc_group3, gender) %>%
+  pivot_wider(names_from = gender, values_from = n, values_fill = 0)
+
+# 6. Optional: Pivot longer to return to tidy format
+vacc_1524 %>%
+  count(vacc_group3, gender) %>%
+  pivot_wider(names_from = gender, values_from = n, values_fill = 0) %>%
+  pivot_longer(-vacc_group3, names_to = "gender", values_to = "count")
+
+```
+
+### **🔹 6. Cross Tabulations**
+
+Used to explore the relationship between two or more categorical variables.
+
+-   `CrossTable()` – From `gmodels`: produces detailed cross-tabs with row %, column %, and counts
+
+```{r, warning=FALSE, message=FALSE, results='hide'}
+# Install and load the gmodels package for cross-tabulation
+if (!requireNamespace("gmodels", quietly = TRUE)) {
+  install.packages("gmodels")
+}
+library(gmodels)
+```
+
+```{r}
+# ------------------------------
+# Cross Tabulation Example
+# ------------------------------
+
+# Generate a contingency table between gender and vaccine group
+CrossTable(vacc_1524$vacc_group3, vacc_1524$gender,
+           prop.r = FALSE,     # Row proportions
+           prop.c = TRUE,     # Column proportions
+           prop.t = FALSE,    # Overall proportion (optional)
+           chisq = TRUE)      # Include chi-square test for independence
+```
+
+------------------------------------------------------------------------
+
+**🔹 Summary Table: Descriptive Statistics and Tabulation Functions**
+
+| **Task** | **Function** | **Package** |
+|----|----|----|
+| Basic numeric summaries | `summary()`, `mean()`, `sd()`, `IQR()` | base |
+| Percentiles and range | `quantile()`, `range()` | base |
+| Skewness / Kurtosis | `skewness()`, `kurtosis()` | e1071, moments |
+| Extended profiling | `describe()`, `stat.desc()`, `skim()` | Hmisc, pastecs, skimr |
+| Frequency tables | `table()`, `xtabs()`, `prop.table()` | base |
+| Clean tables (tidy) | `tabyl()`, `adorn_*()`, `count()` | janitor, dplyr |
+| Group summaries | `group_by()` + `summarise()` | dplyr |
+| Reshape for tables | `pivot_wider()`, `pivot_longer()` | tidyr |
+| Rich cross-tabulation | `CrossTable()` | gmodels |
+
+------------------------------------------------------------------------
+
+### **7.2 Saving and Writing Data**
+
+-   `write.csv()`, `write_xlsx()`, `saveRDS()`, `write_tsv()`
+-   Exporting interactive tables with `DT::datatable()`
+-   Saving and loading the entire R workspace (save.image(), load())
+
+------------------------------------------------------------------------
+
+## **PART VI: DATA VISUALIZATION WITH `ggplot2`**
+
+**Visualization Contents and Types Overview**
+
+-   **Layers**: Theme, Coordinates, Facets, Statistics, Geometries, Aesthetics, Data
+-   **Chart Types**: line, histogram, boxplot, bar, area, density, violin, dotplot, ECDF, scatter, bubble, QQ plot
+-   **Comparative & Multivariate**: faceted plot, pair plot, heatmap, treemap, radar chart, ridgeline plot, forest plot
+-   **Geospatial Visualization**: choropleth map, point map, heatmap overlay
+-   **Statistical Overlays**: error bars, confidence intervals, regression lines, smoothers
+-   **Interactive Visualization**: scatter/line/bar (Plotly), interactive tables (DT), interactive maps (Leaflet), dashboards (Shiny, flexdashboard)
+
+Effective visualizations help uncover patterns, trends, and insights in data. In R, we commonly use the `ggplot2` package for static plots and tools like `plotly`, `DT`, and `leaflet` for interactive dashboards and graphics.
+
+The sections below summarize different types of visualizations and how they fit into analysis workflows.
+
+------------------------------------------------------------------------
+
+### **🔹 Visualization Layer Components**
+
+Every ggplot chart is built using multiple composable layers: - **Data**: The dataset to visualize. - **Aesthetics (`aes()`)**: Mappings between variables and visual elements (e.g., x, y, color). - **Geometries (`geom_*`)**: Plot types (e.g., `geom_line()`, `geom_bar()`). - **Statistics (`stat_*`)**: Summaries or transformations (e.g., `stat_smooth()`). - **Facets**: Create multiple plots by group (`facet_wrap()`, `facet_grid()`). - **Coordinates**: Set axis and aspect ratio (`coord_cartesian()`, `coord_flip()`). - **Themes**: Control overall appearance (e.g., `theme_minimal()`, `theme_bw()`).
+
+### **🔹 Common Chart Types**
+
+| **Chart Type** | **Function** | **Used For** |
+|----|----|----|
+| Line Chart | `geom_line()` | Trends over time |
+| Histogram | `geom_histogram()` | Distribution of continuous variables |
+| Boxplot | `geom_boxplot()` | Distribution & outliers |
+| Bar Plot | `geom_bar()` | Counts or categorical comparison |
+| Area Plot | `geom_area()` | Cumulative trends |
+| Density Plot | `geom_density()` | Smoothed distribution |
+| Violin Plot | `geom_violin()` | Combination of boxplot + density |
+| Dot Plot | `geom_dotplot()` | Count-based plots |
+| ECDF Plot | `stat_ecdf()` | Cumulative distribution |
+| Scatter Plot | `geom_point()` | Bivariate relationships |
+| Bubble Plot | `geom_point(aes(size = ...))` | 3-variable comparison using size |
+
+------------------------------------------------------------------------
+
+### **🔹 Comparative & Multivariate Visuals**
+
+| **Visual Type** | **Purpose** |
+|----|----|
+| **Faceted Plot** (`facet_wrap`) | Compare subgroups in separate panels |
+| **Pair Plot** (`GGally::ggpairs`) | Explore all pairwise relationships |
+| **Heatmap** (`geom_tile`, `heatmap()`) | Show intensity using color |
+| **Treemap** (`treemapify`) | Hierarchical categories and values |
+| **Radar Chart** (`fmsb`) | Compare multivariate profiles |
+| **Ridgeline Plot** (`ggridges`) | Distribution comparison across groups |
+| **Forest Plot** (`forestplot`, `ggforestplot`) | Confidence intervals and effect sizes |
+
+------------------------------------------------------------------------
+
+### **🔹 Geospatial Visualizations**
+
+| **Map Type** | **Function/Use** |
+|----|----|
+| Choropleth Map | Show values by region (e.g., `geom_sf()`, `tmap`) |
+| Point Map | Locations with coordinates (e.g., `geom_point()`, `leaflet::addMarkers`) |
+| Heatmap Overlay | Density of spatial events (e.g., `leaflet::addHeatmap()`) |
+
+------------------------------------------------------------------------
+
+### **🔹 Statistical Enhancements (Overlays)**
+
+-   **Error bars**: `geom_errorbar()` for confidence or SD intervals
+-   **Regression lines**: `geom_smooth(method = "lm")`
+-   **Trend smoothing**: `geom_smooth()` with `method = "loess"`
+-   **Labeling**: `geom_text()`, `geom_label()` to annotate plots
+
+------------------------------------------------------------------------
+
+This section demonstrates how to visualize breast cancer screening and vaccination data. We'll walk through common chart types such as line plots, bar charts, boxplots, and faceted views. Each example is designed with annotations and descriptions to aid understanding.
+
+------------------------------------------------------------------------
+
+### **🔹 Visualization Layer Components with Examples**
+
+Each chart demonstrates how different `ggplot2` components come together using real health datasets.
+
+```{r, message=FALSE, warning=FALSE, results='hide'}
+
+# Install if not already installed
+if (!requireNamespace("treemapify", quietly = TRUE)) {install.packages("treemapify")}
+if (!requireNamespace("ggridges", quietly = TRUE)) {install.packages("ggridges")}
+if (!requireNamespace("gganimate", quietly = TRUE)) install.packages("gganimate")
+if (!requireNamespace("gifski", quietly = TRUE)) install.packages("gifski")
+
+library(gganimate)
+library(gifski)
+library(ggridges)
+library(dplyr)
+library(ggplot2)
+library(plotly)
+library(treemapify)
+library(stringr)  # for str_to_title()
+library(tidyr)
+```
+
+```{r, echo=FALSE}
+
+# Calculate Age as of 31 December 2024
+
+library(lubridate)
+str(vacc_1524$birthdate) 
+
+vacc_1524 <- vacc_1524 %>%
+  mutate(
+    age = floor(time_length(difftime(as.Date("2024-12-31"), birthdate), unit = "years"))
+  )
+
+table (vacc_1524$age)
+
+
+# Categorize into Age Groups
+
+vacc_1524 <- vacc_1524 %>%
+  mutate(
+    age_group = cut(
+      age,
+      breaks = c(0, 9, 19, 29, 49, 100),
+      labels = c("0–9", "10–19", "20–29", "30–49", "50+"),
+      right = TRUE
+    )
+  )
+
+table (vacc_1524$age_group)
+
+
+# extract values like "201617", "201718".
+breast_cancer_data <- breast_cancer_data %>%
+  mutate(year_4digit = as.integer(gsub("^([0-9]{4}).*", "\\1", year)))
+
+table(breast_cancer_data$year_4digit)
+
+```
+
+**Line Chart – Breast Cancer Screening Trends by Region in Australia**
+
+The example below shows a **line chart** illustrating trends in **breast cancer screening rates** across Australian states from 2016 to 2019.
+
+-   Breast cancer screening rates across most Australian states appeared relatively consistent from 2016 to 2018, with minor year-to-year variations.
+
+-   A notable decline in screening rates is evident after 2018 and particularly in 2019, coinciding with the early stages of the COVID-19 pandemic
+
+**State-specific Observations:**
+
+-   **Tasmania (Tas)** consistently had the highest screening rate, around 60%, but showed a clear decline post-2018.
+
+-   The **Northern Territory (NT)** had the lowest rates, around 40%, also experiencing a slight decline during this period.
+
+-   Other states (**ACT, NSW, Qld, SA, Vic, WA**) maintained relatively stable rates (around 55%) until 2018, after which a distinct downturn is noticeable, particularly in Western Australia (WA) and Victoria (Vic).
+
+**Impact of COVID-19:**
+
+-   The observed decline in breast cancer screening from 2019 onwards aligns with the emergence of the COVID-19 pandemic, which disrupted routine healthcare services globally.
+
+This analysis underscores the importance of maintaining consistent access to healthcare services, particularly preventive screenings, even during periods of significant healthcare disruption.
+
+```{r}
+# Visualizing changes in screening rates (50–74 years) over time by state
+
+breast_cancer_data %>%
+  group_by(state, year_4digit) %>%  # group by state and year
+  summarise(mean_rate = mean(rate50_74, na.rm = TRUE), .groups = "drop") %>%
+  ggplot(aes(x = year_4digit, y = mean_rate, color = state)) +  # map axes and color
+  geom_line(size = 1.2) +  # trend lines
+  geom_point(size = 2) +   # points for each year
+  labs(
+    title = "Breast Cancer Screening Rates (50–74 yrs)",  
+    subtitle = "Aggregated by State and Year",           
+    x = "Year", y = "Screening Rate (%)",  # Axis labels
+    color = "State"   # Legend title
+  ) +
+  
+  theme_minimal()  
+```
+
+**Histogram – Distribution of Age**\
+Displays the frequency of vaccinated individuals by age, with a density line overlay to visualize the distribution shape.
+
+The example below shows a histogram illustrating the **age distribution** within our studied population. The distribution highlights a clear **bimodal pattern**, indicating two main age groups. The largest group comprises younger adults, predominantly around 20–30 years old, suggesting a significant representation of young adults. A smaller secondary group emerges around 55–65 years old, reflecting a noticeable segment of older adults. This pattern may indicate specific target groups or demographic characteristics relevant to the population from which the data was collected. Understanding these age clusters can help tailor appropriate health strategies, services, or interventions accordingly.
+
+```{r}
+vacc_1524 %>%
+  ggplot(aes(x = age)) +
+  geom_histogram(aes(y = ..density..), binwidth = 5, fill = "darkblue", color = "white", alpha = 0.7) +
+  geom_density(color = "red", size = 1.2) +
+  labs(title = "Age Distribution with Density Curve", x = "Age", y = "Density") +
+  theme_minimal()
+```
+
+**Pie Chart – Proportion by Vaccine Group**\
+Shows how vaccine groups are proportionally represented in the dataset. Useful for visualizing categorical outcomes.
+
+In the example below, the pie chart represents the proportion of vaccinations grouped into three categories:
+
+-   **Respiratory vaccines** account for the largest proportion, comprising **61%** of all vaccines administered.
+
+-   **Childhood vaccines** represent a significant portion as well, making up **30%**.
+
+-   The category labeled **Other** includes **8%** of vaccines administered, indicating a smaller but notable group of vaccinations outside the respiratory and childhood classifications.
+
+```{r}
+vacc_1524 %>%
+  count(vacc_group3) %>%
+  mutate(perc = n / sum(n), label = scales::percent(perc)) %>%
+  ggplot(aes(x = "", y = perc, fill = vacc_group3)) +
+  geom_col(width = 1) +
+  coord_polar(theta = "y") +
+  geom_text(aes(label = label), position = position_stack(vjust = 0.5)) +
+  labs(title = "Vaccine Group Proportions", fill = "Vaccine Group") +
+  theme_void()
+```
+
+**Bar Plot – Vaccination Count by Vaccine Group**\
+This plot compares the absolute count of vaccinations across groups, with horizontal bars for better readability of long labels.
+
+The example below shows a **horizontal bar chart** illustrating the total number of vaccinations administered, grouped into three distinct categories:
+
+-   **Respiratory vaccines** clearly represent the largest group, indicating that these vaccines were administered most frequently within the population.
+
+-   The **Other** category accounts for the smallest number of vaccinations, suggesting a relatively minor proportion of miscellaneous or specialized vaccines.
+
+```{r}
+vacc_1524 %>%
+  count(vacc_group3) %>%
+  ggplot(aes(x = reorder(vacc_group3, n), y = n, fill = vacc_group3)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  labs(title = "Vaccination Count by Group", x = NULL, y = "Count") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+**Grouped Bar Plot – Vaccination by Race and Vaccine Group**\
+The example below shows a **stacked bar chart** presenting the distribution of vaccinations by race and vaccine category.
+
+-   **Respiratory vaccines** (represented in blue) dominate across all racial groups, consistently making up the largest proportion of administered vaccines, especially noticeable among **Black** and **White** groups.
+
+-   **Childhood vaccines** (represented in red) form a significant proportion of vaccinations among the **Asian** and **Native** groups, highlighting targeted or population-specific vaccination programs for younger age groups within these communities.
+
+-   The **Other vaccines** category (represented in green) comprises a relatively minor proportion and appears more prominent among the **Asian** and **White** populations.
+
+```         
+**Implications:**
+
+These patterns may suggest varying public health strategies, demographic factors, or differing healthcare access across racial groups. Understanding these variations can guide targeted healthcare interventions and improve vaccine coverage equity.
+```
+
+```{r}
+# Prepare data: count vaccinations by race and vaccine group
+
+vacc_1524$race <- tools::toTitleCase(vacc_1524$race)
+
+vacc_summary <- vacc_1524 %>%
+  count(race, vacc_group3) %>%
+  group_by(race) %>%
+  mutate(prop = n / sum(n)) %>%
+  ungroup()
+
+ggplot(vacc_summary, aes(x = race, y = prop, fill = vacc_group3)) +
+  geom_col(position = "dodge") +
+  labs(
+    title = "Vaccination Distribution by Race and Vaccine Group",
+    x = "Race", y = "Proportion",
+    fill = "Vaccine Group"
+  ) +
+  scale_y_continuous(labels = scales::percent_format()) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+rm(vacc_summary)
+```
+
+**Stacked Bar Chart – Race by Vaccine Group**
+
+The example below shows a **stacked bar chart** illustrating the number of vaccinations administered, grouped by vaccine type and categorized by racial groups.
+
+-   The **White** population received the highest number of vaccinations across all vaccine categories (**Childhood, Other, and Respiratory vaccines**).
+
+-   Other racial groups (**Asian, Black, Native, and Other**) also received vaccinations, though in smaller numbers across each vaccine type, indicating ongoing efforts to reach diverse communities.
+
+-   **Respiratory vaccines** had the highest total number of vaccinations administered, suggesting these vaccines were a primary focus within the vaccination program.
+
+```         
+This data helps to illustrate which groups have higher vaccine coverage and highlights the importance of ensuring equitable access and distribution across all communities.
+```
+
+```{r}
+vacc_1524 %>%
+  mutate(race = stringr::str_to_title(race)) %>%
+  count(vacc_group3, race) %>%
+  ggplot(aes(x = vacc_group3, y = n, fill = race)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Stacked Bar Chart: Race by Vaccine Group", x = "Vaccine Group", y = "Count") +
+  theme_minimal()
+```
+
+**Boxplot – Age Distribution by Vaccine Group**\
+Visualizes how age varies across vaccine groups using standard boxplots.
+
+The example below shows a **box plot** depicting age distribution for three vaccine categories (**Childhood vaccines, Other vaccines, and Respiratory vaccines**):
+
+**Key Observations:**
+
+-   **Childhood vaccines** primarily cover younger ages, with most recipients under 25 years old. Some individuals beyond this age range appear as outliers, suggesting occasional vaccinations in older groups.
+
+-   **Respiratory vaccines** generally target an older age group, with the median age around 50 years, and a broad range from younger adults to elderly populations.
+
+-   The **Other vaccines** category has a wider age distribution overall, suggesting these vaccines serve diverse age groups, though with fewer individuals compared to the other two groups.
+
+**Implications:**
+
+This visualization highlights clear age-based targeting for different vaccine categories. Childhood vaccines are expectedly administered primarily to younger populations, while respiratory vaccines predominantly reach older adults. Understanding these age patterns helps to plan targeted public health campaigns and resource allocation effectively.
+
+```{r}
+vacc_1524 %>%
+  ggplot(aes(x = vacc_group3, y = age, fill = vacc_group3)) +
+  geom_boxplot() +
+  labs(title = "Age Distribution by Vaccine Group",
+       x = "Vaccine Group", y = "Age (Years)") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+**Boxplot with Jittered (Individual Data) Points**\
+Combines summary and raw data by overlaying individual age points on the boxplot.
+
+The example below shows a **boxplot with individual data points (jittered)**, displaying the **age distribution** of individuals across three vaccine groups: **Childhood vaccines, Other vaccines, and Respiratory vaccines**.
+
+-   **Childhood vaccines**:
+
+-   Most individuals who received childhood vaccines are young, with a median age around 10 years.
+
+-   The distribution is tightly concentrated, though some older individuals (outliers) also received these vaccines.
+
+-   The data points clearly cluster in younger age ranges, which is expected for this vaccine group.
+
+    -   **Respiratory vaccines**:
+
+        -   This group has the highest median age, around 40–50 years.
+
+        -   The data points are more evenly spread out across a wide age range, with many individuals above 60 years, indicating respiratory vaccines are frequently administered to older populations.
+
+    **Other vaccines**:
+
+    -   This group shows a wide range of ages, from infants to older adults.
+
+    -   While the median age is still relatively low, the spread is broader compared to childhood vaccines, suggesting this category includes various vaccines administered across different age groups.
+
+    **Implications:**
+
+    By combining summary statistics (boxplot) with individual-level data (dots), this chart offers a clear view of both overall trends and variation in vaccination by age. It confirms that vaccine distribution aligns with age-specific health needs—young children for childhood vaccines, and older adults for respiratory vaccines—while also showing the diversity within each group.
+
+```{r}
+vacc_1524 %>%
+  ggplot(aes(x = vacc_group3, y = age, fill = vacc_group3)) +
+  geom_boxplot(outlier.shape = NA, alpha = 0.6) +
+  geom_point(position = position_jitter(width = 0.2),
+             alpha = 0.3, color = "black", size = 1.2) +
+  labs(title = "Boxplot with Individual Data Points",
+       x = "Vaccine Group", y = "Age") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+**Boxplot with Violin Overlay**\
+Adds a violin plot to visualize the full distribution of ages while preserving boxplot summary stats.
+
+The plot below combines a **boxplot** and **violin plot** to display the age distribution across different vaccine groups: **Childhood vaccines**, **Other vaccines**, and **Respiratory vaccines**.
+
+-   **Childhood vaccines**:\
+    The age distribution is heavily concentrated among younger individuals, with most recipients under 25 years. The violin shape is widest near the lower ages, tapering quickly, which indicates that childhood vaccines are rarely given to older individuals.
+
+-   **Respiratory vaccines**:\
+    The distribution leans toward older age groups, with the median age higher than in other categories. The violin is widest in the 40–70 age range, suggesting respiratory vaccines are more commonly administered to older adults.
+
+<!-- -->
+
+-   **Other vaccines**:\
+    This group shows a broader age range. The shape suggests two areas of concentration: one among younger children and another around age 60–70, indicating this group includes vaccine types used across diverse age groups.
+
+    **Overall**, this combined plot provides both statistical summaries (via boxplot) and full distribution shapes (via violin plot), helping to clearly distinguish the age-related usage patterns across vaccine types.
+
+```{r}
+vacc_1524 %>%
+  ggplot(aes(x = vacc_group3, y = age, fill = vacc_group3)) +
+  geom_violin(alpha = 0.4, color = NA) +
+  geom_boxplot(width = 0.2, outlier.shape = NA) +
+  labs(title = "Boxplot with Violin Overlay", x = NULL, y = "Age") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+**Notched Boxplot – Median Comparison**\
+Notches allow a rough comparison of medians across groups. Non-overlapping notches suggest a significant difference.
+
+The plot below presents a **notched boxplot** showing the age distribution for each vaccine group—**Childhood vaccines**, **Other vaccines**, and **Respiratory vaccines**.
+
+-   The **notches** around the medians provide a visual guide for comparing the central values (medians) across groups. If the notches do not overlap, it suggests that the medians are likely different in a statistically meaningful way.
+
+**Key insights:**
+
+-   **Childhood vaccines** show a younger age distribution, with a median age around 10 years and a narrow spread. Outliers indicate a few older individuals also received these vaccines.
+
+-   **Respiratory vaccines** are mainly administered to older age groups, with the highest median age among the three categories.
+
+-   **Other vaccines** span a wider range of ages, but the median remains lower than that of respiratory vaccines.
+
+**Median Comparison:**
+
+-   The **non-overlapping notches** between childhood and respiratory vaccines suggest a clear difference in median ages.
+
+-   The **other vaccines** group overlaps slightly with both, indicating a more mixed age distribution and less pronounced difference.
+
+```{r}
+vacc_1524 %>%
+  ggplot(aes(x = vacc_group3, y = age, fill = vacc_group3)) +
+  geom_boxplot(notch = TRUE) +
+  labs(title = "Notched Boxplot: Vaccine Group vs Age", x = "Group", y = "Age") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+**Faceted Boxplot by Gender**\
+Breaks down the age distribution by vaccine group and gender to compare across subgroups.
+
+The plot below shows **boxplots of age distribution** by **vaccine group** (**Childhood**, **Respiratory**, and **Other vaccines**), separated into two panels by **gender** (**Female** and **Male**).
+
+**Key Observations:**
+
+-   **Childhood vaccines**:
+
+```         
+-    Age distributions are similar for both females and males, with most recipients being under 25 years.
+
+-    A few older outliers are present, especially among females, but the bulk of vaccine recipients are children and adolescents.
+```
+
+-   **Respiratory vaccines**:
+
+```         
+-    This group shows a wide age range in both genders, with median ages around 40–45 years.
+
+-    The distribution is slightly more spread out among males, but the overall trend remains consistent across genders.
+```
+
+-   **Other vaccines**:
+
+```         
+-    A notable gender difference is visible here:
+
+    -   Among **females**, recipients span a broad age range, including many older adults.
+
+    -    Among **males**, the age distribution is narrower and skewed toward younger adults.
+```
+
+**Summary:**
+
+This faceted view helps highlight how **age patterns differ by both vaccine group and gender**. While childhood and respiratory vaccine distributions are generally similar across genders, the **"Other" vaccine group shows more variation**, possibly reflecting differences in vaccine eligibility, access, or health needs.
+
+```{r}
+vacc_1524 %>%
+  ggplot(aes(x = vacc_group3, y = age, fill = vacc_group3)) +
+  geom_boxplot() +
+  facet_wrap(~ gender) +
+  labs(title = "Age by Vaccine Group, Faceted by Gender", x = NULL, y = "Age") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+**Ordered Boxplot – by Median Age**\
+Reorders vaccine groups by median age to emphasize differences in distribution centrality.
+
+The plot below shows **age distributions by vaccine group**, with the groups reordered by **median age** to highlight differences in central tendency.
+
+**Key Observations:**
+
+-   **Childhood vaccines** have the **lowest median age**, with most recipients being under 20 years. A small number of older individuals appear as outliers.
+
+-   **Other vaccines** show a **moderate median age**, but with a wide spread across age groups—ranging from infants to older adults. This suggests these vaccines are used in more varied contexts.
+
+-   **Respiratory vaccines** have the **highest median age**, with recipients typically ranging from their 30s to older adulthood, reflecting their common use among older populations.
+
+**Conclusion:**
+
+By ordering the boxplots by median age, this visual emphasizes the different age profiles targeted by each vaccine group. This approach helps communicate age-related trends in vaccine administration more clearly .
+
+```{r}
+vacc_1524 %>%
+  mutate(vacc_group3 = fct_reorder(vacc_group3, age, median, na.rm = TRUE)) %>%
+  ggplot(aes(x = vacc_group3, y = age, fill = vacc_group3)) +
+  geom_boxplot() +
+  labs(title = "Boxplot Ordered by Median Age", x = NULL, y = "Age") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+**Area Plot – Monthly Vaccination Trends Over Years**\
+Uses an area chart to show monthly vaccination volumes over multiple years, stacked by year.
+
+The area chart below displays **monthly vaccination counts** over multiple years (2015–2024), helping visualize seasonal and annual trends in vaccine uptake.
+
+**Key Observations:**
+
+-   **2020** stands out with the highest overall vaccination counts, especially between **April and June**, likely reflecting a surge due to public health responses such as the COVID-19 pandemic.
+
+-   In other years, vaccination numbers are more evenly distributed, with moderate peaks around **March–April** or **August–September**, possibly aligning with seasonal vaccination programs (e.g., flu campaigns).
+
+-   **2023 and 2024** show a relatively steady pattern throughout the year, with less fluctuation month-to-month.
+
+-   **Earlier years** (2015–2017) have lower and more variable volumes compared to recent years.
+
+**Conclusion:**
+
+This chart highlights both **seasonal vaccination patterns** and the **impact of specific public health events**, such as the elevated activity in 2020. Monitoring these trends over time supports planning for future vaccination campaigns and resource allocation.
+
+```{r}
+vacc_1524 %>%
+  count(vacc_year, vacc_month_name) %>%
+  ggplot(aes(x = vacc_month_name, y = n, group = vacc_year, fill = factor(vacc_year))) +
+  geom_area(alpha = 0.7, position = "identity") +
+  labs(title = "Monthly Vaccination Trends by Year",
+       x = "Month", y = "Number of Vaccinations", fill = "Year") +
+  theme_minimal()
+```
+
+**Faceted Plot – Proportional Vaccination Trends by Group and Race**\
+Displays how the proportion of vaccinations among different races changed across years, separately for each vaccine group.
+
+The faceted line plot below shows how the **proportion of vaccinations** among different **racial groups** has changed over time (**2015–2024**), presented separately for each **vaccine group**: **Childhood**, **Respiratory**, and **Other**.
+
+**Key Observations:**
+
+-   **Childhood vaccines**:
+
+```         
+-   Proportions vary notably year to year, especially for **Asian**, **Black**, and **Native** groups.
+
+-   The **"Other"** and **White** groups show a more consistent presence but with modest fluctuations.
+
+-    Some groups (e.g., Native) show a steady rise in recent years.
+
+**Respiratory vaccines**:
+
+-    Several racial groups (notably **Native**, **Black**, and **Other**) show periods of very high proportions, including years where proportions reached **100%**, likely due to small subgroup sample sizes or data dominance.
+
+-    The **White** and **Asian** groups tend to remain stable, though proportions fluctuate in certain years (e.g., 2020–2022).
+```
+
+-   **Other vaccines**:
+
+```         
+-   Representation is generally lower and more variable across all racial groups.
+
+-    The **White** group maintains a small but steady share throughout most years.
+
+**Interpretation:**
+```
+
+This faceted view enables comparisons within and between vaccine types, highlighting potential shifts in **vaccine access**, **uptake**, or **data coverage** by racial group over time. It also suggests where disparities or changes in focus may have occurred, helping to inform more equitable vaccination strategies.
+
+```{r}
+# Prepare data: floor year, count by group, compute proportions within each group
+
+# Clean and count total per race/year (for denominator)
+total_by_race_year <- vacc_1524 %>%
+  mutate(
+    age = as.integer(round(age)),
+    vacc_year = as.integer(floor(vacc_year)),
+    race = str_to_title(as.character(race))
+  ) %>%
+  count(vacc_year, race, name = "total_race_year")
+
+#  Count per vaccine group (for numerator), then join
+vacc_plot_data <- vacc_1524 %>%
+  mutate(
+    age = as.integer(round(age)),
+    vacc_year = as.integer(floor(vacc_year)),
+    race = str_to_title(as.character(race))
+  ) %>%
+  count(vacc_year, race, vacc_group3, name = "n") %>%
+  left_join(total_by_race_year, by = c("vacc_year", "race")) %>%
+  mutate(prop = n / total_race_year)
+
+# Plot proportion by race within group
+ggplot(vacc_plot_data, aes(x = vacc_year, y = prop, color = race)) +
+  geom_line(size = 1) +
+  facet_wrap(~ vacc_group3) +
+  scale_y_continuous(labels = percent_format()) +
+  scale_x_continuous(breaks = pretty(unique(vacc_plot_data$vacc_year))) +
+  labs(
+    title = "Proportion of Race Within Vaccine Groups by Year",
+    x = "Year", y = "Proportion", color = "Race"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+rm(vacc_plot_data, total_by_race_year)
+
+```
+
+**Statistical Overlay – Regression Line on Vaccination Age**\
+Adds a linear regression to examine the relationship between income and age at vaccination.
+
+The scatterplot below visualizes the relationship between **income** (horizontal axis) and **age at vaccination** (vertical axis), with a **linear regression line** and confidence band overlaid to summarize the trend.
+
+**Key Observations:**
+
+-   The fitted **regression line** shows a **slight negative slope**, suggesting that as income increases, the age at which individuals receive vaccination tends to **decrease modestly**.
+
+-   The **confidence band** (shaded region) around the line is relatively narrow, indicating a fair level of certainty in the trend across the central range of income.
+
+-   The majority of data points are concentrated in the lower income ranges, while higher income values are more sparsely populated and show greater variability.
+
+```         
+**Interpretation:**
+```
+
+This trend suggests a **possible inverse relationship** between income and vaccination age—individuals with higher income may be more likely to receive vaccines at younger ages. This could reflect differences in healthcare access, awareness, or proactive health behaviors associated with income level.
+
+```{r}
+vacc_1524 %>%
+  ggplot(aes(x = income, y = age)) +
+  geom_point(alpha = 0.3, color = "gray50") +
+  geom_smooth(method = "lm", se = TRUE, color = "blue") +
+  labs(
+    title = "Association Between Income and Age at Vaccination",
+    x = "Income", y = "Age"
+  ) +
+  theme_minimal()
+```
+
+**Regression Plot – Age vs Income by Vaccine Group (Log Scale)**\
+Adds linear regression and facets by vaccine group. The x-axis is log-scaled to handle skewed income data.
+
+The plot below shows **scatterplots with linear regression lines**, examining the relationship between **income** and **age at vaccination**. The plots are faceted by **vaccine group**: **Childhood**, **Other**, and **Respiratory**. The x-axis uses a **logarithmic scale** to better handle the skewed distribution of income.
+
+**Key Observations:**
+
+-   **Childhood vaccines**:
+
+```         
+-    A **slight negative trend** is observed, indicating that as income increases, age at vaccination tends to decrease slightly.
+
+-    This may reflect earlier or more timely vaccinations among higher-income individuals for childhood vaccines.
+```
+
+-   **Other vaccines**:
+
+```         
+-   The regression line is nearly flat with a wide confidence interval, suggesting **no strong or consistent relationship** between income and age at vaccination in this group.
+
+-    This likely reflects diverse vaccine purposes and use across a broad age and income range.
+```
+
+-   **Respiratory vaccines**:
+
+```         
+-   A **mild negative trend** is also seen here, where higher-income individuals may receive respiratory vaccines at slightly younger ages.
+
+-    However, the relationship is subtle and the confidence interval overlaps considerably with the regression line.
+
+**Interpretation:**
+```
+
+While the strength of association varies across groups, both the childhood and respiratory vaccine panels suggest a small trend where **higher income is associated with younger age at vaccination**. This may be related to differences in **access**, **preventive health behaviors**, or **healthcare utilization** by income level.
+
+```{r}
+vacc_1524 %>%
+  mutate(vacc_group3 = str_to_title(vacc_group3)) %>%
+  ggplot(aes(x = income, y = age)) +
+  geom_point(alpha = 0.3, color = "gray50") +
+  geom_smooth(method = "lm", se = TRUE, color = "blue") +
+  scale_x_log10(labels = scales::comma_format()) +
+  facet_wrap(~ vacc_group3) +
+  labs(
+    title = "Association Between Income and Age at Vaccination",
+    x = "Income (log scale)", y = "Age"
+  ) +
+  theme_minimal()
+```
+
+**ECDF – Age at Vaccination**
+
+The empirical cumulative distribution function (ECDF) shows the proportion of individuals vaccinated at or below each age. This helps visualize the age distribution in a cumulative way.
+
+The plot below presents shows the **cumulative proportion** of individuals who received a vaccination at or below each age.
+
+**Key Observations:**
+
+-   The curve rises steeply in the early age range, indicating that a large proportion of individuals were vaccinated at younger ages (e.g., before 30).
+
+-   By around **age 50**, approximately **80%** of individuals had been vaccinated.
+
+-   The curve flattens out after age 75, suggesting fewer vaccinations occur at older ages.
+
+**Interpretation:**
+
+The ECDF provides an intuitive way to understand the **distribution of vaccination ages**. It highlights that most vaccinations occur in **childhood and early adulthood**, with fewer individuals vaccinated later in life. This cumulative view complements histograms and boxplots by showing the proportion of individuals affected up to each age.
+
+```{r}
+vacc_1524 <- vacc_1524 %>% filter(income > 0, !is.na(age))
+
+vacc_1524 %>%
+  ggplot(aes(x = age)) +
+  stat_ecdf(geom = "step", color = "steelblue") +
+  labs(title = "ECDF of Age at Vaccination", x = "Age", y = "Cumulative Proportion") +
+  theme_minimal()
+```
+
+**Treemap – Vaccination by Race and Vaccine Group**
+
+This treemap visualizes the distribution of vaccinations by race and vaccine group. Larger areas indicate more individuals within each combination.
+
+The treemap below displays the **distribution of vaccinations** across **racial groups**, further categorized by **vaccine group** (Childhood, Respiratory, and Other). Each rectangle represents a combination of race and vaccine type, with **area size corresponding to the number of individuals** vaccinated.
+
+**Key Observations:**
+
+-   The **White** population accounts for the **largest share overall**, with:
+
+```         
+-    **788 individuals (50.7%)** in the **Respiratory** vaccine group.
+
+-    **404 individuals (26.0%)** in the **Childhood** vaccine group.
+
+-    **114 individuals (7.3%)** in the **Other** vaccine group.
+```
+
+-   Other racial groups have smaller shares:
+
+```         
+-    **Black** individuals make up a modest proportion across groups, particularly **4.5%** in the Respiratory group and **1.4%** in Childhood vaccines.
+
+-    **Asian** individuals represent **4.4%** of Respiratory vaccines and **2.1%** of Childhood vaccines.
+
+-    **Native** and **Other** groups have minimal representation overall.
+
+**Interpretation:**
+```
+
+This treemap visually emphasizes the dominant contribution of the White population across all vaccine types, especially for respiratory vaccines. It also illustrates disparities in representation among racial groups, which can be important for assessing **equity in vaccine access**, **uptake**, and **program targeting**.
+
+```{r}
+# Cross-platform “new device”:
+dev.new(width = 8, height = 6)  
+
+p <- vacc_1524 %>%
+  count(race, vacc_group3) %>%
+  mutate(race = str_to_title(race)) %>%
+  ggplot(aes(area = n, fill = vacc_group3, label = race)) +
+  geom_treemap() +
+  geom_treemap_text(colour = "white", place = "centre", grow = TRUE) +
+  labs(
+    title = "Treemap: Vaccination by Race and Vaccine Group",
+    fill  = "Vaccine Group"
+  ) +
+  theme_minimal()
+
+print(p)
+
+rm (p)
+```
+
+```{r}
+#  Treemap - with Labels Showing Counts and Proportions by Race and vaccine Group
+vacc_1524 %>%
+  count(race, vacc_group3) %>%
+  mutate(
+    race = str_to_title(race),
+    total = sum(n),
+    proportion = n / total,
+    label_text = paste0(race, "\n", n, " (", percent(proportion, accuracy = 0.1), ")")
+  ) %>%
+  ggplot(aes(area = n, fill = vacc_group3, label = label_text)) +
+  geom_treemap() +
+  geom_treemap_text(colour = "white", place = "centre", grow = TRUE, reflow = TRUE) +
+  labs(
+    title = "Treemap: Vaccination by Race and Vaccine Group",
+    fill = "Vaccine Group"
+  ) +
+  theme_minimal()
+```
+
+**Correlation Heatmap – Numeric Variables**
+
+This heatmap displays Pearson correlation coefficients between selected numeric variables. Strong positive or negative values help identify relationships worth further analysis.
+
+The heatmap below displays **Pearson correlation coefficients** between selected numeric variables: **age**, **income**, **healthcare expenses**, and **healthcare coverage**. Correlation values range from **-1 to 1**, where values closer to ±1 indicate stronger relationships.
+
+**Key Observations:**
+
+-   **Age and healthcare coverage** show a **strong positive correlation** (**0.65**), suggesting that as individuals age, they are more likely to have greater healthcare coverage.
+
+-   **Age and healthcare expenses** are also **positively correlated** (**0.66**), indicating that older individuals tend to incur higher healthcare costs.
+
+-   **Healthcare coverage and healthcare expenses** show a **moderate positive correlation** (**0.44**), which may reflect that those with more coverage also utilize healthcare services more frequently or thoroughly.
+
+-   **Income** is **not strongly correlated** with any other variable in this set, with the highest being a negligible **0.02** with healthcare coverage and a slightly negative value with age (**-0.04**) and expenses (**-0.05**).
+
+```         
+**Interpretation:**
+```
+
+This heatmap highlights potential relationships that may inform further analysis—especially the connections between **age, coverage, and expenses**. In contrast, **income appears relatively independent** of the other variables in this dataset.
+
+```{r}
+numeric_vars <- vacc_1524 %>%
+  select(age, income, healthcare_expenses, healthcare_coverage) %>%
+  na.omit()
+
+cor_matrix <- round(cor(numeric_vars), 2)
+
+as.data.frame(as.table(cor_matrix)) %>%
+  rename(Var1 = Var1, Var2 = Var2, Correlation = Freq) %>%
+  ggplot(aes(x = Var1, y = Var2, fill = Correlation)) +
+  geom_tile(color = "white") +
+  geom_text(aes(label = Correlation), color = "black") +
+  scale_fill_gradient2(low = "red", high = "blue", mid = "white", midpoint = 0) +
+  labs(title = "Correlation Heatmap of Numeric Variables", x = NULL, y = NULL) +
+  theme_minimal()
+```
+
+**Ridgeline Plot – Age by Vaccine Group**
+
+This ridgeline plot shows the age distribution for each vaccine group. It highlights where age densities differ across categories.
+
+The ridgeline plot below shows **age distributions** for three vaccine groups: **Childhood**, **Other**, and **Respiratory**. Each layer represents the **density of ages** within a vaccine category, allowing for visual comparison of where individuals are most commonly vaccinated within each group.
+
+**Key Observations:**
+
+-   **Childhood vaccines** show a clear peak at very young ages, as expected. The density drops rapidly as age increases, with a small secondary bump around middle age, possibly reflecting catch-up vaccinations or data irregularities.
+
+-   **Other vaccines** have a **bimodal distribution** with one peak in younger adults and another in older adults (around 70+ years), suggesting they are used across multiple life stages.
+
+-   **Respiratory vaccines** have a **broad distribution**, with a peak density around **60–70 years**, consistent with routine respiratory vaccinations for older adults (e.g., influenza or pneumococcal vaccines).
+
+```         
+**Interpretation:**
+```
+
+This visualization effectively highlights **differences in age targeting** across vaccine groups. It shows that:
+
+-   Childhood vaccines are concentrated in early life,
+
+-   Other vaccines are used more broadly across age ranges, and
+
+-   Respiratory vaccines are predominantly administered to older populations.
+
+```{r}
+vacc_1524 %>%
+  mutate(vacc_group3 = stringr::str_to_title(vacc_group3)) %>%
+  ggplot(aes(x = age, y = vacc_group3, fill = vacc_group3)) +
+  geom_density_ridges(scale = 1.5, alpha = 0.6, color = "white") +
+  labs(title = "Ridgeline Plot: Age Distribution by Vaccine Group", x = "Age", y = "Vaccine Group") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+**Interactive Plot – Income vs Age by Race**
+
+This interactive scatter plot shows the relationship between income and age, colored by race. Hovering reveals more details including group and income.
+
+```{r}
+p <- vacc_1524 %>%
+  mutate(race = stringr::str_to_title(race)) %>%
+  ggplot(aes(x = income, y = age, color = race,
+             text = paste("Race:", race,
+                          "<br>Group:", vacc_group3,
+                          "<br>Income:", income,
+                          "<br>Age:", age))) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "gray30") +
+  labs(title = "Interactive: Income vs Age by Race",
+       x = "Income", y = "Age", color = "Race") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+ggplotly(p, tooltip = "text")
+rm(p)
+```
+
+**Animation – Vaccination Trends Over Years**
+
+This animation shows how vaccination counts across vaccine groups change over time. It helps spot temporal trends and emerging patterns.
+
+```{r}
+anim_plot <- vacc_1524 %>%
+  mutate(vacc_year = as.integer(floor(vacc_year))) %>%
+  count(vacc_year, vacc_group3) %>%
+  ggplot(aes(x = vacc_group3, y = n, fill = vacc_group3)) +
+  geom_col(show.legend = FALSE) +
+  labs(title = 'Year: {frame_time}', x = 'Vaccine Group', y = 'Count') +
+  theme_minimal() +
+  transition_time(vacc_year) +
+  ease_aes('linear')
+
+anim_file <- tempfile(fileext = ".gif")
+anim <- animate(anim_plot, nframes = 100, fps = 10, renderer = gifski_renderer(anim_file))
+print(anim)
+
+rm(anim_plot, anim_file, anim)
+```
+
+**Animation – Breast Cancer Screening Uptake by State**
+
+This animated bar chart shows breast cancer screening uptake over time for each Australian state. It uses faceting to compare regional trends.
+
+```{r}
+breast_anim <- breast_cancer_data %>%
+  filter(!state %in% c("Other", "Unknown")) %>%
+  mutate(year_4digit = as.integer(year_4digit)) %>%
+  group_by(state, year_4digit) %>%
+  summarise(total_screened = sum(part50_74, na.rm = TRUE), .groups = "drop") %>%
+  ggplot(aes(x = year_4digit, y = total_screened, fill = state)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ state) +
+  labs(title = 'Year: {frame_time}', x = 'Year', y = 'Women Screened (50–74 yrs)') +
+  theme_minimal() +
+  transition_time(year_4digit) +
+  ease_aes('linear')
+
+screening_gif <- tempfile(fileext = ".gif")
+anim_screen <- animate(breast_anim, nframes = 100, fps = 10, renderer = gifski_renderer(screening_gif))
+print(anim_screen)
+
+rm(breast_anim, screening_gif, anim_screen)
+```
+
+### **🔹 Formatting, themes and fonts of figures**
+
+**Heatmap – Number of Vaccinations by Month and Weekday** Highlights vaccination activity patterns by day of week and month. Darker tiles represent higher counts.
+
+The heatmap below demonstrates the **number of vaccinations administered** across **each day of the week** and **each calendar month**. Color intensity indicates the relative number of vaccinations, with darker red representing higher uptake and pale yellow representing lower activity.
+
+**Key Observations:**
+
+-   **Saturday consistently shows high uptake**, particularly in **October, September, and July**, suggesting that weekends may be more accessible or preferred for vaccination appointments.
+
+-   **Tuesday in May** and **Wednesday in August** also show pronounced peaks, likely linked to specific campaign efforts or seasonal programs.
+
+-   **Thursday and Friday** generally have moderate activity, while **Sunday and Monday** tend to have lower vaccination counts across most months.
+
+-   Overall, the **summer and early fall months (July to October)** show increased uptake across several weekdays, possibly aligning with back-to-school vaccination drives or respiratory vaccine rollouts.
+
+```         
+**Interpretation:**
+```
+
+The plot reveals both **seasonal** and **weekly rhythms** in vaccination behavior. Recognizing these patterns can guide better **scheduling of clinics**, **resource planning**, and **public messaging** to align with high-demand periods and improve overall vaccine accessibility.
+
+```{r, warning=FALSE, message=FALSE}
+# ................Without  Adding the long Title ........................................................
+# ..............................................................................................
+
+# --- Order weekday and month factors for proper axis display ---
+# --- Convert original vaccination date to Eastern Time (Massachusetts local time) ---
+# Assumes vacc_date is POSIXct or character in UTC or local system time
+vacc_1524 <- vacc_1524 %>%
+  mutate(
+    vacc_datetime_et = with_tz(as.POSIXct(vacc_date, tz = "UTC"), tzone = "America/New_York"),  # Adjust timezone to Eastern Time
+    vacc_weekday = wday(vacc_datetime_et, label = TRUE, abbr = FALSE),                          # Extract weekday (e.g., Monday)
+    vacc_month_name = month(vacc_datetime_et, label = TRUE, abbr = FALSE)                       # Extract month (e.g., January)
+  )
+
+# --- Order weekday and month factors for proper axis display ---
+vacc_1524 <- vacc_1524 %>%
+  mutate(
+    vacc_month_name = factor(vacc_month_name, levels = month.name),  # Ensure months are in calendar order
+    vacc_weekday = factor(vacc_weekday, levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))  # Ensure weekdays are in logical order
+  )
+
+# --- Create heatmap of vaccination counts by weekday and month ---
+vacc_1524 %>%
+  count(vacc_weekday, vacc_month_name) %>%  # Count number of vaccinations by weekday and month
+  ggplot(aes(x = vacc_weekday, y = vacc_month_name, fill = n)) +     # Map weekday to x-axis, month to y-axis, and fill by count
+  geom_tile(color = "white") +                                       # Draw heatmap tiles with white border for readability
+  scale_fill_gradientn(                                              # Use custom yellow-to-red color scale
+    colors = c("#ffffcc", "#ffeda0", "#feb24c", "#f03b20", "#bd0026"),
+    breaks = scales::pretty_breaks(n = 5),                           # Auto-select 5 good breakpoints for legend
+    name = "Vaccinated Number"                                       # Legend title
+  ) +
+  labs(
+    title = "Vaccination Uptake by Weekday and Month",               # Plot title
+    subtitle = "Timestamps interpreted as US Eastern Time (Massachusetts)",  # Timezone context
+    x = "Weekday", y = "Month", fill = "Vaccinated Number",          # Axis and legend labels
+    caption = "Note: Original timestamps converted from UTC to America/New_York"
+  ) +
+  theme_minimal() +
+  theme(
+    text = element_text(family = "Times New Roman"),                 # Font style
+    legend.position = "bottom",                                      # Move legend below the plot
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10, face = "bold"),  # X-axis label formatting
+    axis.text.y = element_text(size = 10, face = "bold"),            # Y-axis label formatting
+    axis.title.x = element_text(face = "bold", size = 11),
+    axis.title.y = element_text(face = "bold", size = 11),
+    plot.title = element_text(size = 12, face = "bold"),
+    legend.title = element_text(size = 10),
+    legend.text = element_text(size = 8)
+  )
+
+
+# Use figure title below to render in Quarto or Rmarkdown 
+#"Figure XX: Vaccination uptake by weekday and month among individuals aged 15–24, 2016–2024."
+```
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Install patchwork if not already installed
+if (!requireNamespace("patchwork", quietly = TRUE)) {install.packages("patchwork")}
+library(patchwork)
+
+```
+
+```{r warning=FALSE, message=FALSE}
+# ................Adding the long Title ........................................................
+# ..............................................................................................
+
+# --- Convert original vaccination date to Eastern Time (Massachusetts local time) ---
+# Assumes vacc_date is POSIXct or character in UTC or local system time
+vacc_1524 <- vacc_1524 %>%
+  mutate(
+    vacc_datetime_et = with_tz(as.POSIXct(vacc_date, tz = "UTC"), tzone = "America/New_York"),  # Adjust timezone to Eastern Time
+    vacc_weekday = wday(vacc_datetime_et, label = TRUE, abbr = FALSE),                          # Extract weekday (e.g., Monday)
+    vacc_month_name = month(vacc_datetime_et, label = TRUE, abbr = FALSE)                       # Extract month (e.g., January)
+  )
+
+# --- Order weekday and month factors for proper axis display ---
+vacc_1524 <- vacc_1524 %>%
+  mutate(
+    vacc_month_name = factor(vacc_month_name, levels = month.name),  # Ensure months are in calendar order
+    vacc_weekday = factor(vacc_weekday, levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))  # Ensure weekdays are in logical order
+  )
+
+# --- Create heatmap of vaccination counts by weekday and month ---
+p <- vacc_1524 %>%
+  count(vacc_weekday, vacc_month_name) %>%  # Count number of vaccinations by weekday and month
+  ggplot(aes(x = vacc_weekday, y = vacc_month_name, fill = n)) +     # Map weekday to x-axis, month to y-axis, and fill by count
+  geom_tile(color = "white") +                                       # Draw heatmap tiles with white border for readability
+  scale_fill_gradientn(                                              # Use custom yellow-to-red color scale
+    colors = c("#ffffcc", "#ffeda0", "#feb24c", "#f03b20", "#bd0026"),
+    breaks = scales::pretty_breaks(n = 5),                           # Auto-select 5 good breakpoints for legend
+    name = "Vaccinated Number"                                       # Legend title
+  ) +
+  labs(
+    title = "Vaccination Uptake by Weekday and Month",               # Plot title
+    x = "Weekday", y = "Month", fill = "Vaccinated Number"           # Axis and legend labels
+  ) +
+  theme_minimal() +
+  theme(
+    text = element_text(family = "Times New Roman"),                 # Font style
+    legend.position = "bottom",                                      # Move legend below the plot
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10, face = "bold"),  # X-axis label formatting
+    axis.text.y = element_text(size = 10, face = "bold"),            # Y-axis label formatting
+    axis.title.x = element_text(face = "bold", size = 11),
+    axis.title.y = element_text(face = "bold", size = 11),
+    plot.title = element_text(size = 12, face = "bold"),
+    legend.title = element_text(size = 10),
+    legend.text = element_text(size = 8)
+  )
+
+# --- Add descriptive figure caption using patchwork's plot_annotation() ---
+final_plot <- p + plot_annotation(
+  caption = "Figure XX: Vaccination uptake by weekday and month among individuals aged 15–24, 2016–2024.",
+  theme = theme(
+    plot.caption = element_text(
+      size = 10, family = "Times New Roman", hjust = 0
+    )
+  )
+)
+
+# --- Display the final plot with caption ---
+final_plot
+
+# setwd ("C:/Users/User/Desktop/Materials_ Course and proposals/VIP collection for Syntax code or project titles/R codes/Data Manipulation and Wrangling")
+# 
+# # Save plots
+# ggsave("Heatmap_vaccination_pattern by day and month.TIFF", plot = last_plot(), device = "tiff", width = 10, height = 6, units = "in")
+# ggsave("Heatmap_vaccination_pattern by day and month.svg", plot = last_plot(), device = "svg", width = 10, height = 6, units = "in")
+
+rm (p, final_plot)
+```
+
+## **PART VII: SHINY App: BUILDING WEB APPS**
+
+8.1 **UI** `fluidPage()`, `sidebarLayout()`, `sidebarPanel()`, `mainPanel()`, `tabsetPanel()`, `tags$style()`
+
+8.2 **Server** `reactive()`, `observeEvent()`, `req()`, `renderPlotly()`, `renderDT()`, `modalDialog()`, `showModal()`
+
+8.3 **App Launch** `shinyApp(ui, server)`
+
+8.4 **Inputs** `sliderInput()`, `selectInput()`, `colourInput()`, `actionButton()`, `downloadButton()`
+
+8.5 **Outputs** `plotlyOutput()`, `DTOutput()`, `datatable()`, `formatStyle()`
+
+8.6 **DT Features** `extensions = 'Buttons'`, export options: `copy`, `csv`, `excel`, `pdf`, `print`
+
+8.7 **Styling and Themes** `tags$style()`, (`shinythemes::shinytheme()` – loaded but not applied)
+
+Shiny is a web application framework for R that allows analysts to build interactive dashboards and tools using familiar syntax. It provides a structured approach to turning R scripts into accessible apps for broader audiences.
+
+A typical Shiny app includes two core components:
+
+-   **UI (User Interface)**: Defines layout, inputs, and outputs shown on the screen interface.
+-   **Server**: Contains the logic that processes data and responds to user interactions.
+
+Shiny apps can include multiple views (tabs), export buttons, dynamic filtering, charts, and customized design themes.
+
+------------------------------------------------------------------------
+
+### **🔹 UI Layout and Page Structure**
+
+-   `fluidPage()`: Defines the page layout.
+-   `sidebarLayout()`, `sidebarPanel()`, `mainPanel()`: Organize inputs and outputs side-by-side.
+-   `tabsetPanel()`: Allows tab navigation for multi-page apps.
+-   `tags$style()`, `shinythemes::shinytheme()`: Add or apply custom styles/themes.
+
+------------------------------------------------------------------------
+
+### **🔹 Server Logic and Reactivity**
+
+-   `reactive()`: Creates reactive data or expressions.
+-   `observeEvent()`: Executes code when a trigger changes.
+-   `req()`: Validates necessary input before proceeding.
+-   Output functions: `renderPlotly()`, `renderDT()`, `renderText()`, `renderTable()`.
+
+------------------------------------------------------------------------
+
+### **🔹 Inputs and Outputs**
+
+| **Type** | **Function** | **Purpose** |
+|----|----|----|
+| Input | `sliderInput()` | Select a numeric value or range |
+| Input | `selectInput()` | Dropdown menu to choose a category |
+| Input | `colourInput()` | Select a color |
+| Input | `actionButton()` | Trigger processing on click |
+| Input | `downloadButton()` | Download output tables or data |
+| Output | `plotlyOutput()` | Render interactive plots using Plotly |
+| Output | `DTOutput()`, `datatable()` | Render interactive tables |
+| Output | `formatStyle()` | Apply styling (e.g., color, font) to tables |
+
+------------------------------------------------------------------------
+
+### **🔹 Table Export Options (DT Extension)**
+
+-   Add `extensions = 'Buttons'` to enable table exports.
+-   Export types: `"copy"`, `"csv"`, `"excel"`, `"pdf"`, `"print"`.
+
+------------------------------------------------------------------------
+
+### **🔹 Launching the App**
+
+-   `shinyApp(ui, server)`: Runs the Shiny app combining both UI and server logic.
+-   Apps can be hosted on ShinyApps.io, internal servers, or embedded in R Markdown dashboards.
+
+------------------------------------------------------------------------
+
+The Shiny app code below demonstrates how interactive visualizations can be built using R to present health data in an accessible and user-friendly format. Specifically, it explores breast cancer screening uptake across states, years, and age groups in Australia. The app enhances user engagement through customizable features and immediate feedback mechanisms.
+
+Key capabilities demonstrated include: - Dynamic UI generation using `fluidPage()`, `sidebarLayout()`, and interactive widgets - State selection using a dropdown (`selectInput()`), which scales better than radio buttons - Age group filtering with a multiple selection input - Quantile-based filtering with `sliderInput()` for rate grouping - Color customization of output using `colourInput()` for personalizing table aesthetics - A modal popup (`modalDialog()`) triggered by a help button to explain data sources - Export options via `downloadButton()` and `DT` export buttons for multiple file formats - Real-time data filtering using `reactive()` expressions to tailor output to user input - An interactive line plot rendered via `plotly` and `ggplot2` for visualization - Fully styled, downloadable data table with `DT::renderDT()` and export capabilities
+
+See the live app at the following platforms
+
+-   **AnalyticsHub YouTube**: <https://studio.youtube.com/video/5V7SPBH-8BE/edit>
+-   **Live App**: <https://j9eu4e-habtamu-mellie0bizuayehu.shinyapps.io/Breast_Cancer_Screening_Shiny_App/>
+
+```{r, results='hide', warning=FALSE, message=FALSE}
+
+# Install required packages if not already installed
+required_packages <- c("shiny", "ggplot2", "plotly", "DT", "dplyr", "shinyjs", "shinyWidgets", "scales", "colourpicker")
+
+# Install missing ones
+new_packages <- required_packages[!(required_packages %in% installed.packages()[,"Package"])]
+if(length(new_packages)) install.packages(new_packages)
+
+# Load packages
+library(shiny)
+library(ggplot2)
+library(plotly)
+library(DT)
+library(dplyr)
+library(shinyjs)
+library(shinyWidgets)
+library(scales)
+library(colourpicker)
+
+
+# load the data
+load("C:/Users/User/Desktop/Materials_ Course and proposals/VIP collection for Syntax code or project titles/R codes/Shiny App BC Screening/Breast Cancer Screening.RData")
+
+```
+
+```{r, eval=FALSE}
+# -------------------Shiny Application for Breast Cancer Screening---------------------
+
+
+# ------------------- UI and Server Definition ---------------------
+
+# Define custom CSS for styling buttons and other UI elements
+ui <- fluidPage(
+  
+  # Application title displayed at the top of the app
+  h1("Breast Cancer Screening Uptake"),
+
+  # Apply custom styling to the download button
+  tags$style(HTML("
+    #download_data {
+      background: orange;
+      font-size: 20px;
+    }
+  ")),  
+
+  # Layout structure: sidebar for inputs and main panel for outputs
+  sidebarLayout(
+    sidebarPanel(
+      
+      # Quantile-based slider to filter screening rate
+      sliderInput("rate_10_group", "Rate Group", 
+                  min = min(breast_cancer_long$rate_10_group, na.rm = TRUE), 
+                  max = max(breast_cancer_long$rate_10_group, na.rm = TRUE), 
+                  value = c(5, 7)),
+      
+      # Dropdown menu for state selection (simplifies and scales better than radio buttons)
+      selectInput("state", "Select State",  
+                  choices = unique(breast_cancer_long$state), 
+                  selected = "WA"),
+
+      # Multi-select dropdown for age groups (allows viewing multiple demographics)
+      selectInput("age_group", "Women's Age Group", 
+                  choices = unique(breast_cancer_long$age_group), 
+                  multiple = TRUE,
+                  selected = unique(breast_cancer_long$age_group)[1]),
+
+      # Add colour input to allow users to control table font colour
+      colourInput("color", "Point color", value = "blue"),
+
+      # Add a help button that triggers a modal popup for guidance
+      actionButton("show_help", "Help"),
+
+      # Add a download button for exporting filtered dataset
+      downloadButton("download_data", "Download Data")
+    ),
+
+    mainPanel(
+      # Render the interactive line chart
+      plotlyOutput("plot"),
+
+      # Render the data table output
+      DTOutput("table")
+    )
+  )
+)
+
+# Define server-side logic for rendering outputs and interactivity
+server <- function(input, output, session) {
+
+  # Show Help Modal: explains data source when help button is clicked
+  observeEvent(input$show_help, {
+    showModal(modalDialog(
+      title = "Help",
+      "This data was compiled from the Australian Institute of Health and Welfare."
+    ))
+  })
+
+  # Reactive expression to filter and summarize the dataset based on inputs
+  filtered_data <- reactive({
+    req(input$rate_10_group, input$state, input$age_group)  # Ensure all inputs are available
+
+    breast_cancer_long %>%
+      filter(rate_10_group >= input$rate_10_group[1] & 
+               rate_10_group <= input$rate_10_group[2],
+             state == input$state,
+             age_group %in% input$age_group) %>%
+      group_by(year, state, age_group) %>%
+      summarise(year = as.integer(year),  # Convert year to integer for plotting
+                rate = round(mean(rate, na.rm = TRUE), 1),  # Average screening rate
+                .groups = "drop") 
+  })
+
+  # Render Table: displays filtered data in an interactive table with export options
+  output$table <- renderDT({
+    datatable(filtered_data(), 
+              options = list(
+                pageLength = 10,  # Show 10 rows per page
+                dom = 'Bfrtip',  # Include Buttons (copy, csv, pdf, etc.)
+                buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                class = "display nowrap compact"  # Responsive and compact table design
+              ),
+              extensions = 'Buttons',
+              style = "bootstrap", 
+              class = "table table-striped table-bordered") %>%
+      formatStyle(columns = names(filtered_data()), color = input$color)  # Use selected color
+  })
+
+  # Download Handler: enables users to download filtered data
+  output$download_data <- downloadHandler(
+    filename = "Breast_cancer_screening_data.csv",
+    content = function(file) {
+      write.csv(filtered_data(), file, row.names = FALSE)
+    }
+  )
+
+  # Render Plot: displays line plot of screening rates over time by age group
+  output$plot <- renderPlotly({
+    df <- filtered_data()
+
+    p <- ggplot(df, aes(x = year, y = rate, color = age_group, group = interaction(state, age_group))) +
+      geom_line(size = 1) +  # Draw lines to show trend
+      geom_point(size = 3) +  # Add points to emphasize data values
+      labs(title = "Breast Cancer Screening Uptake", 
+           x = "Year", 
+           y = "Screening Rate",
+           color = "Age Group") +
+      theme_minimal()
+
+    ggplotly(p)  # Convert ggplot to interactive plotly chart
+  })
+}
+
+# Launch the app
+shinyApp(ui, server)
+```

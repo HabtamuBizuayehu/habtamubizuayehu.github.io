@@ -1,0 +1,76 @@
+---
+title: "Interactive Dashboard: Shiny App"
+description: |
+  Interactive Dashboard via R Shiny application: breast cancer screening.
+author: "Habtamu Bizuayehu"
+website: "https://habtamubizuayehu.com/"
+github: "https://github.com/HabtamuBizuayehu"
+orcid: "https://orcid.org/0000-0002-1360-4909"
+date: 2025-08-05
+image: "shinyapp.png"
+highlight-style: github
+output-dir: docs
+categories: [Shiny, Interactive dashboards]
+format: html
+toc: true
+toc-depth: 3
+self-contained: true
+number-sections: false
+code-fold: false
+code-tools: true
+code-summary: "Show the code"
+theme: united
+knitr: 
+ opts_knit: 
+   warning: false
+   message: false
+editor: visual
+---
+
+## 🧪 Dashborad for Breast Cancer Screening Explorer
+
+▶️ [**Click here for Live App**](https://j9eu4e-habtamu-mellie0bizuayehu.shinyapps.io/Shiny/)
+
+This version of the app responds **instantly** to any change in user input. Filtering options like state, age group, or rate thresholds immediately update the charts and tables — no action button required.
+
+This project is part of a broader effort to **translate public health screening data** into actionable insights. It demonstrates best practices in using **R Shiny** for health surveillance, offering visual tools to support policy development and outreach strategies.
+
+------------------------------------------------------------------------
+
+### 🔍 App Behavior & Reactive Design
+
+This app is built using `reactive()` expressions that automatically track inputs and re-render outputs. It provides a seamless user experience designed for exploration and fast iteration.
+
+| Shiny Feature                    | Role                          |
+|----------------------------------|-------------------------------|
+| `reactive()`                     | Updates outputs automatically |
+| `renderPlotly()`                 | Displays interactive plots    |
+| `renderDT()`                     | Filters and formats tables    |
+| `sliderInput()`, `selectInput()` | Collect user filters          |
+
+------------------------------------------------------------------------
+
+### ✅ Advantages
+
+-   Instant feedback with every change\
+-   Encourages user exploration\
+-   Ideal for training, teaching, and discovery
+
+### ⚠️ Disadvantages
+
+-   Potentially heavier computation\
+-   Less control over refresh timing
+
+------------------------------------------------------------------------
+
+### 🔗 Try the App
+
+▶️ [**Live App (Fully Interactive)**](https://j9eu4e-habtamu-mellie0bizuayehu.shinyapps.io/Shiny/)
+
+------------------------------------------------------------------------
+
+## 🗂️ Project Summary
+
+This interactive dashboard allows users to explore screening uptake across Australian states, age groups, and time. It includes real-time plot updates, table downloads, and color customization — all running directly in the browser.
+
+> **Source code:** [GitHub – Breast Cancer Screening Shiny App](https://github.com/HabtamuBizuayehu/Shiny_App_Breast-Cancer-Screening-among-women)
