@@ -1,4 +1,4 @@
-# 🌍 Habtamu Bizuayehu, PhD  
+# 🌍 Habtamu Bizuayehu
 ### *Data Analyst | Epidemiologist | Researcher*  
 
 👋 **Welcome to my website and professional portfolio.**  
