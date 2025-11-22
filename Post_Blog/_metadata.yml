@@ -1,0 +1,22 @@
+
+freeze: auto
+title-block-banner: true
+title-block: true
+page-layout: article      # ✅ Ensures navbar stays visible in posts
+external: true
+
+
+# # Metadata for all posts in this folder
+# 
+# freeze: auto
+# 
+# # Enable banner style title blocks
+# title-block-banner: true
+# title-block: true
+# external: true
+# 
+# format:
+#   html:
+#     page-layout: full     # ✅ ensures full layout (not article)
+#     navbar: true          # ✅ keeps global navbar visible
+#     toc: true             # optional: shows side TOC if desired

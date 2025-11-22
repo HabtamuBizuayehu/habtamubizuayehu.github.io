@@ -1,0 +1,61 @@
+---
+title: "Experience | Qualifications | Skills and Expertise"
+# subtitle: "Experience | Qualifications | Skills and Expertise"
+# title-block-banner: true
+format:
+  html:
+    css: styles.css
+    # include-in-header:
+    #   - text: |
+    #       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+---
+
+## <i class="fa-solid fa-chart-line"></i> About Me
+
+I’m an Epidemiologist and Data Analyst with over a decade of experience across government health departments, academic institutions, and public health projects. My expertise lies in transforming complex administrative and surveillance data into actionable evidence that improves public health policy, clinical practice, and health equity. I am passionate about data-driven decision-making, inclusive stakeholder engagement, and translating research into practice.
+
+I currently work as a Project Officer (Epidemiologist) at the Western Australia Department of Health, where I lead surveillance and reporting initiatives using linked health datasets such as the Australian Immunisation Register (AIR) and the Western Australian Notifiable Infectious Diseases Database (WANIDD). I design and manage REDCap databases, automate data processing in R, and develop interactive Shiny dashboards that support timely public health responses.
+
+Previously, I worked as a Research Fellow at The University of Queensland, where I led cancer epidemiology projects with the First Nations Cancer & Wellbeing Research Program. At Cancer Council Queensland, I managed the nationally recognised Australian Cancer Atlas project, led a cancer epidemiology study, and contributed to the First Nations Advisory Group. My career reflects a strong commitment to data transparency and evidence-informed decision.
+
+------------------------------------------------------------------------
+
+## <i class="fa-solid fa-screwdriver-wrench"></i> Expertise & Skills
+
+-   **Statistical & Data Tools**: R, STATA, Python, SQL, Power BI, REDCap\
+-   **Data Visualisation**: Dashboards, Spatial analysis, R Shiny, ggplot2, leaflet, treemaps, heatmaps\
+-   **Epidemiology & Surveillance**: Communicable diseases, immunisation, cancer, maternal and child health\
+-   **Methods & Modelling**: Trend and longitudinal analysis, multilevel models, survival analysis, causal modelling, systematic reviews, meta-analysis\
+-   **Data Sources Experience**: Medicare Benefits Schedule (MBS), Pharmaceutical Benefits Scheme (PBS), Western Australian Notifiable Infectious Diseases Database (WANIDD), Australian Immunisation Register (AIR), Queensland Cancer Register, Australian Longitudinal Study on Women’s Health (ALSWH), hospital and community health datasets\
+-   **Teaching & Supervision**: Courses in Epidemiology, Biostatistics, and Public Health; supervision of Honours and Master’s students\
+-   **Research & Collaboration**: Scientific writing, grant writing and management, project leadership, ethics applications, collaboration with First Nations Peoples, and engagement with state and federal health stakeholders
+
+------------------------------------------------------------------------
+
+## <i class="fa-solid fa-briefcase"></i> Work Experience
+
+-   **Project Officer (Epidemiologist)** – WA Department of Health\
+    Led disease surveillance, report automation, project management, and data visualisation for communicable disease and immunisation data.
+
+-   **Postdoctoral Research Fellow** – The University of Queensland\
+    Led cancer epidemiology research, analysed linked data, managed state and national datasets, and contributed to Indigenous-led research strategy.
+
+-   **Senior Research Officer** – Cancer Council Queensland\
+    Led cancer Epidemiology research project, Managed the Australian Cancer Atlas data visualisation project, applied and granted ethics approval, and coordinated with national advisory groups, project teams, and data custodians.
+
+-   **Researcher and Lecturer** – Debre Markos University and Queensland University of Technology\
+    Taught Public Health, Epidemiology, and Biostatistics courses, assessed student work, conducted applied research, and contributed to academic leadership.
+
+------------------------------------------------------------------------
+
+## <i class="fa-solid fa-graduation-cap"></i> Qualifications
+
+I hold a **PhD in Public Health and Behavioural Sciences** from the University of Newcastle, Australia, and have been awarded a **Master of Public Health in Epidemiology** and a **Bachelor of Science in Public Health**.
+
+My PhD research focused on adverse pregnancy outcomes in Australia using longitudinal data from the Australian Longitudinal Study on Women’s Health (ALSWH) and a systematic review. This work sharpened my skills in large data management, causal modelling, multilevel analysis, missing data analysis techniques, and statistical programming using STATA and R. I published four first-author peer-reviewed articles and presented at national conferences.
+
+My postgraduate and undergraduate training provided solid foundations in Public Health, advanced epidemiology, biostatistics, disease prevention, program evaluation, and ethics. I conducted research using clinical and administrative hospital data, applied analytical tools such as STATA, SPSS, and Epi Info, and gained hands-on experience through field placements in healthcare facilities. I graduated top of my undergraduate cohort and was recruited as a junior lecturer based on academic performance.
+
+💡 *I use data to inform decisions, advance equity, and drive actionable change in health systems.*
+
+------------------------------------------------------------------------

@@ -1,0 +1,80 @@
+---
+title: "Expertise and Skill Sets"
+subtitle: "Software, Data, Project, Teaching and Collaboration"
+# title-block-banner: true
+format:
+  html:
+    css: styles.css
+---
+## 💼 Expertise and Key Skill Sets
+With over a decade of experience in epidemiology, public health, and data science, I have developed a comprehensive skill set that spans software tools, data analysis, outbreak investigation, project management and research, Scientific writing, stakeholder engagement and problem solving. This section provides an overview of my technical proficiencies, analytical capabilities, teaching experience, and collaborative leadership across government, academic, and health sectors. Whether working with complex datasets and projects, I bring a rigorous, thoughtful, and impact-driven approach.
+
+## 📁 Project Portfolio
+
+- **Dashboard via R Shiny**: [click here](https://j9eu4e-habtamu-mellie0bizuayehu.shinyapps.io/Breast_Cancer_Screening_Shiny_App/)  
+- **Software Programming**: R and other software programming projects are available at my [GitHub](https://github.com/HabtamuBizuayehu?tab=repositories ) or [AnalyticsHub YouTube](https://studio.youtube.com/channel/UCLVKP0g8GvHhOh0kn20T8eg/videos/upload?filter=%5B%5D&sort=%7B%22columnType%22%3A%22date%22%2C%22sortOrder%22%3A%22DESCENDING%22%7D).  
+- **Scientific Writing & Leadership**: Scientific writing, reports, peer-reviewed publications, grant awards, project management, and leadership are presented at my [website](https://habtamubizuayehu.com/), [Google Scholar Profile](https://scholar.google.com.au/citations?hl=en&user=zHEXO-IAAAAJ), or [ORCID Profile](https://orcid.org/0000-0002-1360-4909).
+
+---
+
+### 💻 Data Tools & Statistical Software 
+
+- **Statistical Programming**: R, Python, SQL, Power BI, STATA  
+- **Database Systems**: REDCap (design, automation, data import/export), SQL  
+- **Dashboard & Visualisation**: R Shiny, Power BI, ggplot2, leaflet, heatmaps, treemaps, spatial mapping
+
+## 📊 Data Analysis & Statistical Modelling
+
+- Performed advanced data cleaning, transformation, and preparation  
+- Conducted causal modelling (e.g., path analysis, Directed Acyclic Graphs)  
+- Completed longitudinal and survival analysis  
+- Applied multilevel modelling, Generalised Estimating Equations (GEE), Generalised Linear Mixed Models (GLMM)  
+- Executed trend analysis and predictive modelling  
+- Handled and imputed missing data (e.g., mean imputation, multiple imputation, backward and forward imputation)  
+- Conducted spatial analysis and geospatial statistics  
+- Completed systematic reviews, meta-analysis, and evidence synthesis  
+
+## 🗃️ Linked Administrative Data Experience
+Carried out data analysis, data management, and data linkage using the following administrative and clinical databases.  
+- [Australian Immunisation Register (AIR)](https://www.health.gov.au/initiatives-and-programs/australian-immunisation-register)  
+- The Western Australian Notifiable Infectious Diseases Database (WANIDD)  
+- [Medicare Benefits Schedule (MBS)](http://www.mbsonline.gov.au/)  
+- [Pharmaceutical Benefits Scheme (PBS)](https://www.pbs.gov.au/)  
+- [Queensland Admitted Patient Data Collection](https://www.health.qld.gov.au/hsu/collections/qhapdc)  
+- [Queensland Cancer Register](https://cancerallianceqld.health.qld.gov.au/queensland-cancer-register-qcr/)   
+- The [Australian Longitudinal Study on Women’s Health (ALSWH)](https://alswh.org.au/)  
+
+## 📚 Research & Knowledge Translation
+
+- Designed and managed large-scale research projects  
+- Secured and managed research grants  
+- Obtained ethical approvals, developed protocols, and reported to stakeholders  
+- Published in peer-reviewed journals and presented at conferences  
+- Contributed to evidence-informed policy and program design  
+- Applied expertise in cancer epidemiology, maternal and child health, and communicable disease surveillance  
+
+## 🎓 Teaching, Mentorship & Capacity Building
+
+- Taught Public Health, Epidemiology, and Biostatistics courses  
+- Developed curricula and coordinated courses  
+- Supervised Master’s and Honours students  
+- Delivered training in data analysis, REDCap, R programming, and visualisation  
+- Supported diverse student cohorts in academic and clinical settings  
+
+## 🤝 Collaboration & Stakeholder Engagement
+
+- Worked with multidisciplinary teams: clinicians, epidemiologists, Aboriginal Health services and community members  
+- Served as a member of the First Nations Advisory Group, Cancer Council Queensland  
+- Liaised with data custodians, ethics committees, and public health teams  
+- Communicated findings to both technical and general audiences  
+- Gained experience across low- and high-income country health systems  
+
+## 🧭 Project & Program Leadership
+
+- Translated analytical outputs into actionable policy and practice  
+- Developed, implemented, and maintained REDCap databases  
+- Mapped processes, designed interfaces, configured alerts, and automated workflows  
+- Created and applied monitoring and evaluation frameworks  
+- Provided strategic guidance for public health programs and interventions  
+
+ ---

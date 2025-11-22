@@ -1,0 +1,319 @@
+/* ====================================================
+   1. NAVBAR STYLING (Proper logo + name layout)
+==================================================== */
+header.navbar,
+.navbar,
+.navbar-container,
+.navbar-light {
+  position: sticky !important;
+  top: 0;
+  z-index: 9999;
+  background-color: #4a1c1c !important;   /* Burgundy */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  padding: 0.6rem 1.5rem !important;
+  align-items: center !important;
+}
+
+/* --- Brand container (photo + name) --- */
+.navbar-brand {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  max-width: none !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+}
+
+/* --- Photo/logo styling --- */
+.navbar-brand img {
+  height: 52px !important;
+  width: auto !important;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+/* --- Your name beside logo --- */
+.navbar-brand .navbar-title {
+  font-size: 1.35rem !important;
+  font-weight: 600 !important;
+  color: #f8f8f4 !important;
+  letter-spacing: 0.4px;
+  text-transform: none;
+}
+
+/* --- Keep brand from overlapping menu --- */
+.navbar .container-fluid {
+  flex-wrap: nowrap !important;
+}
+.navbar-nav {
+  flex-wrap: nowrap !important;
+}
+
+/* --- Fix menu spacing --- */
+.navbar .navbar-nav .nav-link {
+  color: #f8f8f4 !important;
+  margin-right: 0.8rem;
+  font-size: 1rem;
+  font-weight: 400;
+  transition: color 0.2s ease, border-bottom 0.2s ease;
+}
+
+.navbar .navbar-nav .nav-link:hover,
+.navbar .navbar-brand:hover {
+  color: #f1c40f !important;   /* Gold hover */
+}
+
+.navbar .nav-link.active {
+  font-weight: 600;
+  color: #f1c40f !important;
+  border-bottom: 2px solid #f1c40f;
+}
+
+/* --- Right-side icons --- */
+.navbar-nav.ms-auto {
+  margin-left: 2rem !important;
+}
+.navbar .nav-item .bi {
+  font-size: 1.2rem;
+  margin-left: 0.4rem;
+}
+
+/* --- Responsive adjustments --- */
+@media (max-width: 1200px) {
+  .navbar-brand img {
+    height: 45px !important;
+  }
+  .navbar-brand .navbar-title {
+    font-size: 1.2rem !important;
+  }
+  .navbar .navbar-nav .nav-link {
+    font-size: 0.95rem;
+    margin-right: 0.5rem;
+  }
+}/* ====================================================
+   1. NAVBAR STYLING (Compact + Aligned Layout)
+==================================================== */
+header.navbar,
+.navbar,
+.navbar-container,
+.navbar-light {
+  position: sticky !important;
+  top: 0;
+  z-index: 9999;
+  background-color: #4a1c1c !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  padding: 0.4rem 1rem !important; /* tighter vertical and side padding */
+  align-items: center !important;
+}
+
+/* --- Brand area (photo + name) --- */
+.navbar-brand {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;              /* reduced spacing between photo & name */
+  white-space: nowrap !important;
+  overflow: visible !important;
+  max-width: none !important;
+  margin-right: 0.8rem !important;  /* small gap before next items */
+}
+
+/* --- Logo/photo --- */
+.navbar-brand img {
+  height: 48px !important;
+  width: auto !important;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+/* --- Your name beside logo --- */
+.navbar-brand .navbar-title {
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  color: #f8f8f4 !important;
+  letter-spacing: 0.3px;
+  text-transform: none;
+}
+
+/* --- Prevent wrapping --- */
+.navbar .container-fluid {
+  flex-wrap: nowrap !important;
+}
+.navbar-nav {
+  flex-wrap: nowrap !important;
+}
+
+/* ====================================================
+   1b. MENU LINKS (Reduced spacing)
+==================================================== */
+.navbar .navbar-nav .nav-link {
+  color: #f8f8f4 !important;
+  margin-right: 0.5rem !important; /* tighter horizontal spacing */
+  padding: 0.25rem 0.3rem !important;
+  font-size: 0.98rem !important;
+  font-weight: 400;
+  white-space: nowrap;
+  transition: color 0.2s ease, border-bottom 0.2s ease;
+}
+
+.navbar .navbar-nav .nav-link:hover,
+.navbar .navbar-brand:hover {
+  color: #f1c40f !important;
+}
+
+.navbar .nav-link.active {
+  font-weight: 600;
+  color: #f1c40f !important;
+  border-bottom: 2px solid #f1c40f;
+}
+
+/* ====================================================
+   1c. RIGHT ICONS (Compact layout)
+==================================================== */
+.navbar-nav.ms-auto {
+  margin-left: 1rem !important;
+}
+.navbar .nav-item .bi {
+  font-size: 1.15rem;
+  margin-left: 0.3rem;
+  vertical-align: middle;
+}
+
+/* ====================================================
+   1d. RESPONSIVE (Prevent wrapping on mid screens)
+==================================================== */
+@media (max-width: 1200px) {
+  .navbar-brand img {
+    height: 42px !important;
+  }
+  .navbar-brand .navbar-title {
+    font-size: 1.1rem !important;
+  }
+  .navbar .navbar-nav .nav-link {
+    font-size: 0.9rem !important;
+    margin-right: 0.35rem !important;
+    padding: 0.2rem 0.25rem !important;
+  }
+}
+
+/* --- Ensure navbar stays one line on most screens --- */
+@media (min-width: 768px) {
+  .navbar .container-fluid {
+    flex-wrap: nowrap !important;
+  }
+}
+
+
+/* ====================================================
+   2. FIX TOC (Sidebar Index) – Font Size + Scrollable
+==================================================== */
+.sidebar nav,
+.toc {
+  font-size: 0.85rem !important;
+  line-height: 1.4 !important;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.toc a {
+  text-decoration: none;
+  color: #333;
+}
+.toc a:hover {
+  text-decoration: underline;
+}
+.toc ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+.toc li {
+  margin-bottom: 0.2rem;
+}
+
+/* ====================================================
+   3. FIX JUMPED HEADINGS (TOC Anchor Links)
+==================================================== */
+:target::before {
+  content: "";
+  display: block;
+  height: 100px;
+  margin-top: -100px;
+}
+
+/* ====================================================
+   4. HEADINGS – REDUCE SPACING TO FIX VERTICAL GAPS
+==================================================== */
+h1, h2, h3 {
+  margin-top: 1.2rem !important;
+  margin-bottom: 0.8rem !important;
+}
+
+h1 {
+  font-size: 1.8rem !important;
+}
+h2 {
+  font-size: 1.5rem !important;
+}
+h3 {
+  font-size: 1.3rem !important;
+}
+
+/* ====================================================
+   5. PARAGRAPH TEXT – TIGHTER VERTICAL SPACING
+==================================================== */
+p {
+  text-align: justify;
+  margin-top: 0.4rem;
+  margin-bottom: 0.8rem;
+}
+
+/* ====================================================
+   6. IMAGES – SCALE RESPONSIVELY
+==================================================== */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ====================================================
+   7. REMOVE UNWANTED STICKY BEHAVIOR EXCEPT NAVBAR
+==================================================== */
+.page-columns,
+.content {
+  position: relative !important;
+}
+
+/* ====================================================
+   8. ABOUT BLOCK – REMOVE SPACE BEFORE AND AFTER
+==================================================== */
+.quarto-about-jolla {
+  margin-top: 1rem !important;
+  margin-bottom: 1rem !important;
+  padding-top: 0rem;
+  padding-bottom: 0rem;
+}
+
+.quarto-about-jolla img.about-image {
+  margin-bottom: 1rem;
+}
+
+/* ====================================================
+   9. HORIZONTAL LINES (HR) – TIGHTER SPACING
+==================================================== */
+hr {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* ====================================================
+   10. MAIN SECTION LAYOUT 
+==================================================== */
+section.level1 {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+section.level2 {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
