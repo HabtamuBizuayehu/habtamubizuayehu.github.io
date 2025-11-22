@@ -1,0 +1,705 @@
+---
+title: "Deployment Guide for habtamubizuayehu.github.io"
+author: "Habtamu Bizuayehu"
+format: html
+toc: true
+toc-depth: 2
+number-sections: true
+highlight-style: github
+editor: visual
+---
+
+# Introduction
+
+This document is my **permanent reference** for deploying, rebuilding, updating, and safely cleaning my Quarto website at:
+
+- **Website:** https://habtamubizuayehu.com  
+- **Repository:** https://github.com/HabtamuBizuayehu/habtamubizuayehu.github.io  
+- **Publish folder:** `/docs`  
+- **Branch:** `main`  
+
+Local working folder:
+
+
+C:\Users\User\Desktop\Materials_ Course and proposals\VIP collection for Syntax code or project titles\R codes\Website profile Mod 2
+
+````
+
+This guide covers:
+
+1. **Standard deployment**  
+2. **Replacing the entire website** (wipe + rebuild)  
+3. **Adding or deleting selected files**  
+4. **Handling GitHub large file limits**  
+5. **Git LFS usage and limitations**  
+6. **Full cleanup using `git filter-repo`**  
+7. **Safety checks before deleting or overwriting files**  
+8. **Quick cheat-sheet commands**  
+
+---
+
+# 🔍 BEFORE ANY DEPLOYMENT — Safety Checks (Important!)
+
+Before running **ANY delete, commit, or push**, always check:
+
+## ✅ 1. Verify you are inside the correct project folder
+
+```bash
+pwd
+ls -al
+````
+
+You must see your **website files** (index.qmd, docs/, styles.css, etc.).
+If you see things like **Documents, Desktop, AppData**, STOP — wrong folder.
+
+---
+
+## ✅ 2. Check what is currently in GitHub (online)
+
+Open:
+
+```
+https://github.com/HabtamuBizuayehu/habtamubizuayehu.github.io
+```
+
+Confirm:
+
+* Which files exist
+* Whether Github Pages is building
+* Whether it looks empty
+* Whether old files still appear
+
+---
+
+## ✅ 3. Check git status
+
+```bash
+git status
+```
+
+Look for:
+
+* **Untracked files**
+* **Modified files**
+* **Deleted but unstaged** files
+* Whether the repo is clean
+
+---
+
+## ✅ 4. Check last commit history (optional)
+
+```bash
+git log --oneline --graph --decorate --all
+```
+
+---
+
+# 1. Standard Deployment (NO Large Files)
+
+This is my most common workflow.
+
+## 1.1 Move to the correct project folder
+
+```bash
+cd "C:/Users/User/Desktop/Materials_ Course and proposals/VIP collection for Syntax code or project titles/R codes/Website profile Mod 2"
+pwd
+```
+
+Confirm: folder must contain `index.qmd`, `docs/`, `styles.css`.
+
+---
+
+## 1.2 Render the website
+
+```bash
+quarto render
+```
+
+Output appears inside:
+
+```
+docs/
+```
+
+This is the folder GitHub Pages serves.
+
+---
+
+## 1.3 Stage → Commit → Push
+
+```bash
+git add .
+git commit -m "Update website content"
+git push origin main
+```
+
+---
+
+# 2. Replace the ENTIRE Website (Full Rebuild)
+
+Use this when:
+
+* Website is corrupted
+* Bad files exist online
+* Wrong structure
+* You want a full clean rebuild
+
+## ⚠️ SAFETY CHECK FIRST
+
+### Step A — Check what is in the online repo
+
+Go to the GitHub repo and confirm:
+
+* Which files exist
+* Whether there is anything to keep (README, LICENSE, CNAME)
+
+### Step B — Make a backup of local site (optional)
+
+Copy the entire folder to a backup:
+
+```
+Website profile Mod 2 BACKUP/
+```
+
+---
+
+# 2.1 Clone fresh (recommended)
+
+```bash
+cd C:/Users/User
+git clone https://github.com/HabtamuBizuayehu/habtamubizuayehu.github.io
+cd habtamubizuayehu.github.io
+pwd
+```
+
+---
+
+# 2.2 Remove ALL tracked files (wipe clean)
+
+```bash
+git rm -r .
+git add -A
+git commit -m "Remove all website files for full rebuild"
+git push origin main
+```
+
+GitHub repo becomes **empty**.
+
+---
+
+# 2.3 Copy NEW website files
+
+### Option A — Manual copy
+
+Copy all new files from:
+
+```
+Website profile Mod 2/
+```
+
+to:
+
+```
+C:\Users\User\habtamubizuayehu.github.io
+```
+
+### Option B — Build then push
+
+```bash
+quarto render
+git add .
+git commit -m "Upload clean rebuilt website"
+git push origin main
+```
+
+---
+
+# 3. Add OR Delete Selected Files Only (Partial Updates)
+
+Use this for small changes.
+
+---
+
+## 3.1 Add or update a file
+
+```bash
+git add styles.css
+git commit -m "Update styles.css"
+git push
+```
+
+---
+
+## 3.2 Delete a file
+
+⚠️ SAFETY CHECK:
+
+* Ensure file exists locally using `ls`
+* Ensure file exists online (optional)
+
+Then delete:
+
+```bash
+git rm old_photo.jpg
+git commit -m "Remove old photo"
+git push
+```
+
+---
+
+# 4. GitHub Large File Limits (100MB)
+
+GitHub blocks any file over:
+
+```
+100 MB
+```
+
+You have two options:
+
+---
+
+# 4.1 OPTION A — Exclude Large File (recommended)
+
+### Step 1 — Add to `.gitignore`
+
+```
+Post_Blog/SQL_Database_Guide/SQL_Data_Manipulation
+```
+
+### Step 2 — Remove from repo
+
+```bash
+git rm --cached "Post_Blog/SQL_Database_Guide/SQL_Data_Manipulation"
+git add .
+git commit -m "Remove large file and ignore it"
+git push
+```
+
+---
+
+# 4.2 OPTION B — Use Git LFS (Large File Storage)
+
+⚠ GitHub Pages **cannot serve LFS files**
+⚠ Large files stored via LFS do NOT appear on your website
+
+Use only when storing data for repository use.
+
+### Steps:
+
+```bash
+git lfs install
+git lfs track "Post_Blog/SQL_Database_Guide/*"
+git add .gitattributes
+git add .
+git commit -m "Track large files with LFS"
+git push
+```
+
+---
+
+# 5. GitHub Error: File >100MB (Even After Deleting)
+
+This happens because the large file exists in **history**, not in the working folder.
+
+The fix = rewrite history.
+
+---
+
+# 5.1 Remove file from ALL HISTORY (advanced)
+
+```bash
+git filter-repo --force --path "Post_Blog/SQL_Database_Guide/SQL_Data_Manipulation" --invert-paths
+```
+
+This:
+
+* Removes file from all commits
+* Shrinks repo
+* Removes remote origin (normal)
+
+---
+
+# 5.2 Reconnect to remote repo
+
+```bash
+git remote add origin https://github.com/HabtamuBizuayehu/habtamubizuayehu.github.io
+git remote -v
+```
+
+---
+
+# 5.3 Commit and push cleaned history
+
+```bash
+git add .
+git commit -m "Clean history and remove large file"
+git push origin main --force
+```
+
+---
+
+# 6. GitHub Pages Publishing
+
+Settings → Pages:
+
+* **Branch:** main
+* **Folder:** /docs
+* **HTTPS:** enabled once certificate is ready
+* **Custom domain:** habtamubizuayehu.com
+
+DNS/SSL may take **10–30 minutes**.
+
+---
+
+# 7. Quick Cheat-Sheet and summary of the Guide
+
+## Standard update
+
+```bash
+quarto render
+git add .
+git commit -m "Update website"
+git push
+```
+
+---
+
+## Full rebuild
+
+```bash
+git rm -r .
+git add -A
+git commit -m "Full clean rebuild"
+git push
+```
+
+Copy new files → push again.
+
+---
+
+## Add one file
+
+```bash
+git add file.qmd
+git commit -m "Add new page"
+git push
+```
+
+---
+
+## Delete one file
+
+```bash
+git rm file.qmd
+git commit -m "Delete file"
+git push
+```
+
+---
+
+## Exclude large file
+
+```bash
+echo "path/to/file" >> .gitignore
+git rm --cached path/to/file
+git commit -m "Remove large file"
+git push
+```
+
+---
+
+## Use Git LFS
+
+```bash
+git lfs install
+git lfs track "<folder>/*"
+git add .gitattributes
+git add .
+git push
+```
+
+---
+
+## Clean history
+
+```bash
+git filter-repo --force --path "<file>" --invert-paths
+git remote add origin <URL>
+git push --force
+```
+
+---
+
+# Final Notes
+
+* Always confirm your folder using `pwd` before destructive commands
+* Large files should be excluded or moved to LFS
+* GitHub Pages only builds `/docs`
+* Custom domains require DNS + SSL time
+* Keep this `.qmd` as my permanent deployment reference
+
+
+
+
+# **8. Troubleshooting Appendix**
+
+This appendix provides a **quick diagnostic guide** for common Git, GitHub Pages, and deployment issues.
+
+---
+
+## **8.1 Wrong Folder / Git Touching Other System Files**
+
+**Symptom (very dangerous):**
+
+`git status` shows:
+
+```
+AppData/
+Documents/
+Pictures/
+NTUSER.DAT
+```
+
+➡️ **You are in the wrong folder (e.g., C:/Users/User)**
+Git may capture personal system folders.
+
+**Fix:**
+
+1. Leave folder:
+
+   ```bash
+   cd ~
+   ```
+2. Go to correct website repo:
+
+   ```bash
+   cd C:/Users/User/habtamubizuayehu.github.io
+   ```
+3. Verify:
+
+   ```bash
+   pwd
+   ls -al
+   ```
+
+Correct output must show only your website files.
+
+---
+
+## **8.2 index.lock Error**
+
+**Symptom:**
+
+```
+fatal: Unable to create '.git/index.lock': File exists.
+```
+
+**Fix:**
+
+```bash
+rm -f .git/index.lock
+```
+
+Then retry your Git command.
+
+---
+
+## **8.3 Cannot Push — “fetch first” Error**
+
+**Symptom:**
+
+```
+Updates were rejected because the remote contains work that you do not have locally.
+```
+
+**Fix (safe):**
+
+```bash
+git pull origin main --rebase
+git push origin main
+```
+
+**Fix (replacing entire site):**
+
+```bash
+git push origin main --force
+```
+
+---
+
+## **8.4 GitHub Pages Not Updating**
+
+Checklist:
+
+* Did you push to **main**?
+* Did your output go to `docs/`?
+* Check Pages logs:
+  [https://github.com/HabtamuBizuayehu/habtamubizuayehu.github.io/actions](https://github.com/HabtamuBizuayehu/habtamubizuayehu.github.io/actions)
+* TLS Certificate requires **5–30 minutes**
+  If waiting:
+
+  > *Enforce HTTPS — Not yet available*
+
+---
+
+## **8.5 Website Shows Old Version / Blank Page**
+
+Try:
+
+* Hard refresh: `Ctrl + Shift + R`
+* Mobile devices: open in private tab
+* Confirm domain maps to GitHub Pages:
+  [https://dnschecker.org](https://dnschecker.org)
+
+---
+
+## **8.6 Push Rejected — File >100MB**
+
+**Symptom:**
+
+```
+File is 163MB; exceeds GitHub file size limit.
+```
+
+**Fix Option A (recommended): remove file & ignore)**
+
+```bash
+git rm --cached <path>
+echo "<path>" >> .gitignore
+git add .
+git commit -m "Remove large file"
+git push
+```
+
+**Fix Option B (if file exists deep in history):**
+
+```bash
+git filter-repo --force --path "<path>" --invert-paths
+git remote add origin https://github.com/HabtamuBizuayehu/habtamubizuayehu.github.io
+git push --force
+```
+
+---
+
+## **8.7 “origin does not appear to be a git repository”**
+
+Cause: `git filter-repo` removes remote.
+
+Fix:
+
+```bash
+git remote add origin https://github.com/HabtamuBizuayehu/habtamubizuayehu.github.io
+git remote -v
+```
+
+Then:
+
+```bash
+git push origin main --force
+```
+
+---
+
+## **8.8 GitHub Pages: TLS Certificate Pending**
+
+Symptom:
+
+```
+Enforce HTTPS — Not yet available
+```
+
+Fix:
+
+* Wait 5–30 minutes
+* If still pending:
+
+  1. Remove custom domain
+  2. Re-add
+  3. Save
+     GitHub regenerates certificate
+
+---
+
+## **8.9 “Task was canceled” in Pages build**
+
+Cause:
+
+* Multiple builds triggered at same time
+* Large push with LFS
+* Temporary GitHub Pages congestion
+
+Fix:
+
+* Do **one** push
+* Wait 2–5 minutes
+* Refresh Actions log
+
+---
+
+## **8.10 LFS File Not Displaying on Website**
+
+GitHub Pages **cannot** serve LFS files.
+
+Solution:
+
+* Link to the raw file on GitHub
+* OR remove from website project
+* OR reduce size and commit without LFS
+
+---
+
+## **8.11 Pages Builds Successfully but Site Still Empty**
+
+Checklist:
+
+1. Does your folder contain `docs/index.html`?
+2. Did you remove all files accidentally?
+3. Run locally:
+
+   ```bash
+   quarto preview
+   ```
+4. Confirm GitHub Pages settings:
+
+   * Branch: `main`
+   * Folder: `/docs`
+
+---
+
+## **8.12 “Repository Not Empty” When Cloning**
+
+Symptom:
+
+```
+fatal: destination path exists and is not empty
+```
+
+Fix:
+
+Option A — Remove folder manually
+Option B — Rename:
+
+```bash
+git clone <repo> new_folder
+```
+
+---
+
+## **8.13 GitHub Pages Shows Folder Instead of Website**
+
+Cause: No `index.html`.
+
+Fix:
+
+* Add a home page:
+
+  ```bash
+  quarto render
+  git add docs/index.html
+  git commit -m "Add homepage"
+  git push
+  ```
+
+
+
