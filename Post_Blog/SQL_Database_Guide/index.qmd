@@ -1,0 +1,3398 @@
+---
+title: "SQL Data Manipulation Guide"
+description: |
+  Comprehensive guide to manipulating and managing data using SQL, 
+  including joins, aggregations, date functions, and data cleaning techniques.
+author: "Habtamu Bizuayehu"
+date: 2025-10-01
+website: "https://habtamubizuayehu.com/"
+github: "https://github.com/HabtamuBizuayehu"
+orcid: "https://orcid.org/0000-0002-1360-4909"
+linkedin: "https://www.linkedin.com/in/habtamu-bizuayehu-94285980/"
+image: "figure_sql.png"
+
+categories: [SQL, Database Management, Data Analysis]
+
+highlight-style: github
+output-dir: "docs"
+
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: false
+    code-fold: false
+    code-tools: true
+    code-summary: "Show the code"
+    theme: united
+    self-contained: true
+
+knitr:
+  opts_knit:
+    warning: false
+    message: false
+
+editor: visual
+---
+
+## 🧰 **Objective and Contents of the Presentation**
+
+This presentation provides a focused, end-to-end path for working with **PostgreSQL** on Windows—from installation to analysis and reporting. It begins by installing PostgreSQL with the **EnterpriseDB** bundle, registering the server in **pgAdmin**, and using **StackBuilder** for optional tools. It then shows how to create a new database, **import data (e.g., `.csv`)**, and perform **core SQL data manipulation** (filtering, grouping, joins, window functions). Finally, it demonstrates how to **connect SQL with R via Quarto/R Markdown** to generate reproducible reports in **HTML/PDF** that combine narrative, code, and results.
+
+------------------------------------------------------------------------
+
+## 🧭 Presentation Roadmap
+
+The flow is intentional: begin with foundations (**Part I**), load and explore data (**Part II**), then connect and publish reproducible outputs (**Part III**). After that, move through core and advanced wrangling (**Parts IV–V**), descriptive statistics (**Part VI**), data quality and types (**Part VII**), performance tuning (**Part VIII**), and finally security, backup, and sharing (**Part IX**).
+
+**Part I — Introduction and Installing SQL**
+
+-   What is SQL & why it matters (ACID, integrity, performance)
+-   PostgreSQL overview & tooling (pgAdmin, psql)
+
+**Part II — Connecting with R, Rmarkdown, Quarto** - Connecting from R/Quarto; running and saving scripts; comments; shortcuts
+
+**Part III — Data Loading & Exploration**
+
+-   Table creation (DDL) & data types
+-   CSV import: `COPY` / `\copy` and permissions
+-   Basic exploration: previews, counts, distincts, NULL checks
+
+**Part IV — Wrangling Core (SELECT / WHERE / CASE / JOIN)**
+
+-   Selecting & aliasing; computed columns
+-   Filtering, sorting, limiting
+-   Conditional logic with `CASE`, `COALESCE`, `NULLIF`
+-   Joins (INNER/LEFT/RIGHT/FULL) and practical patterns
+-   Appending data
+
+**Part V — Advanced Wrangling**
+
+-   CTEs (`WITH`) for readable pipelines
+-   Window functions (ranking, partitions, moving calculations)
+-   Deduplication with `ROW_NUMBER()`; upserts overview
+
+**Part VI — Data Quality, Types & Dates**
+
+-   Missing data strategies (fill, filter, profile)
+-   Casting & cleaning (regex, numeric/text conversions)
+-   Date/time basics and analysis
+
+**Part VII — Descriptive Statistics & Tabulation**
+
+-   Aggregations & `GROUP BY`; `HAVING` filters
+-   Ordered-set aggregates (percentiles)
+-   Crosstab/pivot with `tablefunc` extension
+
+**Part VIII — Performance Basics**
+
+-   Indexing strategies (B-tree on filters/group keys)
+-   Reading query plans with `EXPLAIN ANALYZE`
+-   Simple tuning tips (predicates, projections, ordering)
+
+**Part IX — Security, Backup & Sharing**
+
+-   Roles & privileges (grant read-only to learners)
+-   Backups: pgAdmin / `pg_dump` & restores
+-   Exporting results (CSV/HTML) & reporting with Quarto
+
+# **Part I — Introduction: Installing, RDBMS, operations and toolkit**
+
+This section sets the context: what SQL is, when a relational database is the right tool, and how ACID {Atomicity (all-or-nothing transactions), Consistency (always obeys constraints), Isolation (concurrent work behaves as if run alone), Durability (commits persist even after failures)} properties and well-designed schemas support reliable analytics at scale. It briefly compare mainstream RDBMS options. Then I walk through a clean Windows install using the EnterpriseDB bundle, registering the server in pgAdmin and verifying connectivity before any data work. In short, the hands-on toolkit centers on SELECT … FROM with WHERE filters, ORDER BY/LIMIT shaping, and DISTINCT/aliases; aggregations (COUNT/SUM/AVG) with GROUP BY/HAVING; joins to combine tables; and a few essentials—COALESCE/CASE, type casts (::), and common string/date helpers.
+
+## 🧭 **Relational Database Management Systems (RDBMS) Landscape**
+
+Relational Database Management Systems (RDBMS) are the engines that store and query structured, table-shaped data using SQL. They matter because they enforce data integrity (ACID transactions), power reporting and analytics, and keep apps reliable under load. Your choice of RDBMS impacts performance, features you can lean on, skills availability in the team, and ongoing licensing/hosting costs.
+
+-   **PostgreSQL** — Open-source, strong data types, constraints, JSON, CTEs (Common Table Expression), window functions, and extensions (e.g., PostGIS). Excellent for analytics + app backends.
+-   **MySQL / MariaDB** — Common in web stacks and hosting; straightforward and lightweight. Great for websites and SaaS backends.
+-   **Microsoft SQL Server** — Popular in enterprise settings (Azure/Windows shops). Tight integration with Power BI and the MS ecosystem.
+-   **Oracle Database** — Feature-rich enterprise workhorse used by government/finance; heavy on licensing and administration.
+-   **Managed Cloud (DBaaS)** — AWS RDS / Azure / Google Cloud SQL hosting PostgreSQL/MySQL/SQL Server with patching, backups, and scaling handled for you.
+
+**This Project choice — PostgreSQL:**\
+I used **PostgreSQL** for this project because it offers modern SQL features without licence, runs well on Windows and all major clouds, and scales from local development to production. It has great community support and extensions when you need them.
+
+## 🔗 **Downloading and Installing SQL**
+
+Download the PostgreSQL installer from:
+
+👉 <https://www.enterprisedb.com/downloads/postgres-postgresql-downloads>
+
+Select the **Windows version** eg x86-64. This installer is bundled with:
+
+-   PostgreSQL Server
+-   pgAdmin
+-   StackBuilder
+-   Command-line tools like `psql`
+
+Bundling everything in one installer saves setup headaches later on.
+
+------------------------------------------------------------------------
+
+### 📥 Installation Steps (Windows)
+
+1.  **Run the Installer**\
+    Double-click the `.exe` file to launch the setup wizard.
+
+2.  **Select Components**\
+    Leave all defaults selected:
+
+    -   ✅ PostgreSQL Server
+    -   ✅ pgAdmin
+    -   ✅ Command Line Tools
+    -   🔄 StackBuilder (highly recommended)
+
+3.  **Choose Installation Directory**\
+    Stick with: `C:\Program Files\PostgreSQL\<version>`, unless you have a good reason to move it.
+
+4.  **Set a Password for `postgres`**\
+    This password secures the default admin account.\
+    💡 Tip: store it safely — you’ll need it to log into pgAdmin later.
+
+5.  **Keep the Default Port**\
+    Port `5432` is standard for PostgreSQL. Change it only if you know you have a conflict.
+
+6.  **Accept the Locale Settings**\
+    The default system locale works fine for most projects. You can later create databases with a specific locale if required
+
+7.  **Finish the Installation**\
+    After confirming settings, the installer will complete the setup and initialise the database service.
+
+------------------------------------------------------------------------
+
+**First Launch: Setting Up pgAdmin**
+
+Launch **pgAdmin** from the Start Menu.
+
+1.  **Click "Add New Server"**
+
+    You’ll be prompted to register your PostgreSQL server so pgAdmin can manage it.
+
+2.  **Configure the Connection**
+
+    -   **General tab**:
+        -   Name: `Local PostgreSQL`
+    -   **Connection tab**:
+        -   Host: `localhost`
+        -   Port: `5432`
+        -   Username: `postgres`
+        -   Password: *(your password from earlier)*
+
+    ✅ Check **Save Password** so you’re not prompted every time.
+
+3.  **Click Save**
+
+    You’ll now see your server listed in the left pane. Expand it to view databases, schemas, tables, and more.
+
+    -   If you see two entries (e.g., *Local PostgreSQL* and *PostgreSQL 17*), they’re just pgAdmin shortcuts. Keep the auto-detected one and feel free to delete the duplicate ne eg localhost.
+    -   You’ll reconnect each time you reopen pgAdmin (right-click server → **Connect**). If the password isn’t remembered, re-enter it and tick **Save Password**.
+
+------------------------------------------------------------------------
+
+**Verifying the Connection**
+
+-   Right-click the server → **Connect**
+-   Expand `Databases` \> `postgres` \> `Schemas` \> `public`
+-   This confirms your PostgreSQL server is active and accessible.
+
+You're now ready to manage your databases through the GUI.
+
+------------------------------------------------------------------------
+
+### 🔌 **Using StackBuilder to Install Extensions**
+
+-   Select your PostgreSQL instance (e.g., `PostgreSQL 15 on port 5432`)
+-   Click **Next**
+-   You’ll see several categories. Here’s a guide:\
+
+**What is recommended:**
+
+| Category | Description |
+|--------------------------|----------------------------------------------|
+| **Add-ons, tools and utilities** | Tools like `pgAgent`, `pgBackRest`, or `adminpack` — helpful for backups, scheduling, and server-side utilities. |
+| **Database Drivers** | ODBC, JDBC, and .NET drivers — install if you're planning to connect PostgreSQL from BI tools or other languages like Java or R. |
+
+**Optional**:
+
+| Category | Use only if... |
+|--------------------------|----------------------------------------------|
+| **Spatial Extensions** | You need GIS support — this includes **PostGIS**. |
+| **Web Development** | You’re working on a full PHP/PostgreSQL stack (less common). |
+| **Database Server** | Already installed via initial setup — no need to repeat. |
+| **Registration-required** | Mostly trialware; skip unless testing something specific. |
+
+Once selected, follow the prompts to download and install the tools/extensions you need.
+
+------------------------------------------------------------------------
+
+\- **Reconnect behaviour**: Each time you reopen pgAdmin, right-click the server → **Connect** (password won’t be prompted if saved).
+
+> If you see `fe_sendauth: no password supplied`, open the server properties → **Connection** tab → re-enter password and tick **Save Password** if required.
+
+------------------------------------------------------------------------
+
+## **SQL Essential Functions and Operations — Overview**
+
+This section offers an overview of essential SQL functions and operations, focusing on their use in data manipulation. We'll explore core concepts that allow you to retrieve, filter, sort, and aggregate data, which are fundamental to working with any dataset. Later, these principles will be demonstrated using the public.global_health_statistics dataset within the SQL_Data_Manipulation database.
+
+------------------------------------------------------------------------
+
+1)  Querying Basics Use `SELECT ... FROM ...` to retrieve columns and rows. Add `WHERE` to filter, `ORDER BY` to sort, `LIMIT` to cap rows, and `DISTINCT` to remove duplicates. Column and table aliases keep queries readable.
+
+------------------------------------------------------------------------
+
+2)  Operators & Predicates Core building blocks for conditions: comparison (`=`, `<>`, `<`, `<=`, `>`, `>=`), logical (`AND`, `OR`, `NOT`), membership (`IN`), ranges (`BETWEEN`), pattern match (`LIKE`, `ILIKE`), null checks (`IS NULL`, `IS NOT NULL`), and regex (`~`, `~*`) in PostgreSQL.
+
+------------------------------------------------------------------------
+
+3)  Identifiers, Aliases, Schemas Qualify objects as `schema.table` (e.g., `public.global_health_statistics`). Use `AS` for aliases (e.g., `ghs`). Strings use single quotes `'...'`; **double quotes** preserve case/characters in identifiers; end statements with `;`. Comments: `-- line` and `/* block */`.
+
+------------------------------------------------------------------------
+
+4)  Aggregation & Grouping Aggregate with `COUNT`, `SUM`, `AVG`, `MIN`, `MAX`. Use `GROUP BY` to define groups and `HAVING` to filter aggregated results.chn
+
+------------------------------------------------------------------------
+
+5)  Joining Data Combine tables on keys. Typical joins: **INNER** (matches), **LEFT** (preserve left), **RIGHT**, **FULL**, and **CROSS**. Prefer explicit `JOIN ... ON ...` with clear key conditions.
+
+------------------------------------------------------------------------
+
+6)  Subqueries & CTEs Nest queries inside `WHERE`/`FROM` or use **CTEs** with `WITH`. CTEs improve readability and can be chained; PostgreSQL also supports `WITH RECURSIVE` for hierarchical problems.
+
+------------------------------------------------------------------------
+
+7)  Set Operations Stack compatible result sets vertically: `UNION` (dedup), `UNION ALL` (no dedup), `INTERSECT` (overlap), `EXCEPT` (left minus right).
+
+------------------------------------------------------------------------
+
+8)  Window Functions Compute ranks, running totals, and moving averages without collapsing rows: `... OVER (PARTITION BY ... ORDER BY ...)`. Common helpers: `ROW_NUMBER`, `RANK`, `LAG`, `LEAD`, `SUM/AVG OVER`.
+
+------------------------------------------------------------------------
+
+9)  Strings, Numbers, Dates Strings: `UPPER`, `LOWER`, `TRIM`, `LENGTH`, `REPLACE`, `SUBSTRING`, concatenation `||`.\
+    Numbers: `ROUND`, `CEIL`, `FLOOR`, safe division with `NULLIF`.\
+    Dates: `NOW`, `EXTRACT`, `DATE_TRUNC`, `MAKE_DATE`. Cast types with `::` or `CAST(...)`.
+
+------------------------------------------------------------------------
+
+10) Conditional & NULL Handling `CASE` builds conditional expressions; `COALESCE` picks the first non-NULL value; `NULLIF(a,b)` returns `NULL` if `a=b` (useful for safe division).
+
+------------------------------------------------------------------------
+
+11) DDL (Data Definition Language) Structures & Indexes Define and evolve schema: `CREATE/ALTER/DROP TABLE`, constraints (`PRIMARY KEY`, `UNIQUE`, `NOT NULL`, `CHECK`), and `CREATE INDEX` to speed up common filters/joins.
+
+------------------------------------------------------------------------
+
+12) Transactions & Security Wrap changes in `BEGIN ... COMMIT` (or `ROLLBACK`). Use `SAVEPOINT` for partial rollbacks. Control access with `GRANT` / `REVOKE`.
+
+------------------------------------------------------------------------
+
+13) Loading & Export Bulk load/export CSV using `COPY` (server-side) or `\copy` (psql client-side). On Windows, prefer forward slashes (`C:/...`), and if permissions fail, move files to `C:/temp/`.
+
+------------------------------------------------------------------------
+
+14) Introspection & “Help” Explore metadata via `information_schema` (tables/columns) or psql meta-commands (`\dt`, `\d ghs`, `\dn`, `\l`). `SHOW search_path;` reveals the active schema order.
+
+------------------------------------------------------------------------
+
+### 📋 **Summary Table — Operators, Functions & Patterns**
+
+> Abbreviation used below: **`ghs`** = `public.global_health_statistics`
+
+| Operator / Function / Pattern | What it does | Tiny example (PostgreSQL) |
+|-------------------|-------------------|----------------------------------|
+| `SELECT ... FROM` | Retrieve columns/rows | `SELECT country, year_event FROM ghs;` |
+| `WHERE` | Filter rows | `... FROM ghs WHERE year_event >= 2018;` |
+| `ORDER BY` | Sort output | `... ORDER BY incidence DESC;` |
+| `LIMIT` / `OFFSET` | Cap rows / paginate | `... ORDER BY dalys DESC LIMIT 10;` |
+| `DISTINCT` | Remove duplicates | `SELECT DISTINCT disease_category FROM ghs;` |
+| `AS` (aliases) | Rename columns/tables | `SELECT dalys AS total_dalys FROM ghs;` |
+| Comparison ops | `=`, `<>`, `<`, `<=`, `>`, `>=` | `WHERE country = 'Australia';` |
+| Logical ops | `AND`, `OR`, `NOT` | `WHERE year_event>=2015 AND dalys>0;` |
+| Membership | `IN (...)` | `WHERE country IN ('Australia','USA');` |
+| Range | `BETWEEN a AND b` | `WHERE year_event BETWEEN 2015 AND 2024;` |
+| Pattern match | `LIKE`, `ILIKE` | `WHERE disease_name ILIKE 'influenza%';` |
+| Regex (PG) | `~`, `~*` | `WHERE disease_name ~* 'flu|covid';` |
+| Null checks | `IS NULL`, `IS NOT NULL` | `WHERE incidence IS NULL;` |
+| String concat | `||` | `SELECT country||' - '||disease_name FROM ghs;` |
+| Casting | `::type` or `CAST()` | `SELECT incidence::numeric FROM ghs;` |
+| Aggregates | `COUNT/SUM/AVG/MIN/MAX` | `SELECT SUM(dalys) FROM ghs;` |
+| `GROUP BY` | Define groups | `... GROUP BY country, year_event;` |
+| `HAVING` | Filter groups | `... GROUP BY country HAVING SUM(dalys)>0;` |
+| **JOIN (all)** | Combine tables: `INNER/LEFT/RIGHT/FULL/CROSS` | `SELECT g.country,r.region FROM ghs g LEFT JOIN country_regions r ON r.country=g.country;` |
+| Subquery (IN) | Filter by another query | `WHERE country IN (SELECT country FROM focus_list);` |
+| CTE (`WITH`) | Name intermediate result | `WITH recent AS (SELECT * FROM ghs WHERE year_event>=2020) SELECT * FROM recent;` |
+| Set ops | `UNION`, `UNION ALL`, `INTERSECT`, `EXCEPT` | `(SELECT country FROM ghs WHERE dalys>0) INTERSECT (SELECT country FROM ghs WHERE incidence>0);` |
+| Window `OVER(...)` | Rank/totals per partition | `SUM(dalys) OVER (PARTITION BY country);` |
+| Ranking | `ROW_NUMBER`, `RANK` | `RANK() OVER (PARTITION BY country ORDER BY SUM(dalys) DESC);` |
+| LAG/LEAD | Prior/next row value | `LEAD(incidence) OVER (PARTITION BY country ORDER BY year_event);` |
+| `CASE` | Conditional logic | `CASE WHEN mortality_pct>5 THEN 'High' ELSE 'Low' END;` |
+| `COALESCE` / `NULLIF` | Null handling & safe division | `COALESCE(incidence,0)/NULLIF(population_affected,0);` |
+| Strings | `UPPER/LOWER/TRIM/LENGTH/REPLACE` | `SELECT UPPER(country), LENGTH(disease_name) FROM ghs;` |
+| Dates | `NOW/EXTRACT/DATE_TRUNC/MAKE_DATE` | `DATE_TRUNC('year', MAKE_DATE(year_event,1,1));` |
+| DML | `INSERT/UPDATE/DELETE/MERGE` | `UPDATE ghs SET incidence=0 WHERE incidence IS NULL;` |
+| DDL | `CREATE/ALTER/DROP TABLE` | `ALTER TABLE ghs ADD COLUMN notes TEXT;` |
+| Constraints | `PRIMARY KEY/UNIQUE/CHECK/NOT NULL` | `ALTER TABLE ghs ADD CHECK (mortality_pct BETWEEN 0 AND 100);` |
+| Indexes | `CREATE INDEX` | `CREATE INDEX ON ghs(country, year_event);` |
+| Transactions | `BEGIN/COMMIT/ROLLBACK/SAVEPOINT` | `BEGIN; UPDATE ghs SET dalys=0; ROLLBACK;` |
+| Security | `GRANT/REVOKE` | `GRANT SELECT ON ghs TO analyst_role;` |
+| Load/Export | `COPY` / `\copy` | `COPY ghs FROM 'C:/temp/file.csv' WITH (CSV,HEADER);` |
+| Introspection | `information_schema`, psql `\d` | `SELECT column_name FROM information_schema.columns WHERE table_name='global_health_statistics';` |
+| Comments | `--`, `/* ... */` | `-- count rows` |
+
+------------------------------------------------------------------------
+
+**Notes to Keep Handy**
+
+-   Prefer **explicit joins** with clear keys; avoid ambiguous `SELECT *` in production code.
+-   List columns in `COPY` for stable mapping if CSV order changes.
+-   Use **forward slashes** on Windows paths with `COPY` (`C:/...`).
+-   Create **composite indexes** to match common filters (e.g., `(country, year_event)`).
+-   Always sanity-check results with quick counts/limits before heavy analysis.
+
+------------------------------------------------------------------------
+
+## **Part II — Connecting with R, Rmarkdown, Quarto**
+
+Why connect SQL with R (and publish via .Rmd/.qmd)?
+
+Modern analytics benefits from using **SQL + R together**: - **SQL** pushes heavy filtering/aggregation to the database (fast, scalable, auditable). - **R** adds wrangling, visualization, statistics, and **reproducible documents**.
+
+**Why use R Markdown (`.Rmd`) or Quarto (`.qmd`):\
+** - **Reproducibility:** prose + code + outputs in one file; anyone can re-run end to end.\
+- **Transparency:** every figure or table is tied to the exact SQL/R code that produced it.\
+- **Shareability:** render to **HTML/PDF/Word** for the web or submission.\
+- **Multi-language:** mix **R chunks** and **SQL chunks**; SQL runs through a live DBI connection created in R.\
+- **Automation:** parameterized reports, scheduled renders, version control.
+
+**How SQL chunks work in Quarto/R Markdown**\
+1) Create a DBI connection object in an **R** chunk (e.g., `con <- dbConnect(...)`).\
+2) Use **SQL** chunks with `connection = con` to run SQL on that database.\
+3) Outputs (tables) are printed inline under each SQL chunk.
+
+> 🔐 **Security tip:** Avoid committing passwords to public repos.
+
+**Execution order & prerequisites:**\
+- Install required R packages (DBI, RSQLite, RPostgres, readr, tidyverse, dbplyr).\
+- Ensure your database server (PostgreSQL) is running when connecting to it.\
+- Verify file paths (e.g., `C:/temp/Global_Health_Statistics.csv`) exist on your machine.\
+- Render top-to-bottom so the connection objects exist before SQL chunks that use them.
+
+### **R Markdown & Quarto Options (R + SQL)**
+
+This section summarizes **chunk options and syntax** when building reports that mix **R chunks** and **SQL chunks** (e.g., \`\``{sql, connection = con}`). The goal is to control **execution**, **display**, and **reproducibility**, while running queries **directly against a database** and printing results inline.
+
+**How SQL chunks work (at a glance)** - Open a DBI connection in an **R** chunk (e.g., `con <- dbConnect(...)`). - Run queries in **SQL** chunks using `connection = con`. - Options like `echo`, `eval`, `include`, `warning`, `message`, `error`, and `cache` behave the same as in R chunks. - SQL chunk outputs render as tables; you can also **capture** them into R objects with `output.var`.
+
+**Summary: Quarto/R Markdown Chunk Options (R & SQL)**
+
+| **Feature** | **Quarto / knitr Syntax** | **Description (applies to R & SQL chunks)** |
+|:-----------------|:--------------------|:--------------------------------|
+| Code chunk (R) | `{r, warning=FALSE, message=FALSE}` | Execute R code; suppress messages/warnings for clean output. |
+| Code chunk (SQL) | `{sql, connection = con}` | Execute SQL against a DBI connection object created in an R chunk. |
+| Show/hide code | `echo: true/false` | Display the source code (`true`) or hide it (`false`). |
+| Run/skip code | `eval: true/false` | Execute the chunk or show code without running it. |
+| Hide code & output | `include: false` | Run side effects (e.g., temp tables) but don’t print code or results. |
+| Control results | `results: 'markup'|'asis'|'hide'` | Choose how printed results appear. |
+| Messages & warnings | `message: false`, `warning: false` | Suppress messages/warnings in output. |
+| Error handling | `error: true/false` | If `true`, continue rendering and show the error text. |
+| Caching | `cache: true` | Reuse results when inputs unchanged (be careful if DB data changes). |
+| Chunk labels | `{r my-label}`, `{sql my-label, connection = con}` | Name chunks for organization, cross-refs, and cache keys. |
+| Figures (R) | `fig.width`, `fig.height`, `fig.align` | Size/alignment for plots created in R chunks. |
+| Table printing | YAML `df-print: paged` | Global HTML table style; affects SQL outputs too. |
+| Output formats | YAML `format:` | Select `html`, `pdf`, `docx`, etc., plus format-specific options. |
+
+**SQL–specific conveniences**
+
+| **SQL Feature** | **Syntax** | **What it does** |
+|:------------------|:------------------|:---------------------------------|
+| Bind a connection | `{sql, connection = con}` | Runs the SQL chunk using the DBI connection defined in an R chunk. |
+| Capture result | `output.var = 'df'` | Saves the query output into an R object (e.g., `df`). |
+| Show query only | `eval: false` | Display the SQL but do not execute (useful for teaching/drafts). |
+| Show result only | `echo: false` | Execute query and print just the table (hide the SQL text). |
+| Hidden setup | `include: false` | Execute without showing anything (e.g., temp objects). |
+| Resilient to errors | `error: true` | Don’t halt the build on a chunk error (prints the error). |
+
+**Examples**
+
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
+# DBI connection created once and reused by SQL chunks
+library(DBI); 
+library(RPostgres)
+con <- dbConnect(
+  RPostgres::Postgres(),
+  dbname = "SQL_Data_Manipulation",
+  host   = "localhost", port = 5432,
+  user   = "postgres",  password = Sys.getenv("PGPASSWORD")
+)
+```
+
+#### **Abbreviations & acronyms used in this section**
+
+-   **SQL** — Structured Query Language
+-   **RDBMS** — Relational Database Management System
+-   **ACID** — Atomicity, Consistency, Isolation, Durability
+-   **DBaaS** — Database as a Service (e.g., RDS/Azure/GCP)
+-   **GUI** — Graphical User Interface (e.g., pgAdmin)
+-   **CLI** — Command-Line Interface (e.g., `psql`)
+-   **CTE** — Common Table Expression (`WITH`, `WITH RECURSIVE`)
+-   **DDL** — Data Definition Language (`CREATE/ALTER/DROP`)
+-   **DML** — Data Manipulation Language (`SELECT/INSERT/UPDATE/DELETE/MERGE`)
+-   **DCL** — Data Control Language (`GRANT/REVOKE`)
+-   **PK** — Primary Key
+-   **FK** — Foreign Key
+-   **MV** — Materialized View
+-   **JSON/JSONB** — JavaScript Object Notation (text/binary)
+-   **GIN** — Generalized Inverted Index (commonly for `jsonb`)
+-   **WAL** — Write-Ahead Log (durability in Postgres)
+-   **QMD/RMD** — Quarto/ R Markdown documents
+
+## Part III — Data Loading & Exploration
+
+-   Table creation (DDL) & data types
+-   CSV import: `COPY` / `\copy` and permissions
+-   Basic exploration: previews, counts, distincts, NULL checks
+
+### Create the Project Database (with Australian locale)
+
+We’ll call the project **SQL_Data_Manipulation**.
+
+> Note: You created the database with **quoted/mixed case**. In PostgreSQL, database names are case-sensitive if created with quotes. Always use the exact casing **SQL_Data_Manipulation** in tools/connectors.
+
+**Run this from the `postgres` database (or any admin DB) in pgAdmin Query Tool:**
+
+```{r , eval=FALSE}
+
+-- Create database with English_Australia.1252 locale (Windows)
+-- If it already exists, skip this block.
+CREATE DATABASE "SQL_Data_Manipulation"
+WITH
+OWNER = postgres
+ENCODING = 'UTF8'
+LC_COLLATE = 'English_Australia.1252'
+LC_CTYPE   = 'English_Australia.1252'
+LOCALE_PROVIDER = 'libc'
+TABLESPACE = pg_default
+CONNECTION LIMIT = -1
+IS_TEMPLATE = FALSE;
+
+COMMENT ON DATABASE "SQL_Data_Manipulation"
+IS 'This is the DB for SQL data manipulation project.';
+
+```
+
+After creation: In pgAdmin, right-click your server → Refresh, then select database SQL_Data_Manipulation and open Query Tool from that database node so subsequent SQL runs in the right place.
+
+💡 Locale note (Windows): English_Australia.1252 controls collation/ctype (sorting/character classification). If creation fails, verify that locale is installed on the OS.
+
+1.  Expand your server → right-click **Databases** → **Create \> Database…**
+2.  **Database**: `SQL_Data_Manipulation_Guide` → **Save**.
+
+(Optional) Set this database as the **Query Tool** target using the dropdown in the toolbar.
+
+🧱 **Create the Target Table (in SQL_Data_Manipulation)**
+
+```{r, eval=FALSE}
+
+-- Ensure you're connected to the "SQL_Data_Manipulation" database before running this.
+CREATE TABLE IF NOT EXISTS public.global_health_statistics (
+    country TEXT,
+    year_event INT,
+    disease_name TEXT,
+    disease_category TEXT,
+    prevalence NUMERIC,
+    incidence NUMERIC,
+    mortality_pct NUMERIC,
+    age_group TEXT,
+    gender TEXT,
+    population_affected BIGINT,
+    healthcare_access TEXT,
+    dr_per_1000 NUMERIC,
+    hospital_beds_per_1000 NUMERIC,
+    treatment_type TEXT,
+    average_treatment_cost_usd NUMERIC,
+    availability_of_vaccines_treatment TEXT,
+    recovery_rate_pct NUMERIC,
+    dalys NUMERIC,
+    improvement_in_5_years_pct NUMERIC,
+    per_capita_income_usd NUMERIC,
+    education_index NUMERIC,
+    urbanization_rate_pct NUMERIC
+);
+
+```
+
+### 📥 Importing Data — Options and Tips
+
+**Importing Data Files into SQL**
+
+Before analyzing data in SQL, we need to **bring it into a database table**.\
+Unlike R or Python, SQL engines do not read files directly; instead, they rely on database commands (`COPY`, `\copy`, `BULK INSERT`, or external tools) to import files into a table.
+
+Below is a summary of how different file types can be imported into common SQL engines.
+
+------------------------------------------------------------------------
+
+| **Data Type** | **SQL Import Method** | **Database** | **Example** |
+|------------------|-------------------|------------------|------------------|
+| CSV | `COPY` or `\copy` (Postgres), `BULK INSERT` (SQL Server), `.import` (SQLite) | PostgreSQL, SQLite, SQL Server | `COPY mytable FROM 'file.csv' CSV HEADER;` |
+| TSV / Text (.tsv) | Same as CSV but with tab delimiter specified | PostgreSQL, SQLite | `COPY mytable FROM 'file.tsv' DELIMITER E'\t' CSV HEADER;` |
+| Excel (.xls/.xlsx) | Convert to CSV first, then import (native SQL cannot parse Excel directly) | All | Save as CSV → `COPY` into SQL |
+| ZIP archives | Extract file first, then import csv into SQL | All | `unzip data.zip` → `COPY mytable FROM 'file.csv' CSV HEADER;` |
+| Stata/SPSS (.dta/.sav) | Convert to CSV using R/Python/StatTransfer, then load into SQL | All | R: `write.csv(read_dta("file.dta"), "file.csv")` → SQL `COPY` |
+| Online files | Download first (with `wget`/`curl`), then import csv | All | `wget URL -O file.csv` → SQL `COPY` |
+
+------------------------------------------------------------------------
+
+**Two ways to load CSV data**:
+
+**Option A — pgAdmin GUI (Import/Export)**
+
+-   Right-click table → **View/Edit Data → All Rows**
+
+    Click **Import/Export** (📥)
+
+-   **Import** tab: choose file, format **CSV**, check **Header**, set delimiter **,**
+
+```         
+**OK**
+```
+
+**Option B — SQL Import**
+
+There are two SQL variants:
+
+**B1. Server-side COPY (runs on the DB server process)**
+
+Works in **pgAdmin Query Tool**.
+
+```         
+The server must be able to read the file path. On Windows, the service account often cannot read Desktop/Documents.
+```
+
+-   **Fix**: move the file to a permissive folder like `C:/temp/`.
+
+```{r, eval=FALSE}
+COPY public.global_health_statistics (
+  country, year_event, disease_name, disease_category, prevalence, incidence, mortality_pct, 
+  age_group, gender, population_affected, healthcare_access, dr_per_1000,
+  hospital_beds_per_1000, treatment_type, average_treatment_cost_usd,
+  availability_of_vaccines_treatment, recovery_rate_pct, dalys,
+  improvement_in_5_years_pct, per_capita_income_usd, education_index, urbanization_rate_pct
+)
+FROM 'C:/temp/Global_Health_Statistics.csv'
+WITH (FORMAT csv, HEADER true, DELIMITER ',', QUOTE '"', ESCAPE '"', ENCODING 'UTF8');
+
+```
+
+**B2. Client-side** \copy (psql)
+
+Only in psql (ie Use SQL Shell), not pgAdmin.
+
+Avoids server-permission issues (can read Desktop paths).
+
+```{r, eval=FALSE}
+
+\copy public.global_health_statistics (
+  country, year_event, disease_name, disease_category, prevalence, incidence, mortality_pct, 
+  age_group, gender, population_affected, healthcare_access, dr_per_1000,
+  hospital_beds_per_1000, treatment_type, average_treatment_cost_usd,
+  availability_of_vaccines_treatment, recovery_rate_pct, dalys,
+  improvement_in_5_years_pct, per_capita_income_usd, education_index, urbanization_rate_pct
+)
+FROM 'C:/Users/User/Desktop/Materials_ Course and proposals/Course Related/Data_source/Global_Health_Statistics.csv'
+WITH (FORMAT csv, HEADER true, DELIMITER ',', QUOTE '"', ESCAPE '"', ENCODING 'UTF8');
+
+```
+
+**Tips (Windows paths)**
+
+Prefer forward slashes (C:/...) to avoid escaping backslashes.
+
+If permission denied appears with COPY, move the file to C:/temp/ or use \copy.
+
+Method used in this project
+
+Used: Option B1 — server-side COPY from C:/temp/Global_Health_Statistics.csv.
+
+Result: COPY 1000000 → 1,000,000 rows imported successfully.
+
+**Where to See the Imported Data (Names & Columns)**
+
+In pgAdmin: **Servers → Databases → SQL_Data_Manipulation → Schemas → public → Tables → global_health_statistics**
+
+Right-click → **View/Edit Data → All Rows to preview.**
+
+Select the table → Columns tab (right pane) to see column names and types.
+
+------------------------------------------------------------------------
+
+#### **1). Importing data to R from local path**
+
+> This chunk reads the CSV into R, opens a **SQLite** database file named `SQL_Data_Manipulation`, and writes the data as a SQLite table. It’s a lightweight, local option for quick iteration (no server required).
+
+```{r, warning=FALSE, message=FALSE}
+
+    # Clear environment and console
+    rm(list = ls()) # To clear the environment (remove all objects in memory)
+    cat("\014") # To clear the console (like wiping a whiteboard)
+```
+
+```{r, warning=FALSE, message=FALSE}
+library(DBI)
+library(RSQLite)
+library(readr)
+library(tidyverse)
+library(dbplyr)
+
+# Read CSV
+global_health_statistics <- read_csv("C:/temp/Global_Health_Statistics.csv")
+
+# Connect to SQLite
+con <- dbConnect(RSQLite::SQLite(), dbname = "SQL_Data_Manipulation")
+
+# Write table to DB
+dbWriteTable(con, "global_health_statistics", global_health_statistics, overwrite = TRUE)
+
+# knitr::opts_chunk$set(connection = "con")
+```
+
+**Use SQL codes: from here and onwards**
+
+The next SQL chunk runs against the current con connection (SQLite here) and previews rows.
+
+```{sql, connection = con}
+SELECT * FROM global_health_statistics LIMIT 10;
+
+```
+
+```{sql, connection = con}
+SELECT 
+  COUNT(*) FILTER (WHERE country IS NULL)       AS null_country,
+  COUNT(*) FILTER (WHERE disease_name IS NULL)  AS null_disease
+FROM global_health_statistics;
+
+```
+
+#### **2). Reading the data available at postgres in SQL Via R**
+
+This section opens a PostgreSQL connection using RPostgres to the database "SQL_Data_Manipulation". Best practice is to keep credentials out of code (use env vars or keychain).
+
+```{r, eval=FALSE, warning=FALSE, message=FALSE}
+# install.packages(c("DBI","RPostgres","dplyr"))  # run once
+library(DBI)
+library(RPostgres)
+library(dplyr)
+
+# (Optional) keep credentials out of the script
+Sys.setenv(PGUSER = "postgres", PGPASSWORD = "yourpassword")
+
+con <- dbConnect(
+  RPostgres::Postgres(),
+  host   = "localhost",
+  port   = 5432,
+  dbname = "SQL_Data_Manipulation",   # matches your screenshot
+  user   = Sys.getenv("PGUSER", "postgres"),
+  password = Sys.getenv("PGPASSWORD", "yourpassword")
+)
+```
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# install.packages(c("DBI","RPostgres","dplyr"))  # run once
+library(DBI)
+library(RPostgres)
+library(dplyr)
+
+# (Optional) keep credentials out of the script
+Sys.setenv(PGUSER = "postgres", PGPASSWORD = "Add_Your_Password_Here")
+
+con <- dbConnect(
+  RPostgres::Postgres(),
+  host   = "localhost",
+  port   = 5432,
+  dbname = "SQL_Data_Manipulation",   # matches your screenshot
+  user   = Sys.getenv("PGUSER", "postgres"),
+  password = Sys.getenv("PGPASSWORD", "Add_Your_Password_Here")
+)
+```
+
+Pull the table from PostgreSQL into an R data frame (or use dbGetQuery to run a SQL SELECT).
+
+```{r}
+global_health_statistics <- dbReadTable(con, Id(schema = "public", table = "global_health_statistics"))
+# or: ghs <- dbGetQuery(con, "SELECT * FROM public.global_health_statistics;")
+
+```
+
+**Reading and Importing Data**
+
+In SQL, importing means **loading external files into a database table** so they can be queried.\
+Unlike R, where we use functions like `read_csv()` or `read_excel()`, in SQL we rely on commands such as `COPY`, `LOAD DATA INFILE`, or `BULK INSERT` depending on the database system.
+
+📊 **Reading Common Data Types in SQL**
+
+| Data Type | SQL Command / Method | Notes | Example |
+|------------------|------------------|------------------|-------------------|
+| CSV | `COPY` (Postgres), `LOAD DATA INFILE` (MySQL), `BULK INSERT` (SQL Server) | Most common tabular format | `COPY patients FROM '/path/patients.csv' CSV HEADER;` |
+| Excel (.xls/.xlsx) | Not directly supported | Convert to CSV or import via ETL tools |  |
+| Tab-separated (.tsv) | Same as CSV with delimiter `\t` |  | `COPY patients FROM '/path/file.tsv' DELIMITER E'\t' CSV HEADER;` |
+| Text (.txt) | Load as delimited file | Need to define delimiter/schema |  |
+| Stata (.dta), SPSS (.sav), RDS | Not supported natively | Convert to CSV first (R/Python/SAS) |  |
+| ZIP archives | SQL cannot unzip | Unzip externally, then import CSV |  |
+| Online CSV/Excel | Some cloud DBs (BigQuery, Snowflake) allow URL loading | Otherwise: download first | `LOAD DATA ... FROM 'https://...'` |
+
+------------------------------------------------------------------------
+
+**Use SQL codes: from here and on wards**: Run a SQL query against PostgreSQL
+
+This demonstration shows how I use SQL to explore and validate a large dataset on global health statistics. Each section introduces the query with a short explanation, followed by the SQL code and notes about the expected output.
+
+### **Data Exploration**
+
+Before analysis, it is important to preview the dataset to confirm structure and column names.\
+The following query selects the first 10 rows for each variable country, year_event, disease_name, prevalence, incidence, mortality_pct, and socio-economic indicators.
+
+```{sql, connection = con}
+-- check some Sample rows
+SELECT *
+FROM public.global_health_statistics
+LIMIT 10;
+```
+
+Confirm how many rows exist in the table: In this case: 1,000,000 rows.
+
+```{sql, connection = con}
+-- Total rows loaded
+SELECT COUNT(*) AS rows_loaded
+FROM public.global_health_statistics;
+
+```
+
+Check the earliest and latest years in the dataset: spans from 2000 to 2024.
+
+```{sql, connection = con}
+SELECT MIN(year_event) AS min_year, MAX(year_event) AS max_year
+FROM public.global_health_statistics;
+```
+
+Look at the most recent events by sorting years in descending order:
+
+```{sql, connection = con}
+SELECT country, year_event, incidence
+FROM public.global_health_statistics
+ORDER BY year_event DESC
+LIMIT 10;
+
+```
+
+Checking Data Completeness
+
+Check for missing values at the PostgreSQL level: Both null_country and null_disease return 0.
+
+```{sql, connection = con}
+SELECT 
+  COUNT(*) FILTER (WHERE country IS NULL)       AS null_country,
+  COUNT(*) FILTER (WHERE disease_name IS NULL)  AS null_disease
+FROM public.global_health_statistics;
+```
+
+### **Creating a Basic Data Dictionary**
+
+```{sql, connection = con}
+-- PostgreSQL example: auto-generate a simple data dictionary
+SELECT 
+    table_name,
+    column_name,
+    data_type,
+    is_nullable
+FROM information_schema.columns
+WHERE table_schema = 'public'
+  AND table_name = 'patients';
+```
+
+📊 Summary Table: SQL Equivalents
+
+The table below provides SQL equivalents for common R exploration tasks.\
+It shows the task, the general SQL approach, and an example query.
+
+| **Task** | **SQL Approach** | **Example** |
+|:------------------|:------------------|:----------------------------------|
+| View structure of dataset | Query metadata | `SELECT column_name, data_type FROM information_schema.columns` |
+| Summarize statistics | Aggregate functions | `MIN(), MAX(), AVG(), STDDEV()` |
+| Preview first rows | `LIMIT` | `SELECT * FROM patients LIMIT 10;` |
+| Preview last rows | `ORDER BY ... DESC LIMIT n` | `SELECT * FROM patients ORDER BY id DESC LIMIT 8;` |
+| Count frequencies | `GROUP BY + COUNT()` | `SELECT gender, COUNT(*) FROM patients GROUP BY gender;` |
+| Count rows | `COUNT(*)` | `SELECT COUNT(*) FROM patients;` |
+| Count columns | Metadata query | `SELECT COUNT(*) FROM information_schema.columns;` |
+| List variable names | Metadata query | `SELECT column_name FROM information_schema.columns;` |
+| Check variable type | Metadata query | `SELECT column_name, data_type FROM information_schema.columns;` |
+| Create data dictionary | Metadata query | *(see metadata query example above)* |
+| Clean column/text values | SQL functions | `UPPER(TRIM(col))` |
+
+------------------------------------------------------------------------
+
+## **Part IV — Wrangling Core (SELECT / WHERE / CASE / JOIN)**
+
+Once a dataset has been imported and explored, the next step is **wrangling** — reshaping and preparing the data for analysis.\
+In SQL, the core tools for wrangling are:
+
+-   Selecting & aliasing (choosing columns, renaming for clarity, creating computed columns)\
+-   Filtering, sorting, limiting (subsetting rows)\
+-   Conditional logic (`CASE`, `COALESCE`, `NULLIF`)\
+-   Joins (combining data across multiple tables)
+
+📊 Summary Table — Conditional Logic & Joins
+
+The table below summarizes key SQL wrangling patterns using the `global_health_statistics` dataset.\
+It highlights **creating variables with CASE, handling missing values, and common join strategies**, with representative examples.
+
+| **Concept** | **Description** | **Example SQL** |
+|------------------|------------------|-------------------------------------|
+| **Binary indicator with CASE** | Recode into two groups (like `ifelse()` in R). | `sql<br>SELECT disease_name, mortality_pct,<br> CASE WHEN mortality_pct > 20 THEN 'High Mortality'<br> ELSE 'Low/Moderate Mortality' END AS mortality_group<br>FROM public.global_health_statistics<br>LIMIT 10;` |
+| **Multi-category recoding** | Multiple conditions, like `case_when()` in R. | `sql<br>SELECT disease_name, mortality_pct,<br> CASE WHEN mortality_pct < 5 THEN 'Low'<br> WHEN mortality_pct BETWEEN 5 AND 20 THEN 'Moderate'<br> WHEN mortality_pct > 20 THEN 'High'<br> ELSE 'Unknown' END AS mortality_category<br>FROM public.global_health_statistics<br>LIMIT 10;` |
+| **Buckets based on numeric ranges** | Group continuous values into buckets. | `sql<br>SELECT country, disease_name, year_event, population_affected,<br> CASE WHEN population_affected IS NULL THEN 'unknown'<br> WHEN population_affected < 1_000 THEN 'very low'<br> WHEN population_affected < 10_000 THEN 'low'<br> WHEN population_affected < 100_000 THEN 'moderate'<br> WHEN population_affected < 1_000_000 THEN 'high'<br> ELSE 'very high' END AS burden_bucket<br>FROM public.global_health_statistics<br>ORDER BY year_event DESC, population_affected DESC<br>LIMIT 10;` |
+| **Combine multiple variables** | Conditional logic across \>1 column. | `sql<br>SELECT disease_name, age_group,<br> CASE WHEN disease_category = 'Infectious' AND age_group = '0-14' THEN 'Child Infectious'<br> WHEN disease_category = 'Infectious' AND age_group = '65+' THEN 'Elderly Infectious'<br> WHEN disease_category = 'Non-communicable' AND age_group = '15-64' THEN 'Adult NCD'<br> ELSE 'Other' END AS combined_category<br>FROM public.global_health_statistics<br>LIMIT 10;` |
+| **Handle missing values** | `COALESCE` replaces NULL, `NULLIF` avoids divide-by-zero. | `sql<br>SELECT country, COALESCE(healthcare_access,'Unknown') AS healthcare_access<br>FROM public.global_health_statistics<br>LIMIT 10;` |
+| **LEFT JOIN** | Keep all fact rows, enrich where possible. | `sql<br>SELECT g.country, COALESCE(cr.region,'Unknown') AS region,<br> g.disease_name, g.year_event, g.population_affected<br>FROM public.global_health_statistics g<br>LEFT JOIN country_region cr ON cr.country = g.country<br>WHERE g.year_event BETWEEN 2018 AND 2022<br>ORDER BY g.year_event DESC, region, g.population_affected DESC<br>LIMIT 15;` |
+| **FULL JOIN** | Keep all rows from both tables; useful for reconciliation. | `sql<br>SELECT COALESCE(g.country, cr.country) AS country_key,<br> cr.region, g.disease_name, g.year_event, g.population_affected,<br> CASE WHEN g.country IS NULL THEN 'missing_in_facts'<br> WHEN cr.country IS NULL THEN 'missing_in_dim'<br> ELSE 'matched' END AS join_status<br>FROM public.global_health_statistics g<br>FULL OUTER JOIN country_region cr ON cr.country = g.country<br>LIMIT 10;` |
+| **Anti-join** | Find fact rows with no matching dimension. | `sql<br>SELECT g.*<br>FROM public.global_health_statistics g<br>WHERE NOT EXISTS (SELECT 1 FROM country_region cr WHERE cr.country = g.country)<br>LIMIT 10;` |
+| **Semi-join** | Keep fact rows that have a match, without returning dimension columns. | `sql<br>SELECT g.country, g.disease_name, g.year_event, g.population_affected<br>FROM public.global_health_statistics g<br>WHERE EXISTS (SELECT 1 FROM country_region cr WHERE cr.country = g.country)<br>LIMIT 10;` |
+
+------------------------------------------------------------------------
+
+For demonstration, I will continue using the **`global_health_statistics`** dataset.
+
+------------------------------------------------------------------------
+
+## **1. Selecting & Aliasing**
+
+Aliasing allows us to rename columns or create new computed fields directly in queries.
+
+Here, I renamed columns (country → country_name) and created a computed column to express affected population in millions. This makes query results easier to interpret when preparing reports.
+
+```{sql, connection = con}
+-- Select key columns with aliases and a computed column
+SELECT 
+    country AS country_name,
+    disease_name AS disease,
+    year_event AS year,
+    population_affected,
+    ROUND(CAST(population_affected AS numeric) / 1000000, 2) AS population_millions
+FROM public.global_health_statistics
+LIMIT 10;
+
+
+```
+
+## **2. Filtering, Sorting, Limiting**
+
+Filtering rows focuses on subsets of interest. Sorting orders results, and limiting restricts the number of records returned.
+
+The code below extracts the countries most affected by Tuberculosis after 2015, ranked by population impacted. Filtering with WHERE, ordering with ORDER BY, and subsetting with LIMIT form the core of SQL wrangling.
+
+```{sql, connection = con}
+-- Top 10 most affected records for Tuberculosis after 2015
+SELECT 
+    country,
+    year_event,
+    disease_name,
+    population_affected
+FROM public.global_health_statistics
+WHERE disease_name = 'Tuberculosis'
+  AND year_event > 2015
+ORDER BY population_affected DESC
+LIMIT 10;
+
+```
+
+When reading results, you may prefer explicit predicates, deterministic ordering, and tight limits while iterating.
+
+```{sql, connection = con}
+--explicit predicates, deterministic ordering, and tight limits while iterating.
+SELECT country, disease_name, year_event, population_affected
+FROM public.global_health_statistics
+WHERE year_event BETWEEN 2010 AND 2020             -- time window
+  AND disease_name ILIKE '%influenza%'             -- case-insensitive contains
+  AND population_affected IS NOT NULL              -- avoid surprises in math
+ORDER BY year_event DESC, population_affected DESC -- deterministic, business-first order
+LIMIT 10;
+```
+
+**Filtering by specific letters, words or names**\
+**Filtering with LIKE and ILIKE**
+
+In PostgreSQL you can use ILIKE instead of LIKE to make the search case-insensitive.
+
+Filtering text values is a common requirement in health datasets.\
+Often we need to retrieve records where a disease name, country, or other text field **contains, starts with, or ends with** a certain word.
+
+In SQL, this is achieved using the `LIKE` operator.\
+- `%` matches **any sequence of characters** (including none).\
+- `_` matches **a single character**.
+
+Below is a summary table of common filtering patterns:
+
+| **Pattern** | **Description** | **SQL Example** |
+|------------------|--------------------|----------------------------------|
+| `%Alzheimer%` | Matches any value containing “Alzheimer” | `SELECT * FROM public.global_health_statistics WHERE disease_name LIKE '%Alzheimer%';` |
+| `Alzheimer%` | Matches values that start with “Alzheimer” | `SELECT * FROM public.global_health_statistics WHERE disease_name LIKE 'Alzheimer%';` |
+| `%Alzheimer` | Matches values that end with “Alzheimer” | `SELECT * FROM public.global_health_statistics WHERE disease_name LIKE '%Alzheimer';` |
+| `%flu%` | Matches any value containing “flu” (e.g. “Influenza”, “Avian flu”) | `SELECT * FROM public.global_health_statistics WHERE disease_name LIKE '%flu%';` |
+| `_alaria` | Matches a 7-letter word ending in “alaria” (e.g. “Malaria”) | `SELECT * FROM public.global_health_statistics WHERE disease_name LIKE '_alaria';` |
+| `C%` | Matches any value starting with the letter “C” | `SELECT * FROM public.global_health_statistics WHERE disease_name LIKE 'C%';` |
+
+------------------------------------------------------------------------
+
+-- Find all records where the disease name starts with "Influenza"
+
+```{sql, connection = con}
+SELECT *
+FROM public.global_health_statistics
+WHERE disease_name LIKE 'Influenza%';
+
+```
+
+Use ILIKE instead of LIKE to make the search case-insensitive:
+
+```{sql, connection = con}
+-- Case-insensitive match for "flu"
+SELECT *
+FROM public.global_health_statistics
+WHERE disease_name ILIKE '%flu%';
+```
+
+```{sql, connection=con}
+-- Find all records where the disease name contains "Alzheimer"
+SELECT *
+FROM public.global_health_statistics
+WHERE disease_name LIKE '%Alzheimer%';
+```
+
+**Top-N per group (practical)**
+
+Top 3 countries per year by affected population.
+
+```{sql, connection=con}
+WITH ranked AS (
+  SELECT
+    country,
+    year_event,
+    population_affected,
+    ROW_NUMBER() OVER (
+      PARTITION BY year_event
+      ORDER BY population_affected DESC, country ASC
+    ) AS rn
+  FROM public.global_health_statistics
+  WHERE population_affected IS NOT NULL
+)
+SELECT country, year_event, population_affected
+FROM ranked
+WHERE rn <= 3
+ORDER BY year_event, rn, country;
+
+```
+
+## **3. Creating variables and Conditional Logic**
+
+SQL lets us recode or transform values inline.
+
+Using CASE
+
+CASE is the SQL equivalent of ifelse() in R or if-else in Python, and it’s essential for creating categorical groupings.
+
+```{sql, connection = con}
+-- Create a binary indicator for high mortality diseases
+SELECT 
+    disease_name,
+    mortality_pct,
+    CASE 
+        WHEN mortality_pct > 20 THEN 'High Mortality'
+        ELSE 'Low/Moderate Mortality'
+    END AS mortality_group
+FROM public.global_health_statistics
+LIMIT 10;
+
+```
+
+**Multi-Category Recoding**
+
+A `CASE` statement with multiple `WHEN ... THEN ...` clauses.
+
+Suppose we want to categorize diseases into **Low**, **Moderate**, and **High** mortality risk groups based on the `mortality_pct` variable.
+
+```{sql, connection = con}
+-- Multi-category classification of mortality levels
+SELECT 
+    disease_name,
+    mortality_pct,
+    CASE 
+        WHEN mortality_pct < 5 THEN 'Low'
+        WHEN mortality_pct BETWEEN 5 AND 20 THEN 'Moderate'
+        WHEN mortality_pct > 20 THEN 'High'
+        ELSE 'Unknown'
+    END AS mortality_category
+FROM public.global_health_statistics
+LIMIT 10;
+
+```
+
+```{sql, connection = con}
+SELECT
+  country,
+  disease_name,
+  year_event,
+  population_affected,
+  CASE
+    WHEN population_affected IS NULL               THEN 'unknown'
+    WHEN population_affected <  1_000              THEN 'very low'
+    WHEN population_affected < 10_000              THEN 'low'
+    WHEN population_affected < 100_000             THEN 'moderate'
+    WHEN population_affected < 1_000_000           THEN 'high'
+    ELSE                                                'very high'
+  END AS burden_bucket
+FROM public.global_health_statistics
+ORDER BY year_event DESC, population_affected DESC
+LIMIT 10;
+
+```
+
+**Combining Multiple Variables**
+
+We can even combine conditions from more than one variable. Here, we create a category based on both disease type and age group.
+
+```{sql, connection = con}
+-- Conditional grouping using disease and age group
+SELECT 
+    disease_name,
+    age_group,
+    CASE 
+        WHEN disease_category = 'Infectious' AND age_group = '0-14' THEN 'Child Infectious'
+        WHEN disease_category = 'Infectious' AND age_group = '65+' THEN 'Elderly Infectious'
+        WHEN disease_category = 'Non-communicable' AND age_group = '15-64' THEN 'Adult NCD'
+        ELSE 'Other'
+    END AS combined_category
+FROM public.global_health_statistics
+LIMIT 10;
+
+```
+
+### **Handling Missing Values (COALESCE, NULLIF)**
+
+COALESCE replaces missing values with a default. NULLIF prevents division by zero by returning NULL instead.
+
+```{sql, connection = con}
+-- Replace null healthcare access values with 'Unknown'
+SELECT
+    country,
+    disease_name,
+    year_event,
+    COALESCE(healthcare_access::text, 'Unknown') AS healthcare_access
+FROM public.global_health_statistics
+LIMIT 10;
+
+```
+
+```{sql, connection = con}
+-- Calculate incidence rate safely (avoid division by zero)
+SELECT 
+    country,
+    disease_name,
+    incidence / NULLIF(population_affected, 0) AS incidence_rate
+FROM public.global_health_statistics
+WHERE year_event = 2020
+LIMIT 10;
+```
+
+### **4. Joins (INNER / LEFT / FULL)**
+
+To keep this self-contained, I’ll create two tables to demonstrate common join shapes:
+
+country_region maps countries to regions.
+
+disease_group maps diseases to broader categories
+
+In a real project these would live in dim.\* tables with clear stewardship.
+
+```{sql, connection = con}
+CREATE TEMP TABLE country_region (
+  country TEXT PRIMARY KEY,
+  region  TEXT NOT NULL
+);
+```
+
+```{sql, connection = con}
+INSERT INTO country_region(country, region) VALUES
+  ('Australia','Oceania'),
+  ('United States','North America'),
+  ('Brazil','South America'),
+  ('India','Asia'),
+  ('Kenya','Africa');
+```
+
+```{sql, connection = con}
+CREATE TEMP TABLE disease_group (
+  disease_name TEXT PRIMARY KEY,
+  disease_group TEXT NOT NULL
+);
+```
+
+```{sql, connection = con}
+INSERT INTO disease_group(disease_name, disease_group) VALUES
+  ('Influenza A','Respiratory'),
+  ('Influenza B','Respiratory'),
+  ('COVID-19','Respiratory'),
+  ('Dengue','Vector-borne'),
+  ('Malaria','Vector-borne');
+
+```
+
+#### **LEFT JOIN (keep all facts; enrich where possible)**
+
+Prefer this when facts must be retained even if the dimension is incomplete.
+
+In the example below, LEFT JOIN ensures all health statistics are retained, even if metadata is missing.
+
+```{sql, connection = con}
+SELECT
+  g.country,
+  COALESCE(cr.region, 'Unknown') AS region,
+  g.disease_name,
+  g.year_event,
+  g.population_affected
+FROM public.global_health_statistics AS g
+LEFT JOIN country_region           AS cr
+  ON cr.country = g.country
+WHERE g.year_event BETWEEN 2018 AND 2022
+ORDER BY g.year_event DESC, region, g.population_affected DESC
+LIMIT 15;
+```
+
+### **FULL JOIN: keep everything from both sides**
+
+Useful for reconciliation and data quality investigations.
+
+```{sql, connection = con}
+SELECT
+  COALESCE(g.country, cr.country) AS country_key,
+  cr.region,
+  g.disease_name,
+  g.year_event,
+  g.population_affected,
+  CASE
+    WHEN g.country IS NULL THEN 'missing_in_facts'
+    WHEN cr.country IS NULL THEN 'missing_in_dim'
+    ELSE 'matched'
+  END AS join_status
+FROM public.global_health_statistics AS g
+FULL OUTER JOIN country_region      AS cr
+  ON cr.country = g.country
+ORDER BY join_status, country_key
+LIMIT 10;
+
+```
+
+### **Joining multiple dimensions**
+
+Add both region and a disease_group, then compute region-level totals.
+
+```{sql, connection = con}
+SELECT
+  cr.region,
+  dg.disease_group,
+  g.year_event,
+  SUM(g.population_affected) AS population_total
+FROM public.global_health_statistics AS g
+LEFT JOIN country_region             AS cr
+  ON cr.country = g.country
+LEFT JOIN disease_group              AS dg
+  ON dg.disease_name = g.disease_name
+WHERE g.year_event >= 2015
+GROUP BY cr.region, dg.disease_group, g.year_event
+ORDER BY cr.region NULLS LAST, dg.disease_group NULLS LAST, g.year_event;
+
+```
+
+**Anti-join pattern (find orphans)**
+
+Facts with unmapped countries (dimension coverage gap):
+
+```{sql, connection = con}
+SELECT g.*
+FROM public.global_health_statistics AS g
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM country_region AS cr
+  WHERE cr.country = g.country
+)
+ORDER BY g.country, g.disease_name, g.year_event
+LIMIT 10;
+```
+
+2)  Anti-join via LEFT JOIN ... IS NULL (equivalent)
+
+```{sql, connection = con}
+
+SELECT g.*
+FROM public.global_health_statistics AS g
+LEFT JOIN country_region AS cr
+  ON cr.country = g.country
+WHERE cr.country IS NULL
+ORDER BY g.country, g.disease_name, g.year_event
+LIMIT 20;
+```
+
+### **Semi-Join Pattern (Keep Only Facts That Have a Match)**
+
+> Goal: return **fact rows that have at least one matching dimension row**, without returning dimension columns or duplicating facts.\
+> Canonical SQL: **`WHERE EXISTS (...)`** (preferred) or **`IN (subquery)`**.\
+> Unlike inner joins, a semi-join returns each qualifying fact at most once.
+
+1)  Semi-join via EXISTS ✅ (recommended)
+
+```{sql, connection = con}
+SELECT g.country, g.disease_name, g.year_event, g.population_affected
+FROM public.global_health_statistics AS g
+WHERE EXISTS (
+  SELECT 1
+  FROM country_region AS cr
+  WHERE cr.country = g.country
+)
+ORDER BY g.country, g.disease_name, g.year_event
+LIMIT 10;
+```
+
+### **3. Appending Data (Stacking Rows)**
+
+Appending (row-binding) is done using UNION or UNION ALL.
+
+UNION ALL keeps duplicates.
+
+UNION removes duplicates.
+
+```{sql, connection = con}
+-- Append two subsets of the same table (stack rows)
+SELECT country, year_event, disease_name, population_affected
+FROM public.global_health_statistics
+WHERE year_event <= 2015
+
+UNION ALL
+
+SELECT country, year_event, disease_name, population_affected
+FROM public.global_health_statistics
+WHERE year_event > 2015
+ORDER BY year_event
+LIMIT 20;
+
+```
+
+# **Part V — Advanced Wrangling**
+
+Beyond basic SELECT and JOIN operations, SQL offers powerful tools for advanced wrangling:
+
+-   **Common Table Expressions (CTEs)** for readability and modular pipelines\
+-   **Window functions** for ranking, partitioning, and moving calculations\
+-   **Deduplication** using `ROW_NUMBER()`\
+-   **Upserts** for managing incremental updates
+
+These techniques are essential for real-world analytics pipelines.
+
+------------------------------------------------------------------------
+
+## 1. Common Table Expressions (CTEs)
+
+A **CTE** lets us build queries in **readable, stepwise blocks**. It’s the SQL equivalent of creating intermediate objects in R with the pipe `%>%`.
+
+In the example below, the first block (mortality_groups) is like an intermediate dataset. The second query reuses it for further filtering.
+
+```{sql, connection = con}
+-- CTE to calculate mortality categories, then filter
+WITH mortality_groups AS (
+  SELECT 
+      country,
+      disease_name,
+      year_event,
+      mortality_pct,
+      CASE 
+        WHEN mortality_pct > 9 THEN 'High Mortality'
+        ELSE 'Low/Moderate Mortality'
+      END AS mortality_group
+  FROM public.global_health_statistics
+)
+SELECT *
+FROM mortality_groups
+WHERE mortality_group = 'High Mortality'
+LIMIT 10;
+```
+
+**2. Window Functions**
+
+Window functions allow calculations across partitions of data without collapsing rows. They are powerful for ranking, moving averages, and comparisons.
+
+Ranking within Groups
+
+```{sql, connection = con}
+-- Rank diseases by affected population per country in 2020
+SELECT 
+    country,
+    disease_name,
+    population_affected,
+    RANK() OVER (PARTITION BY country ORDER BY population_affected DESC) AS rank_within_country
+FROM public.global_health_statistics
+WHERE year_event = 2020
+ORDER BY country, rank_within_country
+LIMIT 10;
+```
+
+Calculating a rolling 3-year average for selected diseases.
+
+```{sql, connection = con}
+-- 3-year moving average of incidence per disease
+SELECT 
+    disease_name,
+    year_event,
+    incidence,
+    ROUND(
+      (AVG(incidence) OVER (
+          PARTITION BY disease_name 
+          ORDER BY year_event 
+          ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+      ))::numeric, 2
+    ) AS incidence_moving_avg
+FROM public.global_health_statistics
+WHERE disease_name IN ('Malaria','Tuberculosis')
+ORDER BY disease_name, year_event
+LIMIT 15;
+
+```
+
+### **3. Deduplication with ROW_NUMBER()**
+
+Sometimes datasets contain duplicate records. We can use ROW_NUMBER() to keep the “first” occurrence and drop the rest.
+
+**Identify duplicates across all columns**
+
+The example below will show you which rows are duplicated, and how many times.
+
+For example, if the same country + disease + year + population row appears 3 times, you’ll see duplicate_count = 3.
+
+```{sql, connection = con}
+SELECT 
+    country,
+    disease_name,
+    year_event,
+    population_affected,
+    COUNT(*) AS duplicate_count
+FROM public.global_health_statistics
+GROUP BY 
+    country,
+    disease_name,
+    year_event,
+    population_affected
+HAVING COUNT(*) > 1
+ORDER BY duplicate_count DESC
+LIMIT 10;
+
+```
+
+If you want to remove duplicates, keeping only one record per case
+
+```{sql, connection = con}
+-- This removes duplicates across all columns.
+SELECT DISTINCT *
+FROM public.global_health_statistics
+LIMIT 15;
+```
+
+If you only want to de-duplicate on some columns (e.g., country, disease_name, year_event), then use DISTINCT ON (Postgres-only):
+
+```{sql, connection = con}
+SELECT DISTINCT ON (country, disease_name, year_event) *
+FROM public.global_health_statistics
+ORDER BY country, disease_name, year_event, population_affected DESC
+LIMIT 15;
+
+```
+
+**Show the actual duplicate rows (not just counts)** This way you actually get the full duplicate rows back, along with a duplicate_count column.
+
+```{sql, connection = con}
+SELECT *
+FROM (
+    SELECT *,
+           COUNT(*) OVER (
+               PARTITION BY country, disease_name, year_event, population_affected
+           ) AS duplicate_count
+    FROM public.global_health_statistics
+) t
+WHERE duplicate_count > 1
+ORDER BY country, disease_name, year_event
+LIMIT 10;
+```
+
+```{sql, connection = con}
+-- Keep only the latest record per country/disease
+WITH ranked AS (
+  SELECT 
+      country,
+      disease_name,
+      year_event,
+      population_affected,
+      ROW_NUMBER() OVER (
+          PARTITION BY country, disease_name 
+          ORDER BY year_event DESC
+      ) AS rn
+  FROM public.global_health_statistics
+)
+SELECT *
+FROM ranked
+WHERE rn = 1
+ORDER BY country, disease_name
+LIMIT 20;
+```
+
+### **4. Upserts Overview**
+
+In real-world pipelines, we often receive incremental updates (new years, new countries, or corrected values). An upsert (update + insert) ensures the table stays in sync:
+
+If a record exists → update it
+
+If not → insert it
+
+The ON CONFLICT clause ensures data is not duplicated. Instead, existing rows are updated.
+
+Tip: We need to have a unique identifier for each record.
+
+Keep only the latest record per duplicate
+
+```{sql, connection = con}
+DELETE FROM public.global_health_statistics a
+USING (
+    SELECT ctid, ROW_NUMBER() OVER (
+               PARTITION BY country, disease_name, year_event
+               ORDER BY population_affected DESC
+           ) AS rn
+    FROM public.global_health_statistics
+) b
+WHERE a.ctid = b.ctid AND b.rn > 1;
+
+```
+
+```{sql, connection = con}
+-- Creating the unique identifier
+ALTER TABLE public.global_health_statistics
+DROP CONSTRAINT IF EXISTS ghs_unique;
+```
+
+```{sql, connection = con}
+ALTER TABLE public.global_health_statistics
+ADD CONSTRAINT ghs_unique UNIQUE (country, year_event, disease_name);
+
+```
+
+```{sql, connection = con}
+-- Insert or do nothing if the combination already exists
+INSERT INTO public.global_health_statistics (
+    country, disease_name, year_event
+)
+VALUES (
+    'Australia', 'Influenza', 2022
+)
+ON CONFLICT (country, disease_name, year_event)
+DO NOTHING;
+
+```
+
+## **Part VI — Data Quality, Types & Dates**
+
+🧭 **Overview**
+
+High-quality analysis starts with high-quality data.\
+This section focuses on assessing and improving **data integrity**, handling **missing values**, managing **data types**, and performing **date/time transformations**.
+
+In practice, data rarely arrives in perfect shape — missing records, inconsistent data types, and messy strings are common.\
+Being able to diagnose and correct these issues directly in SQL demonstrates the ability to build analysis-ready datasets that decision-makers can trust.
+
+Missing data occurs for many reasons: incomplete records, data-entry errors, or missing identifiers.\
+Understanding, profiling, and deciding how to handle these missing values are essential steps before any statistical or predictive modeling.
+
+The workflow includes: - Profiling missing data\
+- Reviewing incomplete records\
+- Applying imputation (filling) strategies\
+- Forward and backward filling within patients\
+- Mean-based imputations
+
+All SQL examples below are written for **PostgreSQL** but can be adapted easily for SQL Server or SQLite.
+
+------------------------------------------------------------------------
+
+#### **1️⃣ Importing and Preparing the Data**
+
+To begin, the dataset is imported into PostgreSQL as `public.visit_hospital`.\
+This process ensures that the structure matches the source CSV file (`C:\temp\visit_hospital.csv`).
+
+------------------------------------------------------------------------
+
+```{sql, connection = con}
+-- Create table for hospital visit data
+DROP TABLE IF EXISTS public.visit_hospital;
+```
+
+```{sql, connection = con}
+CREATE TABLE public.visit_hospital (
+  -- Identifiers
+  id TEXT, id_text TEXT,
+  -- Demographics
+  birthdate DATE, deathdate DATE, ssn TEXT, drivers TEXT, passport TEXT,
+  prefix TEXT, first TEXT, middle TEXT, last TEXT, suffix TEXT,
+  maiden TEXT, marital TEXT, race TEXT, ethnicity TEXT, gender TEXT,  
+  -- Location
+  birthplace TEXT, address TEXT, city TEXT, state TEXT, county TEXT,
+  fips INT, zip INT, lat NUMERIC, lon NUMERIC,  
+  -- Healthcare / Socioeconomic
+  healthcare_expenses NUMERIC, healthcare_coverage NUMERIC, income NUMERIC,  
+  -- Visit metadata
+  visit INT
+);
+```
+
+```{sql, connection = con}
+-- Stage the raw text date
+ALTER TABLE public.visit_hospital ADD COLUMN birthdate_raw TEXT;
+```
+
+```{sql, connection = con}
+-- Clean it into proper DATE
+UPDATE public.visit_hospital
+SET birthdate = TO_DATE(birthdate_raw, 'DD/MM/YYYY')
+WHERE birthdate_raw ~ '^\d{2}/\d{2}/\d{4}$';
+
+```
+
+```{sql, connection = con}
+-- After loading into a staging text column:
+-- Stage the raw text date
+ALTER TABLE public.visit_hospital ADD COLUMN IF NOT EXISTS birthdate_raw TEXT;
+
+```
+
+```{sql, connection = con}
+-- COPY with:
+--  - NULL 'NA'      -> turn "NA" into NULL
+--  - FORCE_NULL (...) -> also treat empty strings as NULL for listed columns
+COPY public.visit_hospital (
+  id, birthdate_raw, deathdate, ssn, drivers, passport,
+  prefix, first, middle, last, suffix, maiden,
+  marital, race, ethnicity, gender,
+  birthplace, address, city, state, county,
+  fips, zip, lat, lon,
+  healthcare_expenses, healthcare_coverage, income,
+  visit, id_text
+)
+FROM 'C:/temp/visit_hospital.csv'
+WITH (
+  FORMAT CSV,
+  HEADER TRUE,
+  NULL 'NA',
+  FORCE_NULL (birthdate_raw, deathdate, fips, zip, lat, lon,
+              healthcare_expenses, healthcare_coverage, income),
+  DELIMITER ',',
+  QUOTE '"',
+  ESCAPE '"',
+  ENCODING 'UTF8');
+
+
+```
+
+```{sql, connection = con}
+UPDATE public.visit_hospital
+SET birthdate = TO_DATE(birthdate_raw, 'DD/MM/YYYY')
+WHERE birthdate_raw ~ '^\d{2}/\d{2}/\d{4}$';
+
+```
+
+#### **2️⃣ Profiling Missing Data**
+
+Understanding which columns have missing values — and how many — is the foundation of any data-quality review.
+
+Before fixing missing data, we must understand how much is missing and where. This first step mimics colSums(is.na()) in R — it counts missing values for each important column.
+
+```{sql, connection = con}
+-- Summarize missing values per selected columns
+SELECT
+  'birthdate' AS column_name, COUNT(*) FILTER (WHERE birthdate IS NULL) AS missing_count FROM public.visit_hospital
+UNION ALL SELECT 'deathdate', COUNT(*) FILTER (WHERE deathdate IS NULL) FROM public.visit_hospital
+UNION ALL SELECT 'race', COUNT(*) FILTER (WHERE race IS NULL) FROM public.visit_hospital
+UNION ALL SELECT 'income', COUNT(*) FILTER (WHERE income IS NULL) FROM public.visit_hospital
+UNION ALL SELECT 'passport', COUNT(*) FILTER (WHERE passport IS NULL) FROM public.visit_hospital
+UNION ALL SELECT 'fips', COUNT(*) FILTER (WHERE fips IS NULL) FROM public.visit_hospital
+UNION ALL SELECT 'zip', COUNT(*) FILTER (WHERE zip IS NULL) FROM public.visit_hospital
+UNION ALL SELECT 'healthcare_coverage', COUNT(*) FILTER (WHERE healthcare_coverage IS NULL) FROM public.visit_hospital;
+
+```
+
+**Context:** Each row in this summary represents a variable and the number of NULL (missing) entries. This gives you an at-a-glance understanding of where data quality issues exist, and whether they are systematic (entire columns) or random (sporadic records).
+
+To get the total number of missing cells across the dataset:
+
+```{sql, connection = con}
+-- Calculate total number of missing cells across selected columns
+SELECT
+  SUM(
+    (birthdate IS NULL)::INT +
+    (deathdate IS NULL)::INT +
+    (race IS NULL)::INT +
+    (income IS NULL)::INT +
+    (passport IS NULL)::INT +
+    (fips IS NULL)::INT +
+    (zip IS NULL)::INT +
+    (healthcare_coverage IS NULL)::INT
+  ) AS total_missing_cells
+FROM public.visit_hospital;
+
+```
+
+This produces one number — the total missing count — useful for data-quality reporting or automated alerts in data pipelines.
+
+#### **3️⃣ Inspecting Rows with Missing Data**
+
+After identifying which columns contain missing values, it’s helpful to inspect a few affected records.
+
+```{sql, connection = con}
+-- Display sample of records that contain missing values
+SELECT id_text, visit, race, income, passport
+FROM public.visit_hospital
+WHERE race IS NULL OR income IS NULL OR passport IS NULL
+ORDER BY id_text, visit
+LIMIT 12;
+
+```
+
+This query mimics filter(!complete.cases(.)) in R. It reveals the context of missing values — are they clustered by person, visit, or variable? This step helps determine the appropriate imputation method (e.g., individual-level fill vs. global averages).
+
+#### **4️⃣ Handling Missing Values (Imputation)**
+
+Imputation means replacing missing data with estimated or default values. This section demonstrates several techniques — from simple replacements to forward/backward fills.
+
+**4.1 Simple categorical imputation: Replacement with COALESCE()**
+
+```{sql, connection = con}
+-- Replace missing passport values with 'UNKNOWN'
+SELECT
+  id_text,
+  visit,
+  passport,
+  COALESCE(passport, 'UNKNOWN') AS passport_imputed
+FROM public.visit_hospital
+WHERE passport IS NULL
+LIMIT 12;
+
+```
+
+COALESCE() replaces NULL with a specified value. For example, unknown passport numbers might represent unregistered patients — instead of leaving them blank, we explicitly mark them as "UNKNOWN". This improves downstream clarity and avoids confusion between “missing” and “not applicable.”
+
+**4.2 Numeric imputations**
+
+**Global mean**: stable when per-ID history is sparse. **Participant mean**: more tailored when individuals have multiple visits.
+
+**4.2.1 Global Mean Imputation for Numeric Data**
+
+```{sql, connection = con}
+-- Compute overall average income (ignoring missing values)
+SELECT AVG(income) AS global_mean_income
+FROM public.visit_hospital
+WHERE income IS NOT NULL;
+
+```
+
+```{sql, connection = con}
+-- Replace missing income values with global mean
+SELECT
+  id_text,
+  visit,
+  income,
+  COALESCE(income, (SELECT AVG(income) FROM public.visit_hospital WHERE income IS NOT NULL)) AS income_imputed_global
+FROM public.visit_hospital
+ORDER BY id_text, visit
+LIMIT 12;
+
+```
+
+This replaces missing income values with the overall mean. While not ideal for predictive models (since it reduces variance), it provides a consistent baseline for descriptive summaries and visualization readiness.
+
+**4.2.2 Group-Level (Participant) Mean Imputation** A more refined approach is to use each patient’s own average income (if available). This reduces bias when patients vary substantially in income levels.
+
+To better respect within-person variation, we calculate mean income for each participant (id_text) and use that as a fill value.
+
+```{sql, connection = con}
+-- Compute mean income per patient
+WITH participant_mean AS (
+  SELECT id_text, AVG(income) AS mean_income
+  FROM public.visit_hospital
+  WHERE income IS NOT NULL
+  GROUP BY id_text
+)
+SELECT
+  v.id_text,
+  v.visit,
+  v.income,
+  COALESCE(v.income, p.mean_income) AS income_imputed_participant
+FROM public.visit_hospital v
+LEFT JOIN participant_mean p
+  ON v.id_text = p.id_text
+ORDER BY v.id_text, v.visit
+LIMIT 12;
+```
+
+**Context:** This technique aligns with R’s group_by(id_text) %\>% summarise(mean(income, na.rm = TRUE)). It produces personalized imputations and avoids using global means that may misrepresent individual economic patterns.
+
+**4.3 Forward and Backward Fill (Sequential Imputation)**
+
+When data is longitudinal (multiple visits per patient), we may want to carry values forward or backward. SQL does not have a native fill() like R’s tidyr, but sorting prepares the data for analytic solutions.
+
+Forward and backward fills propagate the most recent known value across sequential observations — useful when attributes like race or gender should remain constant over multiple visits.
+
+Forward filling uses the last known race value, while backward filling retrieves the next known one. These techniques are valuable when longitudinal patient data should remain internally consistent.
+
+Why both? In visit data, the first or last known race may be the only non-missing value for a participant. Having forward and backward fills lets me choose the nearest known value relative to each visit.
+
+**Forward Fill (by id_text, ordered by visit)**
+
+```{sql, connection = con}
+-- Forward fill race within each id_text
+WITH base AS (
+  SELECT
+    id_text,
+    visit,
+    race,
+    -- running group: increases when we hit a non-NULL race
+    SUM(CASE WHEN race IS NOT NULL THEN 1 ELSE 0 END)
+      OVER (PARTITION BY id_text ORDER BY visit
+            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS grp
+  FROM public.visit_hospital
+)
+SELECT
+  id_text,
+  visit,
+  race,
+  -- carry last known non-NULL forward; stays NULL until first non-NULL appears
+  MAX(race) OVER (PARTITION BY id_text, grp) AS race_forward
+FROM base
+ORDER BY id_text, visit
+LIMIT 12;
+```
+
+**Backward Fill**
+
+```{sql, connection = con}
+-- Backward fill missing race values by patient
+
+WITH base AS (
+  SELECT
+    id_text,
+    visit,
+    race,
+    -- running group from the right: increases when we hit a non-NULL race scanning backwards
+    SUM(CASE WHEN race IS NOT NULL THEN 1 ELSE 0 END)
+      OVER (PARTITION BY id_text ORDER BY visit DESC
+            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS grp_rev
+  FROM public.visit_hospital
+)
+SELECT
+  id_text,
+  visit,
+  race,
+  MAX(race) OVER (PARTITION BY id_text, grp_rev) AS race_backward
+FROM base
+ORDER BY id_text, visit
+LIMIT 12;
+```
+
+**4.4 Combined imputation review (side-by-side)** The example below shows a practical “imputation report”: original vs. forward/backward race and both income fills, restricted to rows that actually had gaps. This gives reviewers a one-glance sanity check.
+
+```{sql, connection = con}
+
+WITH base AS (
+  SELECT
+    id_text, visit, race, income
+  FROM public.visit_hospital
+),
+-- forward-fill race within id_text
+ff_prep AS (
+  SELECT *,
+         SUM((race IS NOT NULL)::int)
+           OVER (PARTITION BY id_text ORDER BY visit) AS grp
+  FROM base
+),
+fwd AS (
+  SELECT id_text, visit,
+         MAX(race) OVER (PARTITION BY id_text, grp) AS race_forward
+  FROM ff_prep
+),
+-- backward-fill race within id_text (for leading NULLs)
+bf_prep AS (
+  SELECT *,
+         SUM((race IS NOT NULL)::int)
+           OVER (PARTITION BY id_text ORDER BY visit DESC) AS grp_rev
+  FROM base
+),
+bwd AS (
+  SELECT id_text, visit,
+         MAX(race) OVER (PARTITION BY id_text, grp_rev) AS race_backward
+  FROM bf_prep
+),
+-- means for income imputation
+gmean AS (
+  SELECT AVG(income) AS global_mean_income
+  FROM public.visit_hospital
+  WHERE income IS NOT NULL
+),
+pmean AS (
+  SELECT id_text, AVG(income) AS mean_income_id
+  FROM public.visit_hospital
+  WHERE income IS NOT NULL
+  GROUP BY id_text
+)
+SELECT
+  v.id_text, v.visit,
+  v.race,
+  f.race_forward,
+  b.race_backward,
+  v.income,
+  COALESCE(v.income, g.global_mean_income) AS income_global_mean,
+  COALESCE(v.income, p.mean_income_id)     AS income_participant_mean
+FROM public.visit_hospital v
+LEFT JOIN fwd  f USING (id_text, visit)
+LEFT JOIN bwd  b USING (id_text, visit)
+CROSS JOIN gmean g
+LEFT JOIN pmean p USING (id_text)
+WHERE v.race IS NULL OR v.income IS NULL
+ORDER BY v.id_text, v.visit NULLS FIRST
+LIMIT 15;
+
+```
+
+#### 🧮 Summary Table of Missing Data Techniques
+
+| **Task / Objective** | **SQL Feature or Function** | **Purpose / What It Does** | **When to Use It** |
+|:-----------------|:------------------|:-----------------|:-----------------|
+| **Profile Missing Data** | `COUNT(*) FILTER (WHERE col IS NULL)` | Counts how many missing (NULL) entries exist in each column | Always the first step in a data-quality audit |
+| **Check Total Missing Cells** | Logical addition `(col IS NULL)::INT` summed across columns | Produces total missing count across all variables | Useful for overall data completeness score |
+| **Inspect Incomplete Records** | `WHERE col IS NULL OR ...` | Shows which specific rows have missing values | Use to detect patterns in missingness (e.g., per patient or visit) |
+| **Replace Missing Text Values** | `COALESCE(column, 'UNKNOWN')` | Fills missing categorical data with an explicit label | Good for identifiers or attributes like `passport`, `gender`, or `ethnicity` |
+| **Replace Missing Numeric Values (Global Mean)** | `COALESCE(income, (SELECT AVG(income) FROM ...))` | Fills missing numeric fields with a global average | Simple and consistent for reporting, though may reduce data variance |
+| **Replace Missing Numeric Values (Group Mean)** | `LEFT JOIN` on grouped `AVG()` | Calculates and fills missing values with participant-specific means | More realistic for longitudinal or panel data (e.g., income per patient) |
+| **Forward Fill (Downward)** | `LAST_VALUE(col) OVER (PARTITION BY id ORDER BY time)` | Propagates the last known non-null value forward | Use when variables remain stable over time (e.g., race, gender) |
+| **Backward Fill (Upward)** | `FIRST_VALUE(col) OVER (PARTITION BY id ORDER BY time ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING)` | Fills missing values upward (from next known observation) | Complements forward fill for complete coverage |
+| **Type Casting for Numeric Fields** | `CAST(col AS NUMERIC)` | Converts text-encoded numbers to true numeric type | Needed before aggregation, averages, or mathematical operations |
+| **String Cleaning (Regex)** | `REGEXP_REPLACE(text, '[^A-Za-z\\s]', '', 'g')` | Removes non-letter characters or formatting noise | Prepares identifiers or names for joins and standardization |
+| **Date Conversion** | `TO_DATE(col, 'YYYY-MM-DD')` | Converts character dates to date objects | Enables date arithmetic, filtering, and time-based grouping |
+| **Date Component Extraction** | `EXTRACT(YEAR FROM date_col)` | Retrieves year, month, or day components | Supports monthly/annual trend analysis |
+| **Filtering Complete Cases** | `WHERE col1 IS NOT NULL AND col2 IS NOT NULL` | Keeps only fully complete rows for analysis | Appropriate for strict models or visualizations that can’t handle nulls |
+
+------------------------------------------------------------------------
+
+**Analytical Insights**
+
+-   **Profiling comes before cleaning.** Always understand the *pattern* and *reason* behind missingness before applying fixes.\
+-   **Context drives imputation choice.** Not every missing value should be replaced — sometimes absence itself carries information (e.g., missing death date = still alive).\
+-   **Group-based imputations preserve individual structure.** Replacing income within each participant group respects the natural data hierarchy.\
+-   **Sequential fills replicate temporal logic.** Forward and backward filling are essential for visit-based or longitudinal data where attributes should persist across time.\
+-   **Documentation ensures transparency.** Each step in the SQL workflow can be reviewed, audited, or reproduced by other analysts.
+
+------------------------------------------------------------------------
+
+### **Data Casting & Cleaning (Regex, Numeric/Text Conversion)**
+
+Real-world datasets often contain inconsistent or improperly formatted data — text in numeric fields, extra spaces, mixed casing, or special characters in names. These issues arise during data collection, system exports, or file conversions, and they can silently break joins, aggregations, or numeric calculations.
+
+This section focuses on **casting**, **cleaning**, and **standardizing** key variables in the `visit_hospital` dataset.\
+We’ll work through examples that show how SQL handles type conversion, regex-based cleanup, and normalization of text fields.
+
+------------------------------------------------------------------------
+
+**1️⃣ Understanding Data Type Inconsistencie**
+
+Before fixing, it’s important to detect type or formatting inconsistencies.\
+For example, numeric columns may contain text artifacts (`'N/A'`, `'unknown'`, `'#NULL!'`), and text columns may contain hidden characters or mixed case.
+
+```{sql, connection = con}
+-- Preview some raw data for inspection
+SELECT id_text, income, fips, zip, passport
+FROM public.visit_hospital
+LIMIT 12;
+```
+
+This step gives a sense of what we’re dealing. For example look if income which is a numeric variable contains null strings, or fips and zip contain unexpected symbols or missing digits. Knowing what’s wrong guides the cleaning strategy.
+
+-- Identify non-numeric entries in columns expected to be numeric ALTER TABLE public.visit_hospital ADD COLUMN IF NOT EXISTS income_raw TEXT, ADD COLUMN IF NOT EXISTS zip_raw TEXT, ADD COLUMN IF NOT EXISTS fips_raw TEXT, ADD COLUMN IF NOT EXISTS marital_raw TEXT, ADD COLUMN IF NOT EXISTS city_raw TEXT, ADD COLUMN IF NOT EXISTS passport_raw TEXT;
+
+UPDATE public.visit_hospital SET income_raw = income::text, zip_raw = zip::text, fips_raw = fips::text, marital_raw = marital, city_raw = city, passport_raw = passport;
+
+-- Generate a numeric “row number” to use with % WITH numbered AS ( SELECT id, row_number() OVER (ORDER BY id) AS rn FROM public.visit_hospital ) UPDATE public.visit_hospital AS v SET income_raw = CASE WHEN n.rn % 10 = 0 THEN 'N/A' WHEN n.rn % 15 = 0 THEN '#NULL!' ELSE v.income_raw END, zip_raw = CASE WHEN n.rn % 12 = 0 THEN '123' WHEN n.rn % 13 = 0 THEN '12-345' WHEN n.rn % 14 = 0 THEN 'A12B3' ELSE v.zip_raw END, fips_raw = CASE WHEN n.rn % 11 = 0 THEN 'abc12' WHEN n.rn % 17 = 0 THEN '1234' ELSE v.fips_raw END, marital_raw = CASE WHEN n.rn % 8 = 0 THEN 'Single' WHEN n.rn % 9 = 0 THEN 'single' WHEN n.rn % 10 = 0 THEN 'SINGLE' ELSE v.marital_raw END, city_raw = CASE WHEN n.rn % 20 = 0 THEN ' new york ' WHEN n.rn % 21 = 0 THEN 'CH!CAGO' WHEN n.rn % 22 = 0 THEN 'los_angeles' ELSE v.city_raw END, passport_raw = CASE WHEN n.rn % 25 = 0 THEN '' WHEN n.rn % 26 = 0 THEN NULL ELSE v.passport_raw END FROM numbered AS n WHERE v.id = n.id;
+
+**2️⃣ Casting Numeric-Like Columns** If a column expected to be numeric contains non-numeric text, direct aggregations like SUM() or AVG() will fail. We can safely convert these columns by filtering or replacing invalid entries.
+
+**2.1 Checking Invalid Numeric Values**
+
+```{sql, connection = con}
+-- Identify non-numeric entries in columns expected to be numeric
+SELECT id_text, income
+FROM public.visit_hospital
+WHERE income::text !~ '^[0-9]+(\.[0-9]+)?$'
+  AND income IS NOT NULL
+LIMIT 10;
+
+```
+
+The regex '\^\s*-?\d+(.\d+)?\s*\$' detects only valid integers or decimals. Anything else (e.g., 'N/A', '#NULL!', 'unknown') is non-numeric. The !\~ operator in PostgreSQL checks for values that do not match the regex.
+
+**2.2 Convert to Numeric Safely**
+
+```{sql, connection = con}
+SELECT
+  id_text,
+  income,
+  income AS income_cleaned
+FROM public.visit_hospital
+LIMIT 12;
+```
+
+This avoids errors by casting only valid numeric entries. Invalid strings are replaced with NULL, allowing numeric aggregations to run safely.
+
+**3️⃣ Text Cleaning with Regex and Standardization**
+
+**3.1 Clean City and Name Fields**
+
+```{sql, connection = con}
+ALTER TABLE public.visit_hospital
+  ADD COLUMN IF NOT EXISTS city_raw TEXT;
+
+```
+
+```{sql, connection = con}
+UPDATE public.visit_hospital
+SET city_raw = city;
+
+```
+
+```{sql, connection = con}
+-- Remove special characters and extra spaces from text
+SELECT
+  id_text,
+  city_raw,
+  REGEXP_REPLACE(TRIM(city_raw), '[^A-Za-z\\s]', '', 'g') AS city_cleaned
+FROM public.visit_hospital
+LIMIT 12;
+
+```
+
+TRIM() removes leading and trailing spaces.
+
+REGEXP_REPLACE() strips non-alphabetic characters (e.g., “CH!CAGO” → “CHCAGO”).
+
+These techniques clean text for better grouping and joining.
+
+**3.2 Standardize Text Casing**
+
+```{sql, connection = con}
+-- Normalize categorical text casing
+SELECT
+  id_text,
+  marital,
+  LOWER(marital) AS marital_lower,
+  INITCAP(LOWER(marital)) AS marital_title
+FROM public.visit_hospital
+LIMIT 12;
+
+```
+
+Mixed casing can create false duplicates (“Single”, “single”, “SINGLE”). LOWER() ensures uniformity for analysis, while INITCAP() is ideal for presentation-ready formats.
+
+**4️⃣ Cleaning and Padding Identifiers**
+
+**4.1 ZIP Code Cleaning**
+
+```{sql, connection = con}
+ALTER TABLE public.visit_hospital
+  ADD COLUMN IF NOT EXISTS zip_raw TEXT;
+```
+
+```{sql, connection = con}
+UPDATE public.visit_hospital
+SET zip_raw = zip::text
+WHERE zip_raw IS NULL;
+
+```
+
+```{sql, connection = con}
+-- Remove non-numeric characters and pad to 5 digits
+SELECT
+  id_text,
+  zip_raw,
+  LPAD(REGEXP_REPLACE(zip_raw, '[^0-9]', '', 'g'), 5, '0') AS zip_cleaned
+FROM public.visit_hospital
+LIMIT 12;
+
+```
+
+REGEXP_REPLACE() removes dashes, letters, and spaces; LPAD() ensures all ZIP codes have five digits ('123' → '00123').
+
+**4.2 FIPS Code Cleaning**
+
+```{sql, connection = con}
+ALTER TABLE public.visit_hospital
+  ADD COLUMN IF NOT EXISTS fips_raw TEXT;
+```
+
+```{sql, connection = con}
+UPDATE public.visit_hospital
+SET fips_raw = fips::text
+WHERE fips_raw IS NULL;
+
+```
+
+```{sql, connection = con}
+-- Clean and normalize FIPS codes
+SELECT
+  id_text,
+  fips_raw,
+  LPAD(REGEXP_REPLACE(fips_raw, '[^0-9]', '', 'g'), 5, '0') AS fips_cleaned
+FROM public.visit_hospital
+LIMIT 12;
+
+```
+
+Standardized FIPS codes ensure geographic consistency. Removing non-numeric characters prevents join failures when linking with regional or census datasets.
+
+**5️⃣ Categorical & Identifier Normalization**
+
+```{sql, connection = con}
+ALTER TABLE public.visit_hospital
+  ADD COLUMN IF NOT EXISTS marital_raw TEXT;
+```
+
+```{sql, connection = con}
+UPDATE public.visit_hospital
+SET marital_raw = marital
+WHERE marital_raw IS NULL;
+
+```
+
+```{sql, connection = con}
+-- Identify distinct marital variants
+SELECT DISTINCT marital_raw
+FROM public.visit_hospital
+ORDER BY marital_raw;
+
+```
+
+Quickly reveals variations such as “single”, “Single”, and “SINGLE” — common in manually entered survey or registry data.
+
+**6️⃣ Before vs After: Data Cleaning Summary View**
+
+The next query displays raw vs. cleaned columns side-by-side, allowing a clear visual comparison for documentation or dashboards.
+
+```{sql, connection = con}
+-- Add raw text versions of numeric/text fields for cleaning
+ALTER TABLE public.visit_hospital
+  ADD COLUMN IF NOT EXISTS income_raw   TEXT,
+  ADD COLUMN IF NOT EXISTS zip_raw      TEXT,
+  ADD COLUMN IF NOT EXISTS fips_raw     TEXT,
+  ADD COLUMN IF NOT EXISTS marital_raw  TEXT,
+  ADD COLUMN IF NOT EXISTS city_raw     TEXT,
+  ADD COLUMN IF NOT EXISTS passport_raw TEXT;
+  
+```
+
+```{sql, connection = con}
+-- Populate them from existing columns
+UPDATE public.visit_hospital
+SET
+  income_raw   = income::text,
+  zip_raw      = zip::text,
+  fips_raw     = fips::text,
+  marital_raw  = marital,
+  city_raw     = city,
+  passport_raw = passport
+WHERE income_raw   IS NULL
+   OR zip_raw      IS NULL
+   OR fips_raw     IS NULL
+   OR marital_raw  IS NULL
+   OR city_raw     IS NULL
+   OR passport_raw IS NULL;
+
+```
+
+```{sql, connection = con}
+-- Create a clean comparison view of selected variables
+SELECT
+  id_text,
+  income_raw,
+  CASE
+    WHEN income_raw ~ '^\s*-?\d+(\.\d+)?\s*$'
+    THEN CAST(TRIM(income_raw) AS NUMERIC)
+    ELSE NULL
+  END AS income_cleaned,
+  zip_raw,
+  LPAD(REGEXP_REPLACE(zip_raw, '[^0-9]', '', 'g'), 5, '0') AS zip_cleaned,
+  fips_raw,
+  LPAD(REGEXP_REPLACE(fips_raw, '[^0-9]', '', 'g'), 5, '0') AS fips_cleaned,
+  marital_raw,
+  INITCAP(LOWER(marital_raw)) AS marital_cleaned,
+  city_raw,
+  REGEXP_REPLACE(TRIM(city_raw), '[^A-Za-z\\s]', '', 'g') AS city_cleaned,
+  passport_raw,
+  COALESCE(NULLIF(TRIM(passport_raw), ''), 'UNKNOWN') AS passport_cleaned
+FROM public.visit_hospital
+ORDER BY id_text
+LIMIT 20;
+
+```
+
+This “before and after” display is ideal for portfolio demonstrations — clearly showing how SQL transformations standardize messy data.
+
+**🧮 Summary of Techniques and Insights**
+
+| **Task / Goal** | **SQL Technique** | **Purpose / What It Fixes** | **Analytical Context / When to Use** |
+|:-----------------|:-----------------|:-----------------|:------------------|
+| **Detect invalid numeric entries** | `!~ '^\s*-?\d+(\.\d+)?\s*$'` | Finds non-numeric strings in numeric columns | Ensures numeric operations (e.g., AVG, SUM) don’t fail or misreport |
+| **Safe numeric casting** | `CASE WHEN col ~ regex THEN CAST(col AS NUMERIC)` | Converts only valid entries to numeric | Prevents casting errors during data type conversions |
+| **Trim and clean text fields** | `TRIM()` | Removes extra spaces from names or city fields | Useful for manual-entry data or multi-system merges |
+| **Remove unwanted characters** | `REGEXP_REPLACE(col, '[^A-Za-z\\s]', '', 'g')` | Cleans text of digits, punctuation, and symbols | Standardizes strings for grouping, joining, or machine learning models |
+| **Normalize text casing** | `LOWER()`, `UPPER()`, `INITCAP()` | Converts inconsistent casing to standard formats | Ensures accurate grouping and consistent visual presentation |
+| **Clean ZIP and FIPS codes** | `REGEXP_REPLACE()` + `LPAD()` | Removes non-numeric characters and pads missing zeros | Prepares identifiers for geographic joins and validation |
+| **Handle blank or missing categorical fields** | `COALESCE(NULLIF(TRIM(col), ''), 'UNKNOWN')` | Converts blank text and NULLs to clear labels | Makes categorical variables explicit for dashboards and reporting |
+| **Detect inconsistent category variants** | `SELECT DISTINCT LOWER(col)` | Finds duplicated categories differing only by case | Helps consolidate values before aggregation |
+| **Preview before vs. after cleaning** | Raw vs. cleaned comparison query | Shows immediate data improvements | Ideal for portfolio documentation and QA verification |
+
+------------------------------------------------------------------------
+
+**Key Takeaways**
+
+Data type consistency ensures that every column supports its intended operation (numeric → arithmetic, text → joins).\
+
+Regex-based cleaning enables flexible and repeatable correction of messy or user-entered data.\
+
+Case and category normalization eliminate hidden duplicates, improving grouping accuracy.\
+
+Padding identifiers keeps cross-referenced codes (like ZIP or FIPS) aligned with external sources.\
+
+Blank-field handling with COALESCE() ensures clarity between “missing” and “not applicable.”\
+
+SQL-first cleaning supports reproducibility and scalability — ideal for enterprise pipelines and analytical environments.
+
+### **Date & Time Basics (conversion, extraction, validation)**
+
+Dates and times are among the most critical yet error-prone data types in analytics.\
+Whether you’re working with patient visits, transactions, or time-series indicators, proper handling of temporal data ensures analytical accuracy and chronological integrity.
+
+## This section demonstrates key SQL techniques for **date conversion**, **validation**, and **temporal analysis** using the `visit_hospital` dataset.
+
+**Inspecting and Profiling Date Columns**
+
+The dataset includes `birthdate`, `deathdate`, and a visit number field (`visit`).\
+Let’s quickly inspect their contents and verify their types.
+
+```{sql, connection = con}
+-- Review the date columns to understand their current formats
+SELECT
+  id_text,
+  birthdate,
+  deathdate,
+  visit
+FROM public.visit_hospital
+LIMIT 10;
+```
+
+**Creating Raw Text Versions of Date Fields**
+
+This initial inspection gives a quick sense of what we’re working with — typically clean and consistent at this stage.
+
+```{sql}
+#| connection: con
+#| include: false
+ALTER TABLE public.visit_hospital
+  ADD COLUMN IF NOT EXISTS birthdate_raw  TEXT,
+  ADD COLUMN IF NOT EXISTS deathdate_raw  TEXT,
+  ADD COLUMN IF NOT EXISTS visit_ts_raw   TEXT;
+```
+
+```{sql}
+#| connection: con
+#| include: false
+UPDATE public.visit_hospital
+SET birthdate_raw = birthdate::text,
+    deathdate_raw = NULL, -- many real datasets have missing deathdate
+    visit_ts_raw  = (birthdate + (visit || ' days')::interval)::timestamp::text;
+
+```
+
+```{sql}
+#| connection: con
+#| include: false
+--Injecting Controlled Inconsistencies for just demonstration purposes 
+
+WITH n AS (
+  SELECT id, row_number() OVER (ORDER BY id) AS rn
+  FROM public.visit_hospital
+)
+UPDATE public.visit_hospital v
+SET
+  birthdate_raw = CASE
+    WHEN n.rn % 8  = 0 THEN 'NA'                  -- sentinel missing flag
+    WHEN n.rn % 9  = 0 THEN ' 1986/07/04 '        -- slashes + spaces
+    WHEN n.rn % 10 = 0 THEN '07-04-1986'          -- dd-mm-yyyy
+    WHEN n.rn % 11 = 0 THEN '2005-04-25T00:00:00' -- ISO with time
+    WHEN n.rn % 12 = 0 THEN '1984-13-24'          -- invalid month
+    WHEN n.rn % 13 = 0 THEN '1984-02-30'          -- invalid day
+    ELSE v.birthdate_raw
+  END,
+  deathdate_raw = CASE
+    WHEN n.rn % 7  = 0 THEN '#NULL!'              -- sentinel
+    WHEN n.rn % 14 = 0 THEN ''                    -- blank
+    WHEN n.rn % 15 = 0 THEN '2010/01/15'
+    WHEN n.rn % 16 = 0 THEN '2010-01-15 14:30'
+    ELSE v.deathdate_raw
+  END,
+  visit_ts_raw = CASE
+    WHEN n.rn % 6  = 0 THEN '2021-05-01T14:30:00Z'  -- ISO Zulu (UTC)
+    WHEN n.rn % 7  = 0 THEN '05/01/2021 2:30 PM'    -- US AM/PM
+    WHEN n.rn % 8  = 0 THEN '2021-05-01 14:30 -0500'-- with offset
+    WHEN n.rn % 9  = 0 THEN ' 2021-05-01 '          -- padded spaces
+    WHEN n.rn % 10 = 0 THEN 'not a date'            -- invalid text
+    ELSE v.visit_ts_raw
+  END
+FROM n
+WHERE v.id = n.id;
+
+```
+
+**Detect Invalid or Impossible Dates**
+
+A common quality check involves identifying logically impossible dates, such as birthdates in the future or deathdates earlier than birthdates.
+
+```{sql, connection = con}
+-- Classify raw dates by validity and pattern
+WITH parts AS (
+  SELECT
+    id_text,
+    birthdate_raw,
+    CASE
+      WHEN birthdate_raw ~ '^\d{4}-\d{2}-\d{2}$' THEN split_part(birthdate_raw, '-', 1)::int
+    END AS year,
+    CASE
+      WHEN birthdate_raw ~ '^\d{4}-\d{2}-\d{2}$' THEN split_part(birthdate_raw, '-', 2)::int
+    END AS month,
+    CASE
+      WHEN birthdate_raw ~ '^\d{4}-\d{2}-\d{2}$' THEN split_part(birthdate_raw, '-', 3)::int
+    END AS day
+  FROM public.visit_hospital
+),
+classified AS (
+  SELECT
+    id_text,
+    birthdate_raw,
+    CASE
+      WHEN year IS NOT NULL THEN
+        CASE
+          WHEN month BETWEEN 1 AND 12
+           AND day   BETWEEN 1 AND 31
+          THEN 'Valid YYYY-MM-DD'
+          ELSE 'Invalid YYYY-MM-DD'
+        END
+      ELSE 'Other/Unknown Format'
+    END AS pattern
+  FROM parts
+)
+SELECT pattern, COUNT(*) AS record_count
+FROM classified
+GROUP BY pattern
+ORDER BY record_count DESC;
+
+```
+
+This profiling identifies all structural variations. Typical outputs include YYYY-MM-DD, YYYY/MM/DD, DD-MM-YYYY, ISO with time, and residual invalid or sentinel categories. Such analysis helps define your cleaning strategy precisely.
+
+**Profiling Valid vs. Invalid Date Patterns**
+
+We first split potential `YYYY-MM-DD` entries into numeric components and classify them as *valid*, *invalid*, or *unknown/other* based on logical rules.
+
+```{sql, connection = con}
+-- Classify raw dates by validity and pattern
+WITH parts AS (
+  SELECT
+    id_text,
+    birthdate_raw,
+    CASE
+      WHEN birthdate_raw ~ '^\d{4}-\d{2}-\d{2}$' THEN split_part(birthdate_raw, '-', 1)::int
+    END AS year,
+    CASE
+      WHEN birthdate_raw ~ '^\d{4}-\d{2}-\d{2}$' THEN split_part(birthdate_raw, '-', 2)::int
+    END AS month,
+    CASE
+      WHEN birthdate_raw ~ '^\d{4}-\d{2}-\d{2}$' THEN split_part(birthdate_raw, '-', 3)::int
+    END AS day
+  FROM public.visit_hospital
+),
+classified AS (
+  SELECT
+    id_text,
+    birthdate_raw,
+    CASE
+      WHEN year IS NOT NULL THEN
+        CASE
+          WHEN month BETWEEN 1 AND 12
+           AND day   BETWEEN 1 AND 31
+          THEN 'Valid YYYY-MM-DD'
+          ELSE 'Invalid YYYY-MM-DD'
+        END
+      ELSE 'Other/Unknown Format'
+    END AS pattern
+  FROM parts
+)
+SELECT pattern, COUNT(*) AS record_count
+FROM classified
+GROUP BY pattern
+ORDER BY record_count DESC;
+```
+
+split_part() extracts year, month, and day components.
+
+The CASE logic validates ranges without immediately casting — avoiding date/time field out of range errors.
+
+This provides a count of valid vs. invalid entries before proceeding.
+
+**Previewing Invalid and Unrecognized Formats**
+
+To inspect the actual records in those categories, filter directly on the pattern column.
+
+```{sql, connection = con}
+-- Inspect rows with invalid or unknown date formats
+WITH parts AS (
+  SELECT
+    id_text,
+    birthdate_raw,
+    CASE
+      WHEN birthdate_raw ~ '^\d{4}-\d{2}-\d{2}$' THEN split_part(birthdate_raw, '-', 1)::int
+    END AS year,
+    CASE
+      WHEN birthdate_raw ~ '^\d{4}-\d{2}-\d{2}$' THEN split_part(birthdate_raw, '-', 2)::int
+    END AS month,
+    CASE
+      WHEN birthdate_raw ~ '^\d{4}-\d{2}-\d{2}$' THEN split_part(birthdate_raw, '-', 3)::int
+    END AS day
+  FROM public.visit_hospital
+),
+classified AS (
+  SELECT
+    id_text,
+    birthdate_raw,
+    CASE
+      WHEN year IS NOT NULL THEN
+        CASE
+          WHEN month BETWEEN 1 AND 12
+           AND day   BETWEEN 1 AND 31
+          THEN 'Valid YYYY-MM-DD'
+          ELSE 'Invalid YYYY-MM-DD'
+        END
+      ELSE 'Other/Unknown Format'
+    END AS pattern
+  FROM parts
+)
+SELECT id_text, birthdate_raw, pattern
+FROM classified
+WHERE pattern IN ('Invalid YYYY-MM-DD', 'Other/Unknown Format')
+ORDER BY pattern, id_text
+LIMIT 20;
+
+```
+
+This step lists actual problematic records — the type of visual audit analysts perform before applying corrections. It allows you to verify whether errors are structural (e.g., 1984-13-24) or represent other issues such as placeholders (NA, blanks, or unrecognized symbols).
+
+**Repairing and Formatting Invalid Dates**
+
+Invalid entries can be normalized through conditional parsing, string manipulation, or replacement rules. The example below demonstrates three repair techniques:\
+
+-   Convert slashed or dashed formats consistently.\
+
+-   Replace sentinel values (NA, #NULL!) with NULL.\
+
+-   Remove invalid or non-parsable text safely.\
+
+```{sql, connection = con}
+-- Clean and standardize textual date representations
+SELECT
+  id_text,
+  birthdate_raw,
+  CASE
+    WHEN birthdate_raw IN ('NA', '#NULL!', '') THEN NULL
+    WHEN birthdate_raw ~ '^\s*\d{4}/\d{2}/\d{2}\s*$' THEN REPLACE(birthdate_raw, '/', '-')  -- unify separator
+    WHEN birthdate_raw ~ '^\s*\d{2}-\d{2}-\d{4}\s*$' THEN
+         TO_CHAR(TO_DATE(TRIM(birthdate_raw), 'DD-MM-YYYY'), 'YYYY-MM-DD')                -- convert to ISO
+    WHEN birthdate_raw ~ '^\s*\d{4}-\d{2}-\d{2}\s*$' THEN TRIM(birthdate_raw)             -- already clean
+    ELSE NULL
+  END AS birthdate_formatted
+FROM public.visit_hospital
+LIMIT 20;
+
+```
+
+This conversion converts all compatible formats into the standard YYYY-MM-DD.
+
+Invalid, unrecognized, or sentinel entries are replaced with NULL.
+
+Using TO_CHAR() ensures consistent ISO formatting for presentation or export.
+
+Date-cleaning logic to ensure that all conversions are **type-safe**, **format-consistent**, and **free of range errors**.
+
+Validating both the **structure** and **value ranges** of date components before conversion, we can confidently transform diverse text-based inputs into clean and usable `DATE` fields.
+
+```{sql, connection = con}
+-- Safely convert and validate mixed-format date strings
+WITH cleaned AS (
+  SELECT
+    id_text,
+    CASE
+      -- Handle missing or placeholder values
+      WHEN birthdate_raw IN ('NA', '#NULL!', '') THEN NULL
+
+      -- Reformat YYYY/MM/DD → YYYY-MM-DD
+      WHEN birthdate_raw ~ '^\s*\d{4}/\d{2}/\d{2}\s*$'
+        THEN REPLACE(birthdate_raw, '/', '-')
+      -- Convert DD-MM-YYYY → YYYY-MM-DD
+      WHEN birthdate_raw ~ '^\s*\d{2}-\d{2}-\d{4}\s*$'
+        THEN TO_CHAR(TO_DATE(TRIM(birthdate_raw), 'DD-MM-YYYY'), 'YYYY-MM-DD')
+
+      -- Keep YYYY-MM-DD only if month/day are in valid ranges
+      WHEN birthdate_raw ~ '^\s*\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])\s*$'
+        THEN TRIM(birthdate_raw)
+      ELSE NULL
+    END AS birthdate_clean_text
+  FROM public.visit_hospital
+)
+SELECT
+  id_text,
+  birthdate_clean_text,
+  CASE
+    -- Only cast strings that pass full structural and range validation
+    WHEN birthdate_clean_text ~ '^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$'
+      THEN TO_DATE(birthdate_clean_text, 'YYYY-MM-DD')
+    ELSE NULL
+  END AS birthdate_final
+FROM cleaned
+WHERE birthdate_clean_text IS NOT NULL
+LIMIT 15;
+```
+
+The inner CASE logic prepares a standardized YYYY-MM-DD text representation.\
+
+Regex guards ensure only syntactically and semantically valid month/day values are converted.\
+
+Invalid, blank, or sentinel entries are safely excluded.\
+
+The outer CASE performs the final casting into the true PostgreSQL DATE type.\
+
+This two-step validation (first reformat, then convert) guarantees that your code runs without any 22008: date/time field value out of range errors, even on messy or mixed-format datasets.\
+
+**Preview of Successfully Cleaned Dates**
+
+```{sql, connection = con}
+-- Preview cleaned and validated dates
+WITH cleaned AS (
+  SELECT
+    id_text,
+    CASE
+      WHEN birthdate_raw IN ('NA', '#NULL!', '') THEN NULL
+      WHEN birthdate_raw ~ '^\s*\d{4}/\d{2}/\d{2}\s*$' THEN REPLACE(birthdate_raw, '/', '-')
+      WHEN birthdate_raw ~ '^\s*\d{2}-\d{2}-\d{4}\s*$' THEN TO_CHAR(TO_DATE(TRIM(birthdate_raw), 'DD-MM-YYYY'), 'YYYY-MM-DD')
+      WHEN birthdate_raw ~ '^\s*\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])\s*$' THEN TRIM(birthdate_raw)
+      ELSE NULL
+    END AS birthdate_clean_text
+  FROM public.visit_hospital
+)
+SELECT
+  id_text,
+  birthdate_clean_text,
+  TO_DATE(birthdate_clean_text, 'YYYY-MM-DD') AS birthdate_final
+FROM cleaned
+WHERE birthdate_clean_text IS NOT NULL
+ORDER BY id_text
+LIMIT 20;
+
+```
+
+This preview confirms that only valid and correctly formatted entries remain. All date strings are now standardized in ISO format (YYYY-MM-DD) and safely castable into the DATE type for further analysis.
+
+**Detecting Residual Missing or Invalid Entries**
+
+It’s useful to summarize how many rows were successfully cleaned versus how many remain missing or invalid. This summary provides a data-quality snapshot — showing the proportion of records that were valid, converted, or excluded.
+
+```{sql, connection = con}
+-- Summarize validity of birthdate entries after cleaning
+WITH final_status AS (
+  SELECT
+    CASE
+      WHEN birthdate_raw IN ('NA', '#NULL!', '') THEN 'Missing / Placeholder'
+      WHEN birthdate_raw ~ '^\s*\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])\s*$' THEN 'Valid (YYYY-MM-DD)'
+      WHEN birthdate_raw ~ '^\s*\d{2}-\d{2}-\d{4}\s*$' THEN 'Converted (DD-MM-YYYY)'
+      WHEN birthdate_raw ~ '^\s*\d{4}/\d{2}/\d{2}\s*$' THEN 'Converted (YYYY/MM/DD)'
+      ELSE 'Other / Invalid'
+    END AS category
+  FROM public.visit_hospital
+)
+SELECT category, COUNT(*) AS record_count
+FROM final_status
+GROUP BY category
+ORDER BY record_count DESC;
+
+```
+
+**List the invalid and unknown rows**
+
+```{sql, connection = con}
+WITH normalized AS (
+  SELECT
+    id_text,
+    birthdate_raw,
+    NULLIF(TRIM(birthdate_raw), '') AS raw_trim,
+    CASE
+      WHEN birthdate_raw ~ '^\s*\d{4}[-/]\d{2}[-/]\d{2}\s*$'
+        THEN REGEXP_REPLACE(TRIM(birthdate_raw), '/', '-', 'g')
+      WHEN birthdate_raw ~ '^\s*\d{2}-\d{2}-\d{4}\s*$'
+        THEN TO_CHAR(TO_DATE(TRIM(birthdate_raw), 'DD-MM-YYYY'), 'YYYY-MM-DD')
+      ELSE NULL
+    END AS ymd_text
+  FROM public.visit_hospital
+),
+parts AS (
+  SELECT
+    id_text, birthdate_raw, raw_trim, ymd_text,
+    CASE WHEN ymd_text ~ '^\d{4}-\d{2}-\d{2}$' THEN split_part(ymd_text,'-',1)::int END AS y,
+    CASE WHEN ymd_text ~ '^\d{4}-\d{2}-\d{2}$' THEN split_part(ymd_text,'-',2)::int END AS m,
+    CASE WHEN ymd_text ~ '^\d{4}-\d{2}-\d{2}$' THEN split_part(ymd_text,'-',3)::int END AS d
+  FROM normalized
+),
+validated AS (
+  SELECT
+    id_text, birthdate_raw, ymd_text, y, m, d,
+    (m BETWEEN 1 AND 12)
+    AND (d BETWEEN 1 AND EXTRACT(DAY FROM (date_trunc('month', make_date(y,m,1))
+                                           + INTERVAL '1 month' - INTERVAL '1 day'))) AS is_valid
+  FROM parts
+)
+SELECT
+  id_text,
+  birthdate_raw,
+  ymd_text AS normalized_text,
+  y, m, d,
+  CASE
+    WHEN ymd_text IS NOT NULL AND NOT is_valid THEN 'Invalid (impossible date)'
+    WHEN ymd_text IS NULL THEN 'Unknown/Unparsed'
+  END AS reason
+FROM validated
+WHERE (ymd_text IS NOT NULL AND NOT is_valid)
+   OR ymd_text IS NULL
+  -- exclude explicit placeholders if you like:
+  AND COALESCE(TRIM(birthdate_raw),'') NOT IN ('NA','#NULL!','')
+ORDER BY reason, id_text
+LIMIT 20;
+
+```
+
+**Range Profiling of Cleaned Dates**
+
+After cleaning and conversion to valide dates, you can check for chronological plausibility (e.g., no future birthdates).
+
+```{sql, connection = con}
+-- Profile chronological range of cleaned birthdates
+WITH validated AS (
+  SELECT
+    TO_DATE(TRIM(birthdate_raw), 'YYYY-MM-DD') AS birthdate_final
+  FROM public.visit_hospital
+  WHERE birthdate_raw ~ '^\s*\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])\s*$'
+)
+SELECT
+  MIN(birthdate_final) AS earliest_birth,
+  MAX(birthdate_final) AS latest_birth,
+  COUNT(*) AS total_valid
+FROM validated;
+
+```
+
+**Summary of Date Formatting**
+
+| Step | Technique | Purpose |
+|-------------------|------------------------|-----------------------------|
+| Pattern profiling | `~` (regex match) + `split_part()` | Identify valid, invalid, or mixed-format entries |
+| Safe reformatting | `REPLACE()` + `TO_CHAR(TO_DATE(...))` | Convert raw input to ISO `YYYY-MM-DD` text safely |
+| Range validation | Regex guard `(0[1-9]|1[0-2])` for month, etc. | Block out-of-range month/day before conversion |
+| Safe conversion | `CASE WHEN ... THEN TO_DATE()` | Cast only confirmed valid formats to `DATE` |
+| Quality summary | `GROUP BY category` | Provide audit view of data quality categories |
+| Range check | `MIN()` / `MAX()` | Confirm chronological plausibility of cleaned dates |
+
+### **Date & Time Analysis**
+
+**Profiling the Date of Birth Column**
+
+Start with an overview to check completeness and plausible ranges.
+
+```{sql, connection = con}
+-- Profile birthdate data: completeness and range
+SELECT
+  COUNT(*) AS total_records,
+  COUNT(birthdate) AS non_missing_birthdate,
+  MIN(birthdate) AS earliest_birth,
+  MAX(birthdate) AS latest_birth
+FROM public.visit_hospital;
+```
+
+This confirms the time coverage of your data (e.g., from 1953–2012) and helps detect potential outliers or missing values.
+
+**Calculating births by Month and Year**
+
+```{sql, connection = con}
+-- Count births by month
+SELECT
+  DATE_TRUNC('month', birthdate)::date AS birth_month,
+  COUNT(*) AS total_births
+FROM public.visit_hospital
+WHERE birthdate IS NOT NULL
+GROUP BY 1
+ORDER BY birth_month;
+
+```
+
+```{sql, connection = con}
+-- Births by Year (show only the year number)
+SELECT
+  EXTRACT(YEAR FROM birthdate)::int AS birth_year,
+  COUNT(*) AS total_births
+FROM public.visit_hospital
+WHERE birthdate IS NOT NULL
+GROUP BY 1
+ORDER BY birth_year;
+
+```
+
+**Calculating Current Age in Years** The AGE() function calculates an interval between two dates, while DATE_PART() extracts the number of years.
+
+```{sql, connection = con}
+-- Compute current age in years for each individual
+SELECT
+  id_text,
+  birthdate,
+  DATE_PART('year', AGE(CURRENT_DATE, birthdate)) AS age_years
+FROM public.visit_hospital
+ORDER BY age_years DESC
+LIMIT 15;
+
+```
+
+AGE(CURRENT_DATE, birthdate) returns the elapsed interval since birth, and DATE_PART('year', …) extracts the total number of full years.
+
+**Calculating Duration from Birthdate to a Reference Date**
+
+Interval arithmetic is often used to determine time to a fixed milestone (e.g., 18th or 65th birthday).
+
+```{sql, connection = con}
+-- Time until 65th birthday for each person
+SELECT
+  id_text,
+  birthdate,
+  (birthdate + INTERVAL '65 years') AS date_turns_65,
+  AGE((birthdate + INTERVAL '65 years'), CURRENT_DATE) AS time_until_65
+FROM public.visit_hospital
+WHERE birthdate IS NOT NULL
+ORDER BY date_turns_65
+LIMIT 15;
+
+```
+
+By adding intervals to birthdate, you can project future milestones, calculate eligibility periods, or align with policy cutoffs (e.g., retirement age).
+
+**Detect Implausible or Anomalous Ages**
+
+Identifying outliers helps ensure that demographic insights are grounded in reality.
+
+```{sql, connection = con}
+WITH ages AS (
+  SELECT
+    id_text,
+    DATE_PART('year', AGE(CURRENT_DATE, birthdate)) AS age_years
+  FROM public.visit_hospital
+  WHERE birthdate IS NOT NULL
+)
+SELECT
+  COUNT(*) FILTER (WHERE age_years < 0)   AS negative_age,
+  COUNT(*) FILTER (WHERE age_years > 100) AS unrealistic_age,
+  ROUND(AVG(age_years)::numeric, 1)       AS avg_age
+FROM ages;
+
+```
+
+This check ensures no impossible ages (negative or over 100 years) are present. Such records may indicate data-entry or unit conversion issues.
+
+**Temporal Trends by Birth Year or Decade** Aggregating by birth year or decade reveals how age distributions evolve over time.
+
+```{sql, connection = con}
+-- Group individuals by birth year and decade
+SELECT
+  FLOOR(EXTRACT(YEAR FROM birthdate) / 10) * 10 AS birth_decade,
+  ROUND(CAST(AVG(DATE_PART('year', AGE(CURRENT_DATE, birthdate))) AS NUMERIC), 1) AS avg_age,
+  COUNT(*) AS total_individuals
+FROM public.visit_hospital
+WHERE birthdate IS NOT NULL
+GROUP BY birth_decade
+ORDER BY birth_decade;
+
+```
+
+EXTRACT(YEAR …) pulls the numeric birth year.
+
+Decade grouping (FLOOR(year / 10) \* 10) is helpful for longitudinal or generational reporting.
+
+**Visualizing Age Distribution Over Time**
+
+```{sql, connection = con}
+-- Average current age by birth decade
+SELECT
+  FLOOR(EXTRACT(YEAR FROM birthdate) / 10) * 10 AS birth_decade,
+  ROUND(CAST(AVG(DATE_PART('year', AGE(CURRENT_DATE, birthdate))) AS NUMERIC), 1) AS avg_age,
+  COUNT(*) AS total_individuals
+FROM public.visit_hospital
+WHERE birthdate IS NOT NULL
+GROUP BY birth_decade
+ORDER BY birth_decade;
+```
+
+This provides an age summary across decades — a compact representation of how age structure shifts over time.
+
+## **Part VII — Descriptive Statistics & Tabulation**
+
+-   Aggregations & `GROUP BY`; `HAVING` filters
+-   Ordered-set aggregates (percentiles)
+-   Crosstab/pivot with `tablefunc` extension
+
+Once the data is clean and structured, the next step is **summarization and tabulation** — transforming granular observations into interpretable statistics.\
+This section demonstrates descriptive techniques such as aggregation with `GROUP BY`, conditional filtering with `HAVING`, calculating percentiles, and reshaping summaries into cross-tabulated (pivoted) formats.
+
+All examples below use the **`public.global_health_statistics`** dataset.
+
+------------------------------------------------------------------------
+
+### 1️⃣ Aggregation with `GROUP BY`
+
+Aggregations condense large datasets into concise summaries — totals, averages, and counts by meaningful categories. The `GROUP BY` clause in SQL is the equivalent of `group_by()` + `summarise()` in R.
+
+In data analytics, this is how we turn millions of records into tables that inform decision-making.
+
+In the example below, the query groups data by both **country** and **disease**, and computes three key metrics:
+
+-   The **average number of people affected** per record,\
+-   The **total number of people affected** (overall disease burden),\
+-   The **number of records contributing to each group**. The example below shows how `GROUP BY` can be used to generate aggregated insights across multiple dimensions, revealing where disease burdens are highest.
+
+------------------------------------------------------------------------
+
+```{sql, connection = con}
+-- Average population affected by disease and country
+SELECT
+  country,
+  disease_name,
+  ROUND(AVG(population_affected)::numeric, 0) AS avg_population_affected,
+  SUM(population_affected)                     AS total_population_affected,
+  COUNT(*)                                     AS records_count
+FROM public.global_health_statistics
+GROUP BY country, disease_name
+ORDER BY total_population_affected DESC
+LIMIT 15;
+
+```
+
+*Context*: This type of aggregation could support a quick ranking of health priorities — for instance, identifying which diseases have historically affected the largest populations within each country. Using both AVG() and SUM() together allows you to distinguish between typical impact per observation and overall cumulative impact. The ORDER BY ensures that the most significant results (in terms of total affected population) appear at the top.
+
+### 2️⃣HAVING for Filtering Aggregated Results
+
+After summarizing, it’s often useful to narrow down results to only those groups that meet specific conditions — for example, diseases with exceptionally high case counts. Unlike WHERE, which filters individual rows before aggregation, HAVING filters aggregated groups after summary calculations.
+
+The example below shows how to isolate high-impact diseases affecting over one million people in total.
+
+```{sql, connection = con}
+-- Show only diseases with more than 1 million people affected
+SELECT
+  disease_name,
+  SUM(population_affected) AS total_population
+FROM public.global_health_statistics
+GROUP BY disease_name
+HAVING SUM(population_affected) > 1000000
+ORDER BY total_population DESC
+LIMIT 10;
+```
+
+Here, HAVING ensures we only report diseases where the cumulative affected population exceeds 1 million. *Context*: This query is useful when performing threshold-based analysis — such as identifying key health challenges that exceed certain severity levels. It could easily be adapted for different analytical questions, such as finding diseases with a rapid increase over time or regions exceeding target incidence rates.
+
+### 3️⃣ Ordered-Set Aggregates: Percentiles & Medians
+
+While aggregates like AVG() provide a measure of central tendency, percentiles and medians describe distribution and spread. They are especially useful when data contains outliers — for example, one extreme outbreak could distort the average, while the median gives a more typical view.
+
+The example below shows how to compute quartiles (25th, 50th, 75th percentiles) of population affected for each disease.
+
+```{sql, connection = con}
+-- Compute median and quartiles of affected population by disease
+SELECT
+  disease_name,
+  PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY population_affected) AS q1,
+  PERCENTILE_CONT(0.5)  WITHIN GROUP (ORDER BY population_affected) AS median,
+  PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY population_affected) AS q3
+FROM public.global_health_statistics
+WHERE population_affected IS NOT NULL
+GROUP BY disease_name
+ORDER BY median DESC
+LIMIT 10;
+```
+
+*Context:* Percentiles help identify which diseases have the widest or most concentrated spread of population impact. For instance, a disease with a large gap between the 25th and 75th percentile likely affects different regions very unevenly — an insight valuable for targeted interventions.
+
+### 4️⃣**Reshaping Data: Cross-Tabulation (Pivoting Data)**
+
+**Data reshaping** refers to transforming the structure of a dataset — switching between **long** and **wide** formats depending on analytical or reporting needs.\
+In *long format*, each observation occupies one row (e.g., each record represents a country–year–disease combination).\
+In *wide format*, a single row may represent a country or year, and multiple variables or categories become columns (e.g., diseases side by side).
+
+Reshaping is a key part of preparing data for visualizations, dashboards, and comparative summaries.\
+While SQL is inherently row-oriented, PostgreSQL’s `tablefunc` extension and some creative joins make reshaping feasible directly within SQL.
+
+These transformations are common in epidemiology, public health reporting, and data science workflows: - Analysts prefer **long format** for modeling and statistical analysis.\
+- Decision-makers and stakeholders often prefer **wide format** for dashboards, comparisons, and quick scanning.
+
+The following examples demonstrate both **wide** and **long** reshaping operations using the `global_health_statistics` dataset.
+
+#### **4.1: Reshaping to Wide Format**
+
+Pivoting data turns long-format tables into wide-format summaries, similar to Excel pivot tables or R’s pivot_wider(). This is particularly useful for comparing values side by side — such as annual totals per disease.
+
+In PostgreSQL, pivoting can be done using the crosstab() function from the tablefunc extension.
+
+**Why important:** Stakeholders often ask for “diseases across columns by year.” The example below shows how I pivot totals by year into a wide table for quick scanning.
+
+```{sql, connection = con}
+-- Enable the extension (run once per database)
+CREATE EXTENSION IF NOT EXISTS tablefunc;
+```
+
+```{sql, connection = con}
+SELECT *
+FROM crosstab(
+  $$
+    SELECT year_event::INT, disease_name, SUM(population_affected)::NUMERIC
+    FROM public.global_health_statistics
+    GROUP BY year_event, disease_name
+    ORDER BY year_event, disease_name
+  $$
+) AS ct(
+  year_event INT,
+  malaria NUMERIC,
+  dengue NUMERIC,
+  influenza NUMERIC,
+  covid19 NUMERIC
+)
+LIMIT 10;
+
+```
+
+**Context:** This example shows how a long transactional dataset can be reshaped into a compact, comparative view where each disease becomes a column. Such output is ideal for visualizing trends or preparing data for dashboards (e.g., year-over-year change in disease prevalence).
+
+#### **4.2: Reshaping to Long Format**
+
+Long format is often preferred for modeling, analytics, and machine learning pipelines because it’s tidy — every variable has its own column, and every observation has its own row. When you receive data in a wide structure (for example, one column per disease), converting it back to long format makes it easier to aggregate, filter, or compute metrics by category.
+
+**Why this matters:** Analytical workflows (e.g., regression, forecasting, clustering) often expect a normalized long structure. This format aligns better with relational database principles and is easier to extend when new diseases or measures appear.
+
+In PostgreSQL, this can be achieved with UNION ALL or the more compact UNNEST() approach.
+
+```{sql, connection = con}
+SELECT year_event, disease_name, population_affected
+FROM (
+    SELECT *
+    FROM crosstab(
+      $$
+        SELECT year_event::INT, disease_name, SUM(population_affected)::NUMERIC
+        FROM public.global_health_statistics
+        GROUP BY year_event, disease_name
+        ORDER BY year_event, disease_name
+      $$
+    ) AS ct(
+      year_event INT,
+      malaria NUMERIC,
+      dengue NUMERIC,
+      influenza NUMERIC,
+      covid19 NUMERIC
+    )
+) crosstab_result
+CROSS JOIN LATERAL unnest(
+    ARRAY['malaria','dengue','influenza','covid19'],
+    ARRAY[malaria,dengue,influenza,covid19]
+) AS t(disease_name, population_affected)
+ORDER BY year_event, disease_name;
+
+```
+
+-   ARRAY\[...\] defines disease names.\
+
+-   ARRAY\[...\] holds the corresponding values from each column.\
+
+-   UNNEST expands them into long rows.\
+
+Another option to achieve the same result could be using UNION ALL:
+
+Below is a demonstration using UNION ALL to manually “unpivot” wide data into long form.
+
+```{sql, connection = con}
+-- Example: manually reshaping a wide table back to long format
+-- (assuming we already have a pivoted summary table)
+WITH disease_wide AS (
+  SELECT *
+  FROM crosstab(
+    $$
+      SELECT year_event::INT, disease_name, SUM(population_affected)::NUMERIC
+      FROM public.global_health_statistics
+      GROUP BY year_event, disease_name
+      ORDER BY year_event, disease_name
+    $$
+  ) AS ct(
+    year_event INT,
+    malaria NUMERIC,
+    dengue NUMERIC,
+    influenza NUMERIC,
+    covid19 NUMERIC
+  )
+)
+SELECT year_event, 'malaria'   AS disease_name, malaria   AS population_affected FROM disease_wide
+UNION ALL
+SELECT year_event, 'dengue',     dengue   FROM disease_wide
+UNION ALL
+SELECT year_event, 'influenza',  influenza FROM disease_wide
+UNION ALL
+SELECT year_event, 'covid19',    covid19   FROM disease_wide
+ORDER BY year_event, disease_name
+LIMIT 20;
+
+
+```
+
+### **5️⃣ Multi-Level Summaries**
+
+When you want to track patterns over time, it’s helpful to summarize data at multiple hierarchical levels. The query below aggregates the total population affected by year and country, producing a panel-like view suitable for temporal trend analysis.
+
+```{sql, connection = con}
+-- Yearly total affected population per country
+SELECT
+  country,
+  year_event,
+  SUM(population_affected) AS total_affected
+FROM public.global_health_statistics
+GROUP BY country, year_event
+ORDER BY country, year_event;
+```
+
+**Context:** This example demonstrates how a simple GROUP BY over multiple dimensions can reveal longitudinal trends — such as whether a country’s total burden is increasing or decreasing over time. The resulting dataset could serve as the basis for line charts or heatmaps in further visualization steps.
+
+------------------------------------------------------------------------
+
+🔎 **Summary Table: Descriptive Statistics & Reshaping Techniques**
+
+| **Technique** | **Purpose** | **SQL Example** | **When to Use** |
+|-----------------|-----------------|--------------------|-----------------|
+| `GROUP BY` + aggregates (`SUM`, `AVG`, `COUNT`) | Collapse raw rows into grouped summaries | `SELECT country, disease_name, SUM(population_affected) FROM ... GROUP BY country, disease_name;` | Rank burdens by country/disease, create quick summaries |
+| `HAVING` filters | Filter groups *after* aggregation | `... GROUP BY disease_name HAVING SUM(population_affected) > 1000000;` | Identify only high-impact diseases or threshold exceedances |
+| Ordered-set aggregates (`PERCENTILE_CONT`) | Compute medians, quartiles, or percentiles | `SELECT disease_name, PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY population_affected) FROM ... GROUP BY disease_name;` | Understand distributions, reduce impact of outliers |
+| `crosstab()` (wide pivot) | Reshape long data into wide format (like Excel pivot tables) | `SELECT * FROM crosstab($$SELECT year_event, disease_name, SUM(population_affected) ...$$) AS ct(...);` | Dashboards, year-over-year comparisons, stakeholder summaries |
+| `UNNEST()` / `UNION ALL` (long unpivot) | Convert wide back to long/tidy format | `SELECT year_event, disease_name, population_affected FROM wide CROSS JOIN LATERAL unnest(...);` | Feed into modeling, visualization, machine learning |
+| Multi-level summaries | Aggregate across multiple hierarchical dimensions | `SELECT country, year_event, SUM(population_affected) FROM ... GROUP BY country, year_event;` | Trend analysis across time and geography |
+
+------------------------------------------------------------------------
+
+**Key Insight:**\
+- *Wide format* is great for comparative dashboards, stakeholder reporting, and scanning.\
+- *Long format* is better for tidy analysis, visualisation, and interoperability with tools like R or Python.\
+- SQL’s flexibility (`GROUP BY`, `HAVING`, `PERCENTILE_CONT`, `crosstab`, `UNNEST`) allows analysts to move fluidly between exploratory statistics and presentation-ready summaries.
+
+------------------------------------------------------------------------
+
+**Key Takeaways**
+
+Descriptive SQL transforms raw transactional data into interpretable insights through summarization and restructuring.
+
+The ability to move fluidly between long and wide formats reflects practical analytical flexibility — catering to both technical and decision-maker audiences.
+
+## **Part VIII — Performance Basics**
+
+Database performance tuning is an essential skill when working with large datasets such as `public.global_health_statistics`. Even seemingly simple queries can become very slow if the database needs to scan millions of rows. This section demonstrates three core performance techniques — indexing, reading query plans, and simple tuning habits — using examples from the dataset. Performance optimization in SQL typically involves:
+
+-   Creating the right **indexes**\
+-   Understanding how queries are executed with `EXPLAIN ANALYZE`\
+-   Applying **simple tuning strategies** to improve speed
+
+------------------------------------------------------------------------
+
+### **1. Indexing Strategies**
+
+SQL databases use **B-tree indexes** by default. They work like a sorted lookup structure that makes finding rows faster.
+
+**When to use indexes:** - On **filtering columns** (`WHERE`) - On **grouping keys** (`GROUP BY`) - On **ordering columns** (`ORDER BY`) - On **join keys** between tables
+
+Indexes act like a book’s table of contents: instead of flipping through every page, the database can jump directly to the rows it needs. For instance:
+
+```{sql, connection = con}
+-- Without an index: PostgreSQL will likely do a sequential scan
+EXPLAIN ANALYZE
+SELECT *
+FROM public.global_health_statistics
+WHERE country = 'Australia';
+```
+
+Indexes speed up queries by allowing the database to **look up rows efficiently** rather than scanning the entire table.
+
+```{r, echo=FALSE}
+con <- dbConnect(
+  RPostgres::Postgres(),
+  host = "localhost",
+  port = 5432,
+  dbname = "SQL_Data_Manipulation",
+  user = "postgres",
+  password = "Add_Your_Password_Here"
+)
+
+```
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# install.packages(c("DBI","RPostgres","dplyr"))  # run once
+library(DBI)
+library(RPostgres)
+library(dplyr)
+
+# (Optional) keep credentials out of the script
+Sys.setenv(PGUSER = "postgres", PGPASSWORD = "Add_Your_Password_Here")
+
+con <- dbConnect(
+  RPostgres::Postgres(),
+  host   = "localhost",
+  port   = 5432,
+  dbname = "SQL_Data_Manipulation",   # matches your screenshot
+  user   = Sys.getenv("PGUSER", "postgres"),
+  password = Sys.getenv("PGPASSWORD", "Add_Your_Password_Here")
+)
+```
+
+CREATE INDEX IF NOT EXISTS idx_ghs_country ON public.global_health_statistics (country);
+
+-- Re-run the query EXPLAIN ANALYZE SELECT \* FROM public.global_health_statistics WHERE country = 'Australia';
+
+With the index in place, the plan switches to an Index Scan, reducing I/O dramatically. On large datasets, this difference is measured in seconds or minutes saved e.g., from 2.9 micro seconds to 0.88 micro seconds in this example (see the screenshot below).
+
+The following screenshot shows the execution time difference observed before and after adding an index:
+
+![](images/SQL%20scan%20time_before.png){fig-alt="PostgreSQL query plan comparison"} ![](images/SQL%20scan%20time_after.png){fig-alt="PostgreSQL query plan comparison"} 
+
+### **2. Reading Query Plans with EXPLAIN ANALYZE**
+
+Indexes are only useful if the database actually uses them. That’s where EXPLAIN ANALYZE comes in. It shows the chosen plan and the actual execution time.
+
+-- Create index on year_event CREATE INDEX IF NOT EXISTS idx_ghs_year_event ON public.global_health_statistics (year_event);
+
+-- Re-run the query to see faster plan EXPLAIN ANALYZE SELECT year_event, COUNT(\*) AS n_records FROM public.global_health_statistics GROUP BY year_event ORDER BY year_event;
+
+The output explains whether PostgreSQL used sorting, hashing, or index scans. If grouping by year is frequent, adding an index on year may shift the plan from expensive full sorts to more efficient operations.
+
+### **3. Simple Tuning Tips**
+
+Even without adding new indexes, developers can make queries run faster by following small habits:
+
+**a) Predicates: Make Them SARGable**
+
+SARGable = Search Argument Able. Avoid wrapping columns in functions.
+
+❌ Non-SARGable
+
+Good (SARGable)
+
+WHERE mortality_pct = 5.0
+
+WHERE year = 2020
+
+**b) Projections: Select Only What You Need**
+
+-- SELECT \* -- FROM public.global_health_statistics;
+
+```{sql, connection = con}
+SELECT country, year_event, disease_name, mortality_pct
+FROM public.global_health_statistics
+LIMIT 20;
+
+```
+
+**c) Ordering: Use Index Support** If you frequently order by columns like population_affected, consider an index.
+
+CREATE INDEX idx_population_affected ON public.global_health_statistics(population_affected) LIMIT 15;
+
+SELECT country, population_affected FROM public.global_health_statistics ORDER BY population_affected DESC LIMIT 15;
+
+**Conclusion**
+
+With even these basic optimizations, you can significantly improve query performance:
+
+Indexing frequently used filter, grouping, and ordering columns (year_event, country, disease_name, population_affected).
+
+Reading query plans with EXPLAIN ANALYZE to understand execution.
+
+Tuning queries by making predicates SARGable, projecting only needed columns, and leveraging indexes for ordering.
+
+These practices ensure your queries on global_health_statistics remain efficient even as the dataset grows.
+
+## **Part IX — Security, Backup & Sharing**
+
+Ensuring data integrity and accessibility means thinking beyond querying. This section covers how to:
+
+-   Secure access with roles & privileges
+-   Create backups and restore databases
+-   Export and share query results for reporting
+
+**1. Roles & Privileges — Granting Read-Only Access to Learners**
+
+PostgreSQL supports fine-grained control over who can connect to databases and what they can do inside.
+
+**Give Learners Read-Only Access to Global Health Data**
+
+-- Identify the Database name SELECT datname FROM pg_database;
+
+**A. Create the Role for the Learner**
+
+```{sql, connection = con}
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT FROM pg_roles WHERE rolname = 'learner_user'
+  ) THEN
+    CREATE ROLE learner_user WITH LOGIN PASSWORD 'SafePass123';
+  END IF;
+END $$;
+
+```
+
+**B. Grant Database Access**
+
+```{sql, connection = con}
+-- Allow learner_user to connect to the specific database eg SQL_Data_Manipulation database
+GRANT CONNECT ON DATABASE "SQL_Data_Manipulation" TO learner_user;
+
+```
+
+**C. Grant Schema-Level Access**
+
+```{sql, connection = con}
+-- Allow the user to access objects in the 'public' schema
+GRANT USAGE ON SCHEMA public TO learner_user;
+```
+
+**D. Grant Read Access to Specific Tables**
+
+```{sql, connection = con}
+-- Allow SELECT queries only
+GRANT SELECT ON public.global_health_statistics TO learner_user;
+```
+
+Now, learner_user can log in, browse the schema, and query the dataset — but cannot modify anything.
+
+**Create Multiple Learners with a Group Role** Instead of managing access per individual, create a shared group role and assign learners to it.
+
+```{sql, connection = con}
+-- Create the role group
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT FROM pg_roles WHERE rolname = 'learners_group'
+  ) THEN
+    CREATE ROLE learners_group;
+  END IF;
+END $$;
+
+```
+
+```{sql, connection = con}
+-- Create individual users
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT FROM pg_roles WHERE rolname = 'learner_ali'
+  ) THEN
+    CREATE ROLE learner_ali WITH LOGIN PASSWORD 'Ali123';
+  END IF;
+END $$;
+```
+
+```{sql, connection = con}
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT FROM pg_roles WHERE rolname = 'learner_sara'
+  ) THEN
+    CREATE ROLE learner_sara WITH LOGIN PASSWORD 'Sara123';
+  END IF;
+END $$;
+
+```
+
+```{sql, connection = con}
+GRANT learners_group TO learner_sara;
+```
+
+```{sql, connection = con}
+-- Grant group access to the database
+GRANT CONNECT ON DATABASE "SQL_Data_Manipulation" TO learners_group;
+```
+
+```{sql, connection = con}
+GRANT USAGE ON SCHEMA public TO learners_group;
+```
+
+```{sql, connection = con}
+GRANT SELECT ON public.global_health_statistics TO learners_group;
+
+```
+
+**Audit Who Has Access**
+
+```{sql, connection = con}
+SELECT rolname
+FROM pg_roles
+WHERE has_database_privilege(rolname, 'SQL_Data_Manipulation', 'CONNECT');
+
+```
+
+**To see which roles have SELECT access on global_health_statistics:**
+
+```{sql, connection = con}
+SELECT grantee, privilege_type
+FROM information_schema.role_table_grants
+WHERE table_name = 'global_health_statistics';
+
+```
+
+**2. Backups and Restores**
+
+**🔸 Using pgAdmin (GUI)**
+
+**To Backup:**
+
+1.  Right-click on SQL_Data_Manipulation\
+
+2.  Click Backup\
+
+3.  Choose format: Custom\
+
+4.  Save the file (.backup)\
+
+**To Restore:**
+
+1.  Create a new empty database (e.g., SQL_Health_Restore)\
+
+2.  Right-click → Restore\
+
+3.  Load the .backup file\
+
+**3. Exporting Results and Reporting with Quarto**
+
+**Export to CSV using psql**
+
+```{sql, connection = con}
+-- **Export to CSV using psql**
+COPY (
+  SELECT disease_name, year_event, AVG(mortality_pct) AS avg_mortality
+  FROM public.global_health_statistics
+  GROUP BY disease_name, year_event
+) TO 'C:\\temp\\disease_mortality.csv' CSV HEADER;
+
+```
+
+**B. Render a Quarto Table or Chart**
+
+```{sql, connection = con}
+SELECT 
+  disease_name,
+  ROUND(AVG(mortality_pct)::numeric, 2) AS avg_mortality
+FROM public.global_health_statistics
+GROUP BY disease_name
+ORDER BY avg_mortality DESC
+LIMIT 10;
+
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(ggplot2)
+library(readr)
+```
+
+```{r}
+df <- read_csv("C:/temp/disease_mortality.csv")
+
+ggplot(df, aes(x = reorder(disease_name, avg_mortality), y = avg_mortality)) +
+geom_col(fill = "#0077cc") +
+coord_flip() +
+labs(title = "Top 10 Diseases by Average Mortality",
+x = "Disease", y = "Mortality %")
+```
+
+## Database Administration & Reporting Tasks
+
+| Task               | Tool                   | Notes                           |
+|-------------------|-----------------------|------------------------------|
+| Grant DB Access    | SQL                    | `GRANT CONNECT`, `GRANT SELECT` |
+| Bulk Learner Setup | SQL + Group Role       | Use `learners_group`            |
+| Backup             | pgAdmin / `pg_dump`    | Choose Custom format            |
+| Restore            | pgAdmin / `pg_restore` | Create empty DB first           |
+| Export             | `\COPY` in `psql`      | Save results as CSV             |
+| Reporting          | Quarto + ggplot        | Use dynamic SQL chunks          |
+
+By combining PostgreSQL’s security model, backup features, and Quarto’s reporting power, you're equipped to build a secure, scalable, and sharable data analysis environment.
+
+# 📝 Summary and Conclusion
+
+This presentation provided an **end-to-end journey through PostgreSQL** on Windows, covering everything from installation to advanced analytics and reporting.
+
+We began with the **foundations of SQL** (ACID principles, PostgreSQL ecosystem, pgAdmin/psql), then demonstrated **data loading and exploration**. From there, we explored both **core wrangling (SELECT, WHERE, JOIN, CASE)** and **advanced techniques (CTEs, window functions, deduplication, upserts)**.
+
+The middle sections focused on **descriptive statistics** (aggregation, percentiles, crosstabs) and **data quality** (missing data handling, casting/cleaning, working with dates).\
+Next, we examined **performance basics** (indexing, query plans, tuning practices) to ensure queries run efficiently even on large health datasets.
+
+Finally, we addressed the critical topics of **security, backup, and sharing**, demonstrating how to manage roles and privileges, perform reliable backups, and integrate results with Quarto for transparent reporting.
+
+------------------------------------------------------------------------
+
+## 🎯 Key Takeaways
+
+-   **SQL is more than queries** — it is a full environment for storing, securing, analyzing, and sharing data.\
+-   **PostgreSQL + pgAdmin** provide a robust platform for analytics work.\
+-   **Integration with R and Quarto** allows reproducible, professional-grade reporting.\
+-   **Data governance practices** (indexes, roles, backups) are as important as analysis techniques.
+
+By combining technical SQL skills with performance, governance, and reproducibility, analysts can deliver results that are **accurate, efficient, and trusted**.
+
+------------------------------------------------------------------------
+
+# 📚 References & Learning Resources
+
+For further study and practice, here are recommended books and websites
+
+**Books** - Beaulieu, A. (2020). Learning SQL: Generate, manipulate, and retrieve data (3rd ed.). O’Reilly Media. ISBN: 978-1492057611
+
+-   Obe, R. O., & Hsu, L. S. (2017). PostgreSQL: Up and running: A practical guide to the advanced open source database (3rd ed.). O’Reilly Media. ISBN: 978-1491963418
+
+-   DeBarros, A. (2018). Practical SQL: A beginner’s guide to storytelling with data. No Starch Press. ISBN: 978-1593278274
+
+**Websites & Documentation** - [PostgreSQL Official Documentation](https://www.postgresql.org/docs/)\
+- [Postgres Tutorial](https://www.postgresqltutorial.com/)\
+- [Mode Analytics SQL Tutorial](https://mode.com/sql-tutorial/)\
+- [RStudio Quarto Documentation](https://quarto.org/)
+
+------------------------------------------------------------------------
