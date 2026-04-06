@@ -1,0 +1,1010 @@
+---
+title: "Power BI Analytics and Dashboard"
+description: |
+   Engagement and Scoping  ·  Power Query · DAX Measures · KPI Cards · Slicers · Formatting · Benchmarking · Dashboard Design · Key Findings.
+author: "Habtamu Bizuayehu"
+date: 2026-03-01
+website: "https://habtamubizuayehu.com/"
+github: "https://github.com/HabtamuBizuayehu"
+orcid: "https://orcid.org/0000-0002-1360-4909"
+linkedin: "https://www.linkedin.com/in/habtamu-bizuayehu-94285980/"
+image: "dashboard_overview.png"
+
+categories: [Power BI, DAX measure, Visualisation, Data Analysis]
+
+highlight-style: github
+output-dir: "docs"
+
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: false
+    code-fold: false
+    code-tools: true
+    code-summary: "Show the code"
+    theme: united
+    self-contained: true
+
+knitr:
+  opts_knit:
+    warning: false
+    message: false
+
+editor: visual
+---
+
+
+**Power BI Analytics and Dashboard — now live**
+
+🌐 Explore the full interactive guide here:
+<https://habtamubizuayehu.com/Podcast_Blog.html>
+
+🗂️ GitHub Repository:
+<https://github.com/HabtamuBizuayehu/Power-BI-Analytics-and-Dashboard>
+
+💾 Download the Power BI file (.pbix) and explore it yourself:
+<https://github.com/HabtamuBizuayehu/Power-BI-Analytics-and-Dashboard/raw/main/Power%20BI%20Dashboard.pbix>
+
+## Introduction
+
+This presentation demonstrates end-to-end data analytics using publicly available breast cancer screening participation data from the Australian Institute of Health and Welfare (AIHW). The project covers data preparation, transformation, DAX measure development, and interactive dashboard design using Power BI — skills directly applicable to operational reporting and decision support roles in health, government, and industry settings.
+
+The data captures screening participation rates across Australian states and territories, age groups, and years from 2017 to 2020. The analysis examines trends over time, geographic variation, and differences by age group to identify patterns and priority areas for program planning and resource allocation.
+
+## **Contents**
+
+1.  Stakeholder Engagement and Project Scoping
+2.  Data Preparation and Transformation
+3.  DAX Measures
+4.  Dashboard Design and Visualisations
+5.  Key Findings
+6.  Conclusion
+
+## **1. Stakeholder Engagement and Project Scoping**
+
+Effective dashboard development begins with a clear understanding of the analytical question, the intended audience, and the decisions the outputs are expected to support. Prior to building the dashboard, it is important to define the project objectives, scope, and reporting requirements to ensure the final product fits for purpose and aligned with stakeholder needs.
+
+### **Objective**
+
+The primary objective of this dashboard is to monitor and communicate breast cancer screening participation rates across Australia, enabling program planners, public health teams, and policy stakeholders to identify trends, geographic variation, and priority population groups requiring targeted intervention.
+
+### **Intended Audience**
+
+The dashboard is designed for a range of stakeholders including:
+
+-   Public health program managers monitoring screening coverage over time
+-   Policy advisors examining equity and access across states and age groups
+-   Executives and senior leaders requiring high-level summaries and key performance indicators
+-   Data analysts and researchers exploring patterns in screening participation
+
+### **Analytical Scope**
+
+The analysis for this project covers:
+
+-   Time period: 2017 to 2020
+-   Geography: all Australian states and territories
+-   Population: women aged 50 to 74 years eligible for the national breast cancer screening program
+-   Data source: publicly available data from the Australian Institute of Health and Welfare (AIHW)
+
+### **Reporting Requirements and Filters**
+
+Through the scoping process, the following interactive filters were identified as essential to support stakeholder exploration of the data:
+
+-   **State or territory** — to examine geographic variation in screening participation across Australia
+-   **Year** — to track trends and changes in coverage over time
+-   **Age group** — to identify differences in participation by age and support age-targeted program planning
+-   **Screening rate range** — to allow users to focus on areas or groups with lower coverage and prioritise intervention efforts
+
+These filters were implemented as interactive slicers within the Power BI dashboard, enabling stakeholders to independently explore the data and derive insights relevant to their specific program or policy context.
+
+## **2. Data Preparation and Transformation**
+
+Before building visualisations, the raw data required a structured preparation and transformation process to ensure it was clean, accurate, and ready for analysis. Part of data preparation was performed using Power Query Editor within Power BI Desktop.
+
+The dataset was sourced from the Australian Institute of Health and Welfare (AIHW) and contains breast cancer screening participation records at the Statistical Area Level 3 (SA3) geography across Australian states and territories from 2017 to 2020. The data is publicly available and was imported directly into Power BI Desktop for cleaning and transformation.
+
+### **Loading the Data**
+
+To get started, open Power BI Desktop and follow these steps:
+
+1.  Click "Excel Workbook" on the home screen
+2.  Browse to and select your data file `Breast_cancer_screening.xlsx`
+3.  In the Navigator window, tick the sheet containing the data
+4.  Click "Transform Data" — this opens Power Query Editor where all cleaning steps are carried out before loading into the data model
+
+Once loaded, you should see the raw dataset with 40 columns and 999+ rows in the Power Query Editor window, as shown in the screenshot below.
+
+```{r}
+#| echo: false
+#| fig-cap: "Figure 1: Raw data loaded in Power Query Editor"
+#| out-width: "100%"
+
+knitr::include_graphics(
+  "C:/Users/User/Desktop/Materials_ Course and proposals/VIP collection for Syntax code or project titles/R codes/Website profile Mod 2/Post_Blog/Power_BI/data_view.png"
+)
+```
+
+> **Tip:** Transform data in Power Query before loading it into the report. This keeps your data model clean and makes it easier to update or troubleshoot later.
+
+### **Data Cleaning and Reshaping Data from Wide to Long Format**
+
+The raw dataset is structured in wide format, where participation counts, 
+population estimates, rates, and expected values for each age group are 
+stored as separate columns (for example, `part50_74`, `pop50_74`, 
+`rate50_74`). To support flexible filtering and aggregation by age group 
+in Power BI, the data needs to be reshaped into long format — one row 
+per SA3 area, year, and age group combination.
+
+### **Removing Unnecessary Columns**
+
+The raw dataset contains several columns that are not needed for this analysis. Removing them keeps the data model clean and improves dashboard performance.
+
+Remove the following:
+
+1.  Right-click the `sa3coden` column header and select **Remove**
+2.  To remove all `agen` columns at once:
+    -   Hold **Ctrl** on your keyboard
+    -   Click each column header that starts with `agen` to select them all
+    -   Right-click any selected column and choose **Remove Columns**
+
+> **Tip:** You can use the search bar at the top of the column list to quickly find columns if your dataset is wide. Removing unused columns also speeds up report refresh time.
+
+### **Filtering Invalid Records**
+
+Some records in the dataset have the state recorded as "Unknown" or "Other". These do not represent valid Australian states or territories and should be excluded before building any geographic visualisations.
+
+To filter these out:
+
+1.  Click the dropdown arrow on the `state` column header
+2.  Uncheck "Unknown" and "Other" from the list
+3.  Click **OK**
+
+This ensures all geographic analyses are based on valid state and territory records.
+
+The raw dataset encodes financial years as numeric values (for example, 
+201617 represents the 2016-17 financial year). These need to be recoded 
+into standard calendar years so that time-based filtering and trend 
+charts work correctly in the dashboard.
+
+
+The recoding, column removal, reshaping, and state filtering are all 
+handled in a single M code block applied through the Advanced Editor. 
+To apply this:
+
+1. Click the **View** tab in the Power Query ribbon
+2. Click **Advanced Editor**
+3. Replace all existing content with the M code provided below
+4. Click **Done** and check the data looks correct
+
+```{r}
+#| eval: false
+#| echo: true
+
+#// ============================================================
+#// Update the file path in Step 1 to match your file location
+#// ============================================================
+
+let
+
+    // Step 1: Load the Excel file
+    Source = Excel.Workbook(
+        File.Contents("C:\Users\User\Downloads\Breast_cancer_screening.xlsx"), 
+        null, true),
+
+    // Step 2: Set Name column type and navigate to Sheet1
+    #"Changed Type1" = Table.TransformColumnTypes(
+        Source,{{"Name", type text}}),
+    Sheet1_Sheet = #"Changed Type1"{[Item="Sheet1",Kind="Sheet"]}[Data],
+
+    // Step 3: Promote first row as column headers
+    #"Promoted Headers" = Table.PromoteHeaders(
+        Sheet1_Sheet, [PromoteAllScalars=true]),
+
+    // Step 4: Set correct data types for all columns
+    #"Changed Type" = Table.TransformColumnTypes(
+        #"Promoted Headers",{
+        {"sa3code", Int64.Type}, {"sa3coden", Int64.Type}, 
+        {"sa3name", type text}, {"state", type text}, 
+        {"year", Int64.Type}, {"part50_74", Int64.Type}, 
+        {"pop50_74", Int64.Type}, {"rate50_74", type number}, 
+        {"agen50_74", Int64.Type}, {"expct50_74", Int64.Type}, 
+        {"part50_69", Int64.Type}, {"pop50_69", Int64.Type}, 
+        {"rate50_69", type number}, {"agen50_69", Int64.Type}, 
+        {"expct50_69", Int64.Type}, {"part50_54", Int64.Type}, 
+        {"pop50_54", Int64.Type}, {"rate50_54", type number}, 
+        {"agen50_54", Int64.Type}, {"expct50_54", Int64.Type}, 
+        {"part55_59", Int64.Type}, {"pop55_59", Int64.Type}, 
+        {"rate55_59", type number}, {"agen55_59", Int64.Type}, 
+        {"expct55_59", Int64.Type}, {"part60_64", Int64.Type}, 
+        {"pop60_64", Int64.Type}, {"rate60_64", type number}, 
+        {"agen60_64", Int64.Type}, {"expct60_64", Int64.Type}, 
+        {"part65_69", Int64.Type}, {"pop65_69", Int64.Type}, 
+        {"rate65_69", type number}, {"agen65_69", Int64.Type}, 
+        {"expct65_69", Int64.Type}, {"part70_74", Int64.Type}, 
+        {"pop70_74", Int64.Type}, {"rate70_74", type number}, 
+        {"agen70_74", Int64.Type}, {"expct70_74", Int64.Type}}),
+
+    // Step 5: Remove sa3coden — duplicate identifier not needed
+    RemovedColumns = Table.RemoveColumns(
+        #"Changed Type", {"sa3coden"}),
+
+    // Step 6: Unpivot age group columns from wide to long format
+    // Keeps sa3code, sa3name, state, year fixed
+    // All other columns become rows with Attribute and Value
+    UnpivotedColumns = Table.UnpivotOtherColumns(
+        RemovedColumns, 
+        {"sa3code", "sa3name", "state", "year"}, 
+        "Attribute", "Value"),
+
+    // Step 7: Extract measure name (part, pop, rate, expct)
+    // and age group (eg 50_74) from the Attribute column
+    AddedMeasure = Table.AddColumn(
+        UnpivotedColumns, 
+        "measure", 
+        each if Text.StartsWith([Attribute], "part") then "part"
+             else if Text.StartsWith([Attribute], "pop") then "pop"
+             else if Text.StartsWith([Attribute], "rate") then "rate"
+             else if Text.StartsWith([Attribute], "expct") then "expct"
+             else null),
+
+    AddedAgeGroup = Table.AddColumn(
+        AddedMeasure,
+        "age_group",
+        each if Text.StartsWith([Attribute], "part") 
+             then Text.AfterDelimiter([Attribute], "part")
+             else if Text.StartsWith([Attribute], "pop") 
+             then Text.AfterDelimiter([Attribute], "pop")
+             else if Text.StartsWith([Attribute], "rate") 
+             then Text.AfterDelimiter([Attribute], "rate")
+             else if Text.StartsWith([Attribute], "expct") 
+             then Text.AfterDelimiter([Attribute], "expct")
+             else null),
+
+    // Step 8: Remove Attribute column and null measure rows
+    RemovedAttribute = Table.RemoveColumns(
+        AddedAgeGroup, {"Attribute"}),
+    FilteredNulls = Table.SelectRows(
+        RemovedAttribute, 
+        each [measure] <> null),
+
+    // Step 9: Pivot measure back to wide format
+    // Creates separate columns for part, pop, rate, expct
+    PivotedMeasures = Table.Pivot(
+        FilteredNulls,
+        List.Distinct(FilteredNulls[measure]),
+        "measure", 
+        "Value"),
+
+    // Step 10: Recode financial year to standard calendar year
+    RecodedYear = Table.AddColumn(
+        PivotedMeasures, 
+        "year_clean", 
+        each if [year] = 201617 then 2017
+             else if [year] = 201718 then 2018
+             else if [year] = 201819 then 2019
+             else if [year] = 201920 then 2020
+             else [year]),
+    RemovedOldYear = Table.RemoveColumns(
+        RecodedYear, {"year"}),
+    RenamedYear = Table.RenameColumns(
+        RemovedOldYear, {{"year_clean", "year"}}),
+
+    // Step 11: Exclude invalid state records
+    FilteredStates = Table.SelectRows(
+        RenamedYear, 
+        each [state] <> "Unknown" and [state] <> "Other"),
+
+    // Step 12: Select and reorder final columns for dashboard use
+    ReorderedColumns = Table.SelectColumns(
+        FilteredStates,
+        {"sa3code", "sa3name", "state", "year", 
+         "age_group", "part", "pop", "rate", "expct"})
+
+in
+    ReorderedColumns
+```
+
+5. Check the preview to confirm the data is now in long format with 
+   one row per SA3 area, year, and age group. It should look like the following output.
+   
+```{r}
+#| echo: true
+#| fig-cap: " Data Reshaping and cleaning in Power Query Editor"
+#| out-width: "100%"
+
+knitr::include_graphics(
+  "C:/Users/User/Desktop/Materials_ Course and proposals/VIP collection for Syntax code or project titles/R codes/Website profile Mod 2/Post_Blog/Power_BI/data_cleaning.png"
+)
+```
+   
+> **Tip:** After applying this transformation, your dataset will have 
+> significantly more rows than the original wide format, as each SA3 
+> area and year combination now has a separate row for each age group. 
+> This is expected and is what enables age group filtering to work 
+> correctly in your dashboard slicers and visuals.
+
+> **Note:** Update the file path in the Source step to match the 
+> location of your file if it differs from the path shown above.
+
+
+6. Make sure the column data type is set to **Whole Number** or 
+   **Date** — click the data type icon on the left of the column 
+   header and select the appropriate type
+
+> **Why this matters:** The column name does not determine how 
+> Power BI interprets the data. What matters is the data type. 
+> If the year column is left as a large number like 201617, 
+> Power BI will treat it as a continuous numeric value rather 
+> than a time-based category, which breaks trend charts and 
+> year-based slicers.
+
+
+### **Checking Data**
+
+Before closing Power Query, it is good practice to do a quick check to make sure everything looks right:
+
+-   The `year` column should show values 2017, 2018, 2019, and 2020 
+-   The `state` column should show valid Australian states and territories only
+-   The `sa3coden` and `agen` columns should no longer be visible
+-   Row count should be consistent with expectations
+
+> **Tip:** Click "Column quality" or "Column profiling" in the View tab to see a summary of each column including value counts, errors, and empty values. This is a quick way to spot any remaining data quality issues before loading.
+
+### **Transform data**
+
+To support accurate analysis and visualisation, variables should be assigned the correct data type; for instance, the year field is converted to a Whole Number.
+
+- Click Transform data from the Home ribbon to open Power Query Editor
+- Select the year column
+- Click the data type icon next to the column header
+- Set the data type to Whole Number to ensure correct numeric handling and sorting in the data model
+
+### **Applying and Closing**
+
+Once all transformation steps are completed and verified:
+
+1.  Click **Close and Apply** in the top left of the ribbon
+2.  Power BI will apply all steps and load the clean dataset into the data model
+3.  You should now see `Sheet1` appear in the Data pane on the right side of the report canvas, ready for DAX measure development and dashboard design.
+From here and onwards the `Sheet1` has been renamed to `screening`
+
+> **Note:** All transformation steps are recorded automatically in the Applied Steps panel on the right side of Power Query Editor. If something does not look right, you can click any step to review or delete it and redo it. This makes Power Query a safe and transparent environment for data preparation.
+
+
+## **3 DAX Measures**
+
+DAX (Data Analysis Expressions) is the formula language used in Power BI 
+to create calculated measures and columns. Measures are dynamic 
+calculations that respond to the filters and slicers applied in the 
+dashboard, making them essential for building interactive and meaningful 
+analytical outputs.
+
+In this project, DAX measures were developed to summarise screening 
+participation, calculate rates per 100,000 women, and track year-on-year 
+changes across states and age groups. All measures were created by 
+clicking "New Measure" in the Modeling tab of Power BI Desktop.
+
+> **How to create a measure:** Click the **Modeling** tab in the top 
+> ribbon, then click **New Measure**. A formula bar will appear at the 
+> top of the screen. Type or paste the DAX formula and press Enter. 
+> The measure will appear in the Data pane on the right with a 
+> calculator icon. To use it in a visual, drag it onto the canvas 
+> or into the Values field of a selected visual.
+
+> **Where to see the result:** Once a measure is created, it does 
+> not show a value on its own. To see the result, add the measure 
+> to a visual such as a Card, Bar Chart, or Table. For example, 
+> drag "Avg Screening Rate" onto a Card visual to display the 
+> current value based on any active filters or slicers.
+
+### **Average Screening Rate**
+
+The `rate` variable in the dataset represents the screening participation 
+rate for each SA3 area, age group, and year combination. This measure 
+calculates the average of those rates across all records matching the 
+current filter context — for example, all areas in WA for women aged 
+60 to 64 in 2020. It is the simplest summary of screening coverage 
+and a good starting point for a KPI card at the top of the dashboard.
+
+```{r}
+#| eval: false
+#| echo: true
+Avg Screening Rate = 
+AVERAGE(screening[rate])
+```
+
+> **Example result:** If you add this measure to a Card visual and 
+> set the state slicer to WA and the year slicer to 2020, the card 
+> will display the average screening rate in WA for that year.
+
+### **Screening Rate per 100,000 Women**
+
+While the `rate` variable gives a percentage, this measure expresses 
+participation as a rate per 100,000 eligible women. This is a standard 
+epidemiological approach that allows fair comparison across areas with 
+very different population sizes. For example, a 55% rate in a small 
+regional area represents far fewer women than a 55% rate in a major 
+city — the rate per 100,000 makes this difference visible and 
+comparable.
+```{r}
+#| eval: false
+#| echo: true
+Screening Rate per 100k = 
+DIVIDE(
+    SUMX(screening, screening[pop] * screening[rate] / 100),
+    SUMX(screening, screening[pop])
+) * 100000
+```
+
+> **Example result:** A value of 54,300 means that for every 100,000 
+> eligible women in the selected filter context, approximately 54,300 
+> participated in screening. Add this measure to a Card visual to 
+> display it, or use it in a bar chart to compare across states.
+
+### **Year-on-Year Change per 100,000 Women**
+
+This measure calculates the change in screening rate per 100,000 women 
+compared to the previous year. Positive values indicate an improvement 
+in screening coverage, while negative values indicate a decline. This 
+helps program managers and policy stakeholders quickly identify where 
+coverage is improving or deteriorating over time.
+
+```{r}
+#| eval: false
+#| echo: true
+Rate Change per 100k = 
+VAR CurrentYear = MAX(screening[year])
+VAR PriorYear = CurrentYear - 1
+VAR CurrentRate = CALCULATE(
+    [Screening Rate per 100k], 
+    screening[year] = CurrentYear)
+VAR PriorRate = CALCULATE(
+    [Screening Rate per 100k], 
+    screening[year] = PriorYear)
+RETURN CurrentRate - PriorRate
+```
+
+> **Example result:** If the rate per 100,000 was 55,200 in 2019 
+> and 54,300 in 2020, this measure will return -900, indicating 
+> a decline of 900 women per 100,000 between those two years. 
+> Add this to a Card visual with conditional formatting to show 
+> positive changes in green and negative changes in red.
+
+**Change compared to national average for the same year**
+
+This shows whether the selected state or group is above or below the national average, which is more meaningful for program planning.
+```{r}
+#| eval: false
+#| echo: true
+Rate vs National Avg = 
+VAR SelectedRate = [Screening Rate per 100k]
+VAR NationalRate = CALCULATE(
+    [Screening Rate per 100k],
+    ALL(screening[state]),
+    ALL(screening[age_group]))
+RETURN SelectedRate - NationalRate
+```
+
+
+### **Estimated Number of Women Screened**
+
+This measure estimates the total number of women who participated 
+in screening across the selected filters. It is calculated by 
+multiplying the eligible population by the participation rate for 
+each SA3 area and age group, then summing across all records. 
+This gives a concrete count that is easier to communicate to 
+non-technical audiences than a rate alone.
+```{r}
+#| eval: false
+#| echo: true
+Women Screened Estimate = 
+SUMX(screening, screening[pop] * screening[rate] / 100)
+```
+
+> **Example result:** A value of 182,400 means an estimated 182,400 
+> women participated in screening across the selected states, age 
+> groups, and years. This is a useful headline figure for executive 
+> KPI cards and program reporting.
+
+### **Highest and Lowest Performing State**
+
+These measures identify the state or territory with the highest and 
+lowest average screening rate for the selected filter context. They 
+are useful for KPI cards at the top of the dashboard to draw 
+immediate attention to geographic variation at a glance.
+```{r}
+#| eval: false
+#| echo: true
+Highest Rate State = 
+VAR MaxRate = 
+    MAXX(
+        VALUES(screening[state]), 
+        CALCULATE(AVERAGE(screening[rate]))
+    )
+RETURN
+    CALCULATE(
+        MAX(screening[state]),
+        FILTER(
+            VALUES(screening[state]),
+            CALCULATE(AVERAGE(screening[rate])) = MaxRate
+        )
+    )
+```
+
+```{r}
+#| eval: false
+#| echo: true
+Lowest Rate State = 
+VAR MinRate = 
+    MINX(
+        VALUES(screening[state]), 
+        CALCULATE(AVERAGE(screening[rate]))
+    )
+RETURN
+    CALCULATE(
+        MAX(screening[state]),
+        FILTER(
+            VALUES(screening[state]),
+            CALCULATE(AVERAGE(screening[rate])) = MinRate
+        )
+    )
+```
+
+> **Example result:** The Highest Rate State card might display 
+> "ACT" and the Lowest Rate State card might display "NT", 
+> immediately signalling to stakeholders which jurisdictions 
+> are performing well and which may need targeted program support.
+
+> **Tip:** Once you have created each measure, it will appear in 
+> the Data pane on the right side of Power BI Desktop with a 
+> calculator icon next to it. To use it, simply drag it onto 
+> the canvas or into the Values field of a selected visual.
+
+> **Note:** All measures reference `screening` as the 
+> table name. If your table has a different name, update it 
+> in each measure accordingly.
+
+
+## **4. Dashboard Design and Visualisations**
+
+The dashboard was designed to provide an interactive and accessible 
+summary of breast cancer screening participation across Australia. 
+The layout follows a structured top-to-bottom flow — from high-level 
+KPI summaries at the top, through interactive filters, to detailed 
+trend and comparative charts below. This design approach ensures that 
+both executive and operational stakeholders can quickly find the 
+information most relevant to their needs.
+
+### **Page Setup and Title**
+
+The report page was renamed and a title was added to clearly identify 
+the report and its data source. To set this up:
+
+1. Right-click the page tab at the bottom of the screen and select 
+   **Rename Page** — type `Screening Dashboard` and press Enter
+2. Click the **View** tab in the top ribbon, then click 
+   **Page view** and select **Fit to page**
+3. Click the **Insert** tab in the top ribbon, then click **Text Box**
+4. Click on the canvas and type:
+   `Breast Cancer Screening Uptake — Australia`
+5. Press Enter and on the next line type:
+   `Source: Australian Institute of Health and Welfare (AIHW) | Developed by Habtamu Bizuayehu`
+6. Select the title text, set font size to **18** and click **Bold**
+7. Select the subtitle text and set font size to **10**
+8. Resize and drag the text box to sit at the top of the canvas
+
+### **KPI Cards**
+
+Four KPI cards were added across the top of the dashboard to provide 
+an at-a-glance summary of key screening metrics. Each card responds 
+dynamically to the slicers and filters applied by the user, making 
+them useful for both high-level executive reporting and operational 
+monitoring.
+
+To add each KPI card:
+
+1. Click on an empty area of the canvas
+2. In the **Visualizations** panel, click the **Card** visual icon 
+   (it looks like a single number display)
+3. In the **Data** panel on the right, drag the measure into the 
+   **Fields** box of the card
+4. Click the card to select it, then click **Format visual** 
+   (the paint roller icon) in the Visualizations panel
+5. Under **Callout value**, update the display units and decimal 
+   places as needed
+6. Under **Category label**, type a friendly name for the card
+7. Resize and position the card, then repeat for each measure
+
+The four cards display:
+
+- **Average Screening Rate (%)** — drag `Avg Screening Rate` 
+  into the Fields box
+- **Rate per 100,000 Women** — drag `Screening Rate per 100k` 
+  into the Fields box
+- **Estimated Women Screened** — drag `Women Screened Estimate` 
+  into the Fields box
+- **Compared to National Average** — drag `Rate vs National Avg` 
+  into the Fields box
+
+> **Tip:** To align cards evenly, hold **Ctrl** and click each 
+> card to select them all, then click **Format** in the top ribbon 
+> and use **Align** and **Distribute horizontally** to space 
+> them evenly across the top of the canvas.
+
+```{r}
+#| echo: false
+#| fig-cap: "KPI cards showing key screening metrics"
+#| out-width: "100%"
+knitr::include_graphics(
+  "C:/Users/User/Desktop/Materials_ Course and proposals/VIP collection for Syntax code or project titles/R codes/Website profile Mod 2/Post_Blog/Power_BI/kpi_cards.png"
+)
+```
+
+### **Interactive Slicers**
+
+Four interactive slicers were added below the KPI cards to allow 
+users to filter the dashboard by state, year, age group, and 
+screening rate range. These slicers apply simultaneously across 
+all visuals on the page, enabling stakeholders to explore the data 
+independently without requiring any technical knowledge.
+
+To add a slicer, follow these three steps for each one:
+
+1. Click an empty area of the canvas
+2. Click the **Slicer** icon in the Visualizations panel
+3. Tick the relevant field in the Data panel
+
+Each slicer should be in its own separate slicer box. The four 
+slicers are configured as follows:
+
+- **State** — tick `state`, then click **Format visual** > 
+  **Slicer settings** > **Options** > **Style** > select **Dropdown**
+
+- **Year** — tick `year`, then click **Format visual** > 
+  **Slicer settings** > **Options** > **Style** > select **Tile** 
+  so years display as clickable buttons
+
+- **Age Group** — tick `age_group`, then click **Format visual** > 
+  **Slicer settings** > **Options** > **Style** > select **Dropdown**. 
+  Under **Selection**, turn **Multi-select** and **Select all** to **On** 
+  so users can select more than one age group at a time
+
+- **Screening Rate Range** — tick `rate`, then click **Format visual** > 
+  **Slicer settings** > **Options** > **Style** > select **Between** 
+  to create a range slider equivalent to the rate group slider in 
+  the R Shiny application
+
+> **Tip:** If you cannot find the Style option, make sure you are 
+> in the **Format visual** tab (paint roller icon) and not the 
+> **Add data** tab. The Style setting is under 
+> **Slicer settings** > **Options**.
+
+> **Note:** Power BI automatically applies slicer selections to 
+> all compatible visuals on the same page, so no additional 
+> configuration is needed to link the slicers to your charts and cards.
+
+```{r}
+#| echo: false
+#| fig-cap: "Interactive slicers for state, year, age group, and rate range"
+#| out-width: "100%"
+knitr::include_graphics(
+  "C:/Users/User/Desktop/Materials_ Course and proposals/VIP collection for Syntax code or project titles/R codes/Website profile Mod 2/Post_Blog/Power_BI/slicers.png"
+)
+```
+
+### **Screening Rate Trend by Age Group**
+
+A line chart was added to display screening participation trends 
+from 2017 to 2020, with a separate line for each age group. This 
+visual allows users to examine how participation has changed over time 
+and whether certain age groups are consistently above or below others.
+
+To add this visual:
+
+1. Click on an empty area of the canvas
+2. Select the **Line chart** visual from the Visualizations panel
+3. Configure the fields as follows:
+   - **X axis** — drag `year` from the Data panel
+   - **Y axis** — drag `Avg Screening Rate`
+   - **Legend** — drag `age_group`
+4. Click **Format visual** and apply the following settings:
+   - Under **Title** — type 
+     `Screening Rate Trend by Age Group (2017–2020)`
+   - Under **Lines** — set line thickness to **2px**
+   - Under **Markers** — turn **On** to show data point markers
+   - Under **Data labels** — turn **On** to display values on 
+     the chart
+   - Under **Legend** — set position to **Right**
+5. Resize the chart to span the full width of the canvas below 
+   the slicers
+  
+```{r}
+#| echo: false
+#| fig-cap: "Line chart showing screening rate trend by age group (2017-2020)"
+#| out-width: "100%"
+knitr::include_graphics(
+  "C:/Users/User/Desktop/Materials_ Course and proposals/VIP collection for Syntax code or project titles/R codes/Website profile Mod 2/Post_Blog/Power_BI/trend_chart.png"
+)
+``` 
+   
+### **Rate Compared to National Average by State**
+
+A horizontal bar chart was added to display how each state's screening 
+rate compares to the national average. This visual is more informative 
+than a simple year-on-year change as it benchmarks each state directly 
+against the national average, making it immediately clear which states 
+are underperforming and by how much. Bars extending to the right 
+(positive values) indicate the state screens more women per 100,000 
+than the national average, while bars to the left (negative values) 
+indicate below-average performance.
+
+To add this visual:
+
+1. Click on an empty area of the canvas
+2. Select the **Clustered bar chart** visual
+3. Configure the fields as follows:
+   - **Y axis** — drag `state`
+   - **X axis** — drag `Rate vs National Avg`
+
+4. Click **Format visual** > **Visual** tab and apply the following:
+   - Under **Title** — type `Rate Compared to National Average`
+
+**Applying conditional colour formatting:**
+
+5. First create a helper measure by clicking **New Measure** in the 
+   Modeling tab and paste the following:
+   
+```{r}
+#| eval: false
+#| echo: true
+Bar Color = 
+IF([Rate vs National Avg] >= 0, "#107c10", "#d13438")
+```
+
+6. Click the bar chart to select it
+7. Click **Format visual** > **Visual** tab > **Bars** > **Colors** 
+   > click **fx**
+8. In the dialog box that opens:
+   - Change **Format style** from **Rules** to **Field value**
+   - Under **What field should we base this on?** — select `Bar Color`
+   - Click **OK**
+
+> **Why Field value works better than Rules:** The `Rate vs National Avg` 
+> measure returns large values in the thousands (eg 4K or -13K) because 
+> it calculates differences per 100,000 women. Using Rules requires 
+> specifying a numeric range wide enough to capture all values, which 
+> can be unreliable. Using Field value with a dedicated colour measure 
+> is simpler, more reliable, and automatically handles any value 
+> regardless of size.
+
+**Adding a reference line at zero:**
+
+9. Click the **Analytics** icon (magnifying glass) in the 
+   Visualizations panel
+10. Click **Constant line** > **Add line**
+11. Set value to **0**, label to `National average`, 
+    line style to **Dashed**, and colour to **dark grey**
+
+> **Key insight from this visual:** NT shows the largest gap below 
+> the national average at around -13K per 100,000 women, while 
+> TAS and ACT perform above the national benchmark. This immediately 
+> signals to program planners which jurisdictions require targeted 
+> intervention and resource allocation.
+
+```{r}
+#| echo: false
+#| fig-cap: "Figure 7: Screening rate compared to national average by state"
+#| out-width: "100%"
+knitr::include_graphics(
+  "C:/Users/User/Desktop/Materials_ Course and proposals/VIP collection for Syntax code or project titles/R codes/Website profile Mod 2/Post_Blog/Power_BI/national_avg_chart.png"
+)
+```
+
+
+
+### **Detailed Data Table**
+
+A table visual was added at the bottom of the dashboard to display 
+the underlying data for the selected filters, allowing stakeholders 
+to examine specific values for any state, age group, and year 
+combination.
+
+To add this visual:
+
+1. Click on an empty area of the canvas
+2. In the Visualizations panel, click the **Table** visual icon
+3. In the Data panel, tick only these fields in this order:
+   - `state`
+   - `age_group`
+   - `year`
+   - `Avg Screening Rate`
+
+   > **Important:** Only tick the fields listed above. 
+   > Do not tick `rate`, `Sum of rate`, or `year` as a 
+   > raw numeric field — use `Avg Screening Rate` instead 
+   > as it gives a meaningful summarised value rather than 
+   > a raw sum.
+
+4. Click the **Format visual** icon (paint roller) and apply:
+   - Click **Title** and type `Screening Participation SUmmary`
+   - Click **Style** and select **Alternating rows**
+   - Click **Column headers**, turn bold **On**, and set 
+     font size to **11**
+
+5. Resize the table to span the full width of the canvas 
+   at the bottom of the dashboard
+
+> **Tip:** Users can sort the table by any column by clicking 
+> the column header in the dashboard view. This makes it easy 
+> to identify the highest and lowest performing areas without 
+> any additional configuration.
+
+```{r}
+#| echo: false
+#| fig-cap: "Figure 8: Detailed data table with screening participation metrics"
+#| out-width: "100%"
+knitr::include_graphics(
+  "C:/Users/User/Desktop/Materials_ Course and proposals/VIP collection for Syntax code or project titles/R codes/Website profile Mod 2/Post_Blog/Power_BI/data_table.png"
+)
+```
+
+### **Final Dashboard Overview**
+
+The completed dashboard integrates all KPI cards, slicers, charts, 
+and the data table into a single cohesive report page. All visuals 
+respond simultaneously to the interactive slicers, enabling 
+stakeholders to explore screening participation by state, year, 
+age group, and rate range without technical knowledge.
+
+**Applying a consistent theme:**
+
+1. Click the **View** tab in the top ribbon
+2. Click **Themes** and select **Executive** or **Accessible default** 
+   for a clean professional appearance
+3. If you want to customise further, click **Customize current theme** 
+   to adjust the colour palette, font family, and visual defaults 
+   to match your organisation's branding
+
+**Aligning and spacing visuals:**
+
+4. Hold **Ctrl** and click each visual to select them all, or press 
+   **Ctrl + A** to select everything on the canvas
+5. Click the **Format** tab in the top ribbon
+6. Click **Align** > **Snap to grid** to ensure consistent spacing 
+   across all visuals
+7. Use **Align left**, **Align top**, and **Distribute horizontally** 
+   or **Distribute vertically** to arrange visuals into clean rows 
+   and columns
+
+**Formatting individual visuals:**
+
+8. Click each visual to select it, then click the **Format visual** 
+   icon (paint roller) in the Visualizations panel
+9. Click the **General** tab and apply the following to each visual:
+   - Under **Title** — type a clear descriptive title, set font 
+     size to **12**, font colour to your preferred dark colour, 
+     and turn **Bold** on
+   - Under **Effects** > **Background** — set background colour 
+     to **White** to ensure all visuals have a consistent clean surface
+   - Under **Effects** > **Border** — turn **On**, set colour to 
+     `#e0e0e0` (light grey), and set width to **1px** for a 
+     subtle card-style border
+   - Under **Effects** > **Shadow** — turn **Off** to keep the 
+     dashboard flat and professional
+
+**Formatting fonts consistently:**
+
+10. For each visual, click **Format visual** > **Visual** tab and 
+    apply consistent font sizes:
+    - Axis labels (X axis and Y axis) — set font size to **10**
+    - Data labels — set font size to **9**
+    - Legend text — set font size to **10**
+    - Visual titles — set font size to **12** and turn bold **On**
+    - KPI card callout values — set font size to **24**
+    - KPI card category labels — set font size to **10**
+
+**Adding a key insight text box:**
+
+11. Click **Insert** > **Text Box**
+12. Type a plain-language summary of the key finding, for example:
+    `Screening rose from 2017 to 2019 then declined in 2020. 
+    Highest participation was among women aged 65–69 years.`
+13. Set font size to **11**, colour to your preferred dark colour
+14. Add a border using **Format** > **Border** and set to a light 
+    accent colour to make it stand out from the other visuals
+
+**Adding a footer:**
+
+15. Click **Insert** > **Text Box** and place it at the very bottom 
+    of the canvas
+16. Type:
+    `Source: Australian Institute of Health and Welfare (AIHW) | 
+    Developed by Habtamu Bizuayehu | Data period: 2017–2020`
+17. Set font size to **9** and colour to **grey**
+```{r}
+#| echo: false
+#| fig-cap: "Final Power BI dashboard — Breast Cancer Screening Uptake Australia"
+#| out-width: "100%"
+knitr::include_graphics(
+  "C:/Users/User/Desktop/Materials_ Course and proposals/VIP collection for Syntax code or project titles/R codes/Website profile Mod 2/Post_Blog/Power_BI/dashboard_overview.png"
+)
+```
+
+## 5. Key Findings
+
+The following key findings emerged from the analysis of breast cancer 
+screening participation across Australia from 2017 to 2020.
+
+**Screening rates peaked in 2019 then declined in 2020.** Participation 
+increased steadily from 2017 to 2019 across most states and age groups, 
+before declining in 2020. This decline is likely associated with 
+disruptions to health services during the COVID-19 pandemic, which 
+reduced access to and uptake of preventive health programs including 
+cancer screening.Hesitancy for screening and vaccination fatigue
+could also contribute for the small rate.
+
+**Women aged 65 to 69 years had the highest participation rates.** 
+This age group consistently recorded the highest screening rates 
+across all years and states, suggesting this cohort is well engaged 
+with the national screening program. In contrast, women aged 50 to 54 
+years recorded the lowest rates, indicating an opportunity for targeted 
+outreach to younger eligible women.
+
+**The Northern Territory recorded the largest gap below the national 
+average.** NT screening rates were approximately 15,000 per 100,000 
+women below the national average, far exceeding the gap observed in 
+any other state or territory. This reflects longstanding challenges 
+in delivering preventive health services to geographically dispersed 
+and remote populations, and points to a clear priority area for 
+program investment and community engagement.
+
+**Tasmania and ACT performed above the national average.** Both 
+jurisdictions consistently recorded rates above the national benchmark 
+across the study period, demonstrating that higher coverage is 
+achievable and providing a model for other states to learn from.
+
+**Geographic and age-related variation signals targeted intervention 
+opportunities.** The variation in screening rates across states and 
+age groups is not random — it reflects structural differences in 
+service access, program reach, and population demographics. These 
+patterns provide actionable insights for program planners to 
+direct resources, tailor outreach strategies, and monitor the 
+impact of targeted interventions over time.
+
+## **6. Conclusion**
+
+This portfolio project has demonstrated an end-to-end data analytics workflow 
+using publicly available breast cancer screening data from the 
+Australian Institute of Health and Welfare. From raw data preparation 
+in Power Query through to DAX measure development, interactive 
+dashboard design, and evidence synthesis. The project reflects the 
+practical skills required for data analyst roles in health, government, 
+and industry settings.
+
+The dashboard enables stakeholders at all levels — from program 
+managers to executive leaders — to explore screening participation 
+interactively, benchmark performance against the national average, 
+and identify priority populations and geographies for targeted 
+intervention. The use of conditional formatting, KPI cards, and a 
+plain-language key insight panel ensures that complex analytical 
+outputs are communicated clearly and accessibly to both technical 
+and non-technical audiences.
+
+The analytical techniques and tools demonstrated in this project — 
+including Power Query M code for data transformation, DAX for dynamic 
+measure development, and structured dashboard design principles — are 
+directly transferable to workforce analytics, operational reporting, 
+and performance monitoring contexts across a wide range of 
+organisational settings.
+
+> **Take-home message:** Effective data analytics is not just about 
+> technical skill — it is about translating complex data into clear, 
+> actionable insights that support better decisions. This dashboard 
+> demonstrates that capability across the full analytical pipeline, 
+> from raw data to evidence-informed recommendations.
+
+
+
+
+
